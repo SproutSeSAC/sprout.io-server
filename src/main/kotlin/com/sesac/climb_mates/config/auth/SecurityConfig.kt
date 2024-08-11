@@ -16,7 +16,8 @@ import org.springframework.security.web.SecurityFilterChain
 @EnableWebSecurity
 class SecurityConfig(
     private val customSuccessHandler: CustomSuccessHandler,
-    private val customFailureHandler: CustomFailureHandler
+    private val customFailureHandler: CustomFailureHandler,
+    private val customOAuth2UserService:CustomOAuth2UserService
 ) {
     @Bean
     fun passwordEncoder():PasswordEncoder{
@@ -37,13 +38,20 @@ class SecurityConfig(
                 .requestMatchers("/login/**", "/account/**").not().authenticated()
                 .anyRequest().authenticated()
         }
-        http.formLogin{
-            it
-                .loginPage("/login")
-                .loginProcessingUrl("/login/action")
-                .successHandler(customSuccessHandler)
-                .failureHandler(customFailureHandler)
-                .permitAll()
+//        http.formLogin{
+//            it
+//                .loginPage("/login")
+//                .loginProcessingUrl("/login/action")
+//                .successHandler(customSuccessHandler)
+//                .failureHandler(customFailureHandler)
+//                .permitAll()
+//        }
+        http.oauth2Login {
+            it.userInfoEndpoint{
+                it.userService(customOAuth2UserService)
+            }
+            it.successHandler(customSuccessHandler)
+            it.failureHandler(customFailureHandler)
         }
         http.logout {
             it.deleteCookies("JSESSIONID")
