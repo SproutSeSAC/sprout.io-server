@@ -38,15 +38,16 @@ class SecurityConfig(
                 .requestMatchers("/login/**", "/account/**").not().authenticated()
                 .anyRequest().authenticated()
         }
-//        http.formLogin{
-//            it
-//                .loginPage("/login")
-//                .loginProcessingUrl("/login/action")
-//                .successHandler(customSuccessHandler)
-//                .failureHandler(customFailureHandler)
-//                .permitAll()
-//        }
+        http.formLogin{
+            it
+                .loginPage("/login")
+                .loginProcessingUrl("/login/action")
+                .successHandler(customSuccessHandler)
+                .failureHandler(customFailureHandler)
+                .permitAll()
+        }
         http.oauth2Login {
+            it.loginPage("/login")
             it.userInfoEndpoint{
                 it.userService(customOAuth2UserService)
             }
