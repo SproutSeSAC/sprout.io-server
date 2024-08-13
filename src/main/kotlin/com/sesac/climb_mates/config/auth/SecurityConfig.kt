@@ -16,7 +16,8 @@ import org.springframework.security.web.SecurityFilterChain
 @EnableWebSecurity
 class SecurityConfig(
     private val customSuccessHandler: CustomSuccessHandler,
-    private val customFailureHandler: CustomFailureHandler
+    private val customFailureHandler: CustomFailureHandler,
+    private val customOAuth2UserService:CustomOAuth2UserService
 ) {
     @Bean
     fun passwordEncoder():PasswordEncoder{
@@ -33,8 +34,9 @@ class SecurityConfig(
     fun filterChain(http:HttpSecurity): SecurityFilterChain{
         http.csrf { it.disable() }
         http.authorizeHttpRequests{
-            it.requestMatchers("/css/**", "/script/**", "/img/**", "/error/**", "/sms/**").permitAll()
-                .requestMatchers("/login/**", "/account/**").not().authenticated()
+            it.requestMatchers("/css/**", "/script/**", "/img/**", "/error/**", "/sms/**",
+                "/api/**", "/test/**", "/account/**").permitAll()
+                .requestMatchers("/login/**").not().authenticated()
                 .anyRequest().authenticated()
         }
         http.formLogin{
@@ -44,6 +46,14 @@ class SecurityConfig(
                 .successHandler(customSuccessHandler)
                 .failureHandler(customFailureHandler)
                 .permitAll()
+        }
+        http.oauth2Login {
+            it.loginPage("/login")
+            it.userInfoEndpoint{
+                it.userService(customOAuth2UserService)
+            }
+            it.successHandler(customSuccessHandler)
+            it.failureHandler(customFailureHandler)
         }
         http.logout {
             it.deleteCookies("JSESSIONID")

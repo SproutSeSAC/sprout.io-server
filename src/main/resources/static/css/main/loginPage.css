@@ -24,3 +24,19 @@
     font-weight: bold;
     font-size:1em;
 }
+
+#google_login{
+    width:100%;
+
+    background-color: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 5px;
+    padding:2vw;
+
+    margin-top:3vh;
+
+    font: size 1em;
+    font-weight: bold;
+
+    color: white;
+}
