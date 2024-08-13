@@ -1,12 +1,10 @@
 package com.sesac.climb_mates
 
 import com.opencsv.CSVReader
-import com.sesac.climb_mates.data.persona.Persona
-import com.sesac.climb_mates.data.store.Menu
-import com.sesac.climb_mates.data.store.Store
-import com.sesac.climb_mates.data.store.img.StoreImage
-import com.sesac.climb_mates.service.PersonaService
-import com.sesac.climb_mates.service.StoreService
+import com.sesac.climb_mates.store.data.Menu
+import com.sesac.climb_mates.store.data.Store
+import com.sesac.climb_mates.store.data.img.StoreImage
+import com.sesac.climb_mates.store.StoreService
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +19,6 @@ import java.nio.charset.StandardCharsets
 class CsvReadTest(
     @Autowired private val resourceLoader: ResourceLoader,
     @Autowired private val storeService: StoreService,
-    @Autowired private val personaService: PersonaService
 ) {
     /**
      * 식당명0,음식점종류1,제페유무2,식대가능유무3,메뉴4,가격5,도보6,전화번호7,영업날짜/시간8,지도url뒤 숫자만9,도로명주소10,사진 주소값11

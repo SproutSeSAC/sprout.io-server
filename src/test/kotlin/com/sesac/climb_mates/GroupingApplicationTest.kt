@@ -1,8 +1,8 @@
 package com.sesac.climb_mates
 
 import com.sesac.climb_mates.account.AccountService
-import com.sesac.climb_mates.service.GroupingService
-import com.sesac.climb_mates.service.StoreService
+import com.sesac.climb_mates.grouping.GroupingService
+import com.sesac.climb_mates.store.StoreService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.time.LocalDate

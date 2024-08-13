@@ -1,12 +1,12 @@
 package com.sesac.climb_mates
 
 import com.sesac.climb_mates.account.data.Account
-import com.sesac.climb_mates.data.store.Menu
-import com.sesac.climb_mates.data.store.Store
-import com.sesac.climb_mates.data.store.time.StoreTime
-import com.sesac.climb_mates.data.store.img.StoreImage
+import com.sesac.climb_mates.store.data.Menu
+import com.sesac.climb_mates.store.data.Store
+import com.sesac.climb_mates.store.data.time.StoreTime
+import com.sesac.climb_mates.store.data.img.StoreImage
 import com.sesac.climb_mates.account.AccountService
-import com.sesac.climb_mates.service.StoreService
+import com.sesac.climb_mates.store.StoreService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -129,11 +129,13 @@ class ClimbMatesApplicationTests(
 		} }
 
 		for(i:Int in imagePathList.indices){
-			storeService.createStoreImage(StoreImage(
+			storeService.createStoreImage(
+                StoreImage(
 				store = storeService.getStoreById((i+1).toLong()),
 				path = imagePathList[i],
 				size = 0,
-			))
+			)
+            )
 			println(imagePathList[i])
 		}
 		println()
