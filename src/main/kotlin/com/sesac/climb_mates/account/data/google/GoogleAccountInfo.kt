@@ -1,4 +1,4 @@
-package com.sesac.climb_mates.data.account.google
+package com.sesac.climb_mates.account.data.google
 
 import jakarta.persistence.*
 

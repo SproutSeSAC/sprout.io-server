@@ -1,9 +1,5 @@
-package com.sesac.climb_mates.controller
+package com.sesac.climb_mates.account
 
-import com.sesac.climb_mates.data.account.Account
-import com.sesac.climb_mates.service.AccountService
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping

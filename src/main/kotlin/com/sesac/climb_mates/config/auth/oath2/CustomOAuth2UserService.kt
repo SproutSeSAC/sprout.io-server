@@ -1,7 +1,7 @@
-package com.sesac.climb_mates.config.auth
+package com.sesac.climb_mates.config.auth.oath2
 
-import com.sesac.climb_mates.data.account.google.GoogleAccount
-import com.sesac.climb_mates.data.account.google.GoogleAccountRepository
+import com.sesac.climb_mates.account.data.google.GoogleAccount
+import com.sesac.climb_mates.account.data.google.GoogleAccountRepository
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest

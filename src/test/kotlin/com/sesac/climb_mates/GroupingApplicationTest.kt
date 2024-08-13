@@ -1,7 +1,6 @@
 package com.sesac.climb_mates
 
-import com.sesac.climb_mates.data.grouping.Grouping
-import com.sesac.climb_mates.service.AccountService
+import com.sesac.climb_mates.account.AccountService
 import com.sesac.climb_mates.service.GroupingService
 import com.sesac.climb_mates.service.StoreService
 import org.springframework.beans.factory.annotation.Autowired

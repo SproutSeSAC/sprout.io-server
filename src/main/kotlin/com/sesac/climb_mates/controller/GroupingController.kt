@@ -1,6 +1,6 @@
 package com.sesac.climb_mates.controller
 
-import com.sesac.climb_mates.service.AccountService
+import com.sesac.climb_mates.account.AccountService
 import com.sesac.climb_mates.service.GroupingService
 import jakarta.servlet.http.HttpSession
 import org.springframework.security.core.annotation.AuthenticationPrincipal

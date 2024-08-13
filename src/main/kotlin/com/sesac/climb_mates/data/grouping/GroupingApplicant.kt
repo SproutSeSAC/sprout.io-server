@@ -1,6 +1,6 @@
 package com.sesac.climb_mates.data.grouping
 
-import com.sesac.climb_mates.data.account.Account
+import com.sesac.climb_mates.account.data.Account
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -16,7 +16,7 @@ data class GroupingApplicant(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
-    var account:Account,
+    var account: Account,
 
     @Column(name="created_date", nullable = false)
     val createdDate: LocalDateTime = LocalDateTime.now()

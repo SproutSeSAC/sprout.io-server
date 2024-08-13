@@ -1,6 +1,6 @@
 package com.sesac.climb_mates.api
 
-import com.sesac.climb_mates.service.AccountService
+import com.sesac.climb_mates.account.AccountService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.*

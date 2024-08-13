@@ -1,7 +1,7 @@
 package com.sesac.climb_mates.api
 
 import com.sesac.climb_mates.data.learning_mates.*
-import com.sesac.climb_mates.service.AccountService
+import com.sesac.climb_mates.account.AccountService
 import com.sesac.climb_mates.service.LearningMatesService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
