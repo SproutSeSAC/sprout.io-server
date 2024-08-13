@@ -1,11 +1,11 @@
 package com.sesac.climb_mates
 
-import com.sesac.climb_mates.data.account.Account
+import com.sesac.climb_mates.account.data.Account
 import com.sesac.climb_mates.data.store.Menu
 import com.sesac.climb_mates.data.store.Store
 import com.sesac.climb_mates.data.store.time.StoreTime
 import com.sesac.climb_mates.data.store.img.StoreImage
-import com.sesac.climb_mates.service.AccountService
+import com.sesac.climb_mates.account.AccountService
 import com.sesac.climb_mates.service.StoreService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

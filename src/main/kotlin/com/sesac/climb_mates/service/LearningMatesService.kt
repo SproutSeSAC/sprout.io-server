@@ -1,6 +1,6 @@
 package com.sesac.climb_mates.service
 
-import com.sesac.climb_mates.data.account.AccountRepository
+import com.sesac.climb_mates.account.data.AccountRepository
 import com.sesac.climb_mates.data.learning_mates.*
 import org.springframework.stereotype.Service
 

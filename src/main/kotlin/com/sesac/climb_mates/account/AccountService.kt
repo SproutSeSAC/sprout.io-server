@@ -1,9 +1,8 @@
-package com.sesac.climb_mates.service
+package com.sesac.climb_mates.account
 
-import com.sesac.climb_mates.data.account.Account
-import com.sesac.climb_mates.data.account.AccountRepository
+import com.sesac.climb_mates.account.data.Account
+import com.sesac.climb_mates.account.data.AccountRepository
 import jakarta.servlet.http.HttpSession
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile

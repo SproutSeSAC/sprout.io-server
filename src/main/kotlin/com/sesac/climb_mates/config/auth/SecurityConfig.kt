@@ -1,6 +1,6 @@
 package com.sesac.climb_mates.config.auth
 
-import com.sesac.climb_mates.data.account.AccountRepository
+import com.sesac.climb_mates.config.auth.oath2.CustomOAuth2UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain
 class SecurityConfig(
     private val customSuccessHandler: CustomSuccessHandler,
     private val customFailureHandler: CustomFailureHandler,
-    private val customOAuth2UserService:CustomOAuth2UserService
+    private val customOAuth2UserService: CustomOAuth2UserService
 ) {
     @Bean
     fun passwordEncoder():PasswordEncoder{
@@ -47,13 +47,13 @@ class SecurityConfig(
                 .failureHandler(customFailureHandler)
                 .permitAll()
         }
-        http.oauth2Login {
-            it.loginPage("/login")
-            it.userInfoEndpoint{
+        http.oauth2Login { configure ->
+            configure.loginPage("/login")
+            configure.userInfoEndpoint{
                 it.userService(customOAuth2UserService)
             }
-            it.successHandler(customSuccessHandler)
-            it.failureHandler(customFailureHandler)
+            configure.successHandler(customSuccessHandler)
+            configure.failureHandler(customFailureHandler)
         }
         http.logout {
             it.deleteCookies("JSESSIONID")

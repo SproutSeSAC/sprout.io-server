@@ -1,6 +1,6 @@
 package com.sesac.climb_mates.data.store.review
 
-import com.sesac.climb_mates.data.account.Account
+import com.sesac.climb_mates.account.data.Account
 import com.sesac.climb_mates.data.store.Store
 import jakarta.persistence.*
 import java.time.LocalDateTime

@@ -1,7 +1,7 @@
 package com.sesac.climb_mates.service
 
-import com.sesac.climb_mates.data.account.Account
-import com.sesac.climb_mates.data.account.AccountRepository
+import com.sesac.climb_mates.account.data.Account
+import com.sesac.climb_mates.account.data.AccountRepository
 import com.sesac.climb_mates.data.grouping.*
 import com.sesac.climb_mates.data.store.StoreRepository
 import org.springframework.security.core.userdetails.User
@@ -78,7 +78,7 @@ class GroupingService(
         return groupingApplicantRepository.deleteByAccountUsernameAndGroupingId(username, groupId)
     }
 
-    fun isApplicant(groupingId: Long, account:Account): Boolean {
+    fun isApplicant(groupingId: Long, account: Account): Boolean {
         groupingApplicantRepository.findByGroupingId(groupingId).forEach {
             if(it.account == account){
                 println("있음")
