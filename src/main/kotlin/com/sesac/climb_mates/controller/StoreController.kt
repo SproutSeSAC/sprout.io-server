@@ -1,10 +1,8 @@
 package com.sesac.climb_mates.controller
 
-import com.sesac.climb_mates.data.store.time.StoreTime
-import com.sesac.climb_mates.data.store.img.StoreImage
-import com.sesac.climb_mates.service.GroupingService
-import com.sesac.climb_mates.service.StoreService
-import jakarta.servlet.http.HttpSession
+import com.sesac.climb_mates.store.data.time.StoreTime
+import com.sesac.climb_mates.grouping.GroupingService
+import com.sesac.climb_mates.store.StoreService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Controller
