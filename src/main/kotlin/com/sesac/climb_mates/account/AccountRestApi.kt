@@ -1,8 +1,8 @@
 package com.sesac.climb_mates.account
 
 import com.sesac.climb_mates.account.data.Account
-import com.sesac.climb_mates.data.campus.CampusClass
-import com.sesac.climb_mates.service.CampusService
+import com.sesac.climb_mates.campus.data.CampusClass
+import com.sesac.climb_mates.campus.CampusService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

@@ -1,9 +1,9 @@
-package com.sesac.climb_mates.service
+package com.sesac.climb_mates.campus
 
-import com.sesac.climb_mates.data.campus.Campus
-import com.sesac.climb_mates.data.campus.CampusClass
-import com.sesac.climb_mates.data.campus.CampusClassRepository
-import com.sesac.climb_mates.data.campus.CampusRepository
+import com.sesac.climb_mates.campus.data.Campus
+import com.sesac.climb_mates.campus.data.CampusClass
+import com.sesac.climb_mates.campus.data.CampusClassRepository
+import com.sesac.climb_mates.campus.data.CampusRepository
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -29,7 +29,7 @@ class CampusService(
         )
     }
 
-    fun createCampusClass(campusClass:CampusClass): CampusClass {
+    fun createCampusClass(campusClass: CampusClass): CampusClass {
         return campusClassRepository.save(campusClass)
     }
 
