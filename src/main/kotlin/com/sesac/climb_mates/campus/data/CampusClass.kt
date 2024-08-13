@@ -1,4 +1,4 @@
-package com.sesac.climb_mates.data.campus
+package com.sesac.climb_mates.campus.data
 
 import jakarta.persistence.*
 import java.time.LocalDateTime
