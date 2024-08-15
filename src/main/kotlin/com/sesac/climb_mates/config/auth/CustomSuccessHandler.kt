@@ -31,11 +31,12 @@ class CustomSuccessHandler(
 //            redirectStrategy.sendRedirect(request, response, "/")
 //        }
 
-        val path = if(googleAccountInfoRepository.findByGoogleAccountSub(authentication!!.name).isEmpty) "/account/main" else "/"
+        //val path = if(googleAccountInfoRepository.findByGoogleAccountSub(authentication!!.name).isEmpty) "/account/main" else "/"
+        val path = "/"
         val redirectStrategy = DefaultRedirectStrategy()
 
         redirectStrategy.sendRedirect(request, response, path)
 
-        println("Login: ${request!!.requestId} / ${LocalDateTime.now()} / ${authentication.name}")
+        println("Login: ${request!!.requestId} / ${LocalDateTime.now()} / ${authentication!!.name}")
     }
 }

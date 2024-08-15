@@ -2,6 +2,9 @@ package com.sesac.climb_mates.grouping
 
 import com.sesac.climb_mates.account.AccountService
 import com.sesac.climb_mates.grouping.data.*
+import com.sesac.climb_mates.grouping.data.applicant.GroupingApplicant
+import com.sesac.climb_mates.grouping.data.review.GroupingReview
+import com.sesac.climb_mates.grouping.data.review.GroupingReviewDTO
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.DeleteMapping

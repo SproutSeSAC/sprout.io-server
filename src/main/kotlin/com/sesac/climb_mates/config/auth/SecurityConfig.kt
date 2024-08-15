@@ -21,14 +21,13 @@ class SecurityConfig(
 ) {
     @Bean
     fun passwordEncoder():PasswordEncoder{
-        return  BCryptPasswordEncoder() //
+        return  BCryptPasswordEncoder()
     }
 
     @Bean
     fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration):AuthenticationManager{
         return authenticationConfiguration.authenticationManager
     }
-
 
     @Bean
     fun filterChain(http:HttpSecurity): SecurityFilterChain{

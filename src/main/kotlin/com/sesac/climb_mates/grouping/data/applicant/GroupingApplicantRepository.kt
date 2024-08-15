@@ -1,4 +1,4 @@
-package com.sesac.climb_mates.grouping.data
+package com.sesac.climb_mates.grouping.data.applicant
 
 import jakarta.transaction.Transactional
 import org.springframework.data.jpa.repository.JpaRepository
