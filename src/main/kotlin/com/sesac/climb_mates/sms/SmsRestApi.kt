@@ -1,0 +1,19 @@
+package com.sesac.climb_mates.sms
+
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+@RequestMapping("/sms/api")
+class SmsRestApi(
+    private val smsService: SmsService
+) {
+    @GetMapping("/send")
+    fun sendMail(@RequestParam(name="mail", defaultValue = "none")mail:String): String {
+        println("${mail} 전송")
+        return smsService.validateEmail(mail)
+    }
+
+}

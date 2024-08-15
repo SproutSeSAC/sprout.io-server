@@ -1,6 +1,6 @@
 package com.sesac.climb_mates.config.auth
 
-import com.sesac.climb_mates.data.account.AccountRepository
+import com.sesac.climb_mates.account.data.AccountRepository
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails

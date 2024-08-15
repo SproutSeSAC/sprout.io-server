@@ -1,7 +1,7 @@
 package com.sesac.climb_mates
 
-import com.sesac.climb_mates.data.campus.CampusClass
-import com.sesac.climb_mates.service.CampusService
+import com.sesac.climb_mates.campus.data.CampusClass
+import com.sesac.climb_mates.campus.CampusService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

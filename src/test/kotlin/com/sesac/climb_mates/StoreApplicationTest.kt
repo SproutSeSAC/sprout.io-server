@@ -1,10 +1,10 @@
 package com.sesac.climb_mates
 
 import com.opencsv.CSVReader
-import com.sesac.climb_mates.data.store.Menu
-import com.sesac.climb_mates.data.store.Store
-import com.sesac.climb_mates.data.store.time.StoreTime
-import com.sesac.climb_mates.service.StoreService
+import com.sesac.climb_mates.store.data.Menu
+import com.sesac.climb_mates.store.data.Store
+import com.sesac.climb_mates.store.data.time.StoreTime
+import com.sesac.climb_mates.store.StoreService
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
