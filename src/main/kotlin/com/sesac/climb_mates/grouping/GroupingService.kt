@@ -3,6 +3,11 @@ package com.sesac.climb_mates.grouping
 import com.sesac.climb_mates.account.data.Account
 import com.sesac.climb_mates.account.data.AccountRepository
 import com.sesac.climb_mates.grouping.data.*
+import com.sesac.climb_mates.grouping.data.applicant.GroupingApplicant
+import com.sesac.climb_mates.grouping.data.applicant.GroupingApplicantRepository
+import com.sesac.climb_mates.grouping.data.review.GroupingReview
+import com.sesac.climb_mates.grouping.data.review.GroupingReviewDTO
+import com.sesac.climb_mates.grouping.data.review.GroupingReviewRepository
 import com.sesac.climb_mates.store.data.StoreRepository
 import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Service

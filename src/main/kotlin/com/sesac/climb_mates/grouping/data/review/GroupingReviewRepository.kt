@@ -1,4 +1,4 @@
-package com.sesac.climb_mates.grouping.data
+package com.sesac.climb_mates.grouping.data.review
 
 import org.springframework.data.jpa.repository.JpaRepository
 

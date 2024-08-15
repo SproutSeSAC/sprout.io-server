@@ -1,7 +1,6 @@
-package com.sesac.climb_mates.controller
+package com.sesac.climb_mates.account
 
 import com.sesac.climb_mates.account.data.Account
-import com.sesac.climb_mates.account.AccountService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Controller

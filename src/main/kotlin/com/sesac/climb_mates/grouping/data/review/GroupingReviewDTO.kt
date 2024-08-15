@@ -1,4 +1,4 @@
-package com.sesac.climb_mates.grouping.data
+package com.sesac.climb_mates.grouping.data.review
 
 data class GroupingReviewDTO(
     val groupId:Long,

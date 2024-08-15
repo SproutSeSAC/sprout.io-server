@@ -1,6 +1,7 @@
 package com.sesac.climb_mates.grouping.data
 
 import com.sesac.climb_mates.account.data.Account
+import com.sesac.climb_mates.grouping.data.applicant.GroupingApplicant
 import com.sesac.climb_mates.store.data.Store
 import jakarta.persistence.*
 import java.time.LocalDateTime
