@@ -1,12 +1,9 @@
 package com.sesac.climb_mates.config.auth
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.sesac.climb_mates.data.account.google.GoogleAccountInfoRepository
+import com.sesac.climb_mates.account.data.google.GoogleAccountInfoRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.DefaultRedirectStrategy
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.stereotype.Component
@@ -34,11 +31,12 @@ class CustomSuccessHandler(
 //            redirectStrategy.sendRedirect(request, response, "/")
 //        }
 
-        val path = if(googleAccountInfoRepository.findByGoogleAccountSub(authentication!!.name).isEmpty) "/account/main" else "/"
+        //val path = if(googleAccountInfoRepository.findByGoogleAccountSub(authentication!!.name).isEmpty) "/account/main" else "/"
+        val path = "/"
         val redirectStrategy = DefaultRedirectStrategy()
 
         redirectStrategy.sendRedirect(request, response, path)
 
-        println("Login: ${request!!.requestId} / ${LocalDateTime.now()} / ${authentication.name}")
+        println("Login: ${request!!.requestId} / ${LocalDateTime.now()} / ${authentication!!.name}")
     }
 }
