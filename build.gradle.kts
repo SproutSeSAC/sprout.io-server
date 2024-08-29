@@ -42,6 +42,8 @@ dependencies {
 	// auth
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("com.squareup.retrofit2:retrofit:2.9.0")
+	implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
 	// db
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
