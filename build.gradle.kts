@@ -72,3 +72,7 @@ tasks.withType<Test> {
 	exclude("**/*")
 	useJUnitPlatform()
 }
+
+tasks.jar {
+	enabled = false
+}
