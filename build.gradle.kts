@@ -74,3 +74,8 @@ tasks.withType<Test> {
 	exclude("**/*")
 	useJUnitPlatform()
 }
+
+// spring boot 2.5.0 이후 버전일 경우 plain.jar 생성 방지
+tasks.jar {
+	enabled = false
+}

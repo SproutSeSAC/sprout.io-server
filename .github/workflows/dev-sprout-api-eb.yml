@@ -1,0 +1,56 @@
+# This is a basic workflow that is manually triggered
+
+name: Manual workflow
+
+on:
+  push:
+    tags:
+      - 'dev[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+        -   uses: actions/checkout@v2
+        -   name: Set up JDK 17
+            uses: actions/setup-java@v2
+            with:
+              java-version: '17'
+              distribution: 'temurin'
+
+        -   name: Build with Gradle
+            uses: gradle/gradle-build-action@937999e9cc2425eddc7fd62d1053baf041147db7
+            with:
+                arguments: build --exclude-task test
+
+        -   name: Get current time
+            uses: 1466587594/get-current-time@v2
+            id: current-time
+            with:
+                format: YYYY-MM-DDTHH-mm-ss # 다른 포맷으로 변경 가능 (MomentJS format syntax)
+                utcOffset: "+09:00" # 한국시간(KST) 설정
+
+        # grandle build를 통해 만들어진 jar를 beanstalk에 배포하기 위한 zip 파일 생성 프로세스
+        -   name: Generate deployment package
+            run: |
+                mkdir -p deploy
+                cp build/libs/*.jar deploy/application.jar # 빌드 완료 시 jar 파일명을 application.jar로 변경
+                cp Procfile deploy/Procfile
+                cp -r .ebextensions deploy/.ebextensions
+                cp -r .platform deploy/.platform
+                cd deploy && zip -r deploy.zip . # Procfile, .ebextensions, .platform 포함하여 zip 생성
+
+
+        -   name: Beanstalk Deploy
+            uses: einaregilsson/beanstalk-deploy@v20
+            with:
+                aws_access_key: ${{ secrets.AWS_EB_ACCESS_KEY_ID }} # github secrets 내 등록값 사용
+                aws_secret_key: ${{ secrets.AWS_EB_SECRET_ACCESS_KEY }} # github secrets 내 등록값 사용
+                application_name: sprout-api # Elastic Beanstalk application 이름
+                environment_name: Dev-sprout-api-env # Elastic Beanstalk environment 이름
+                version_label: Github Action-${{steps.current-time.outputs.formattedTime}} # 배포 버전은 타임스탬프를 이용하여 구분
+                region: ap-northeast-2
+                deployment_package: deploy/deploy.zip
+                wait_for_environment_recovery: 300
+
+  
