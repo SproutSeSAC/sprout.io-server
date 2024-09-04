@@ -1,0 +1,48 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:mariadb://sprout-dev.cf42e2mq2dxs.ap-northeast-2.rds.amazonaws.com:3306/sprout-dev
+    username: sprout
+    password: sprout123!!
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    defer-datasource-initialization: true
+    show-sql: true
+    generate-ddl: true
+    open-in-view: true
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            client-id: 1028775640743-0c62hhj7k55mefmiput6rl1freu9uihr.apps.googleusercontent.com
+#            client-secret: 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
+#            scope:
+#              - email
+#              - profile
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+    session:
+      timeout: 1800
+  port: 8080
+
+#  thymeleaf:
+#    cache: false
+#    prefix: classpath:/templates/
+#    suffix: .html
+#    encoding: UTF-8
+
+
