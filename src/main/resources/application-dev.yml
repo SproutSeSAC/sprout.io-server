@@ -2,7 +2,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:mariadb://sprout-dev.cf42e2mq2dxs.ap-northeast-2.rds.amazonaws.com/sprout-dev
+    url: jdbc:mariadb://sprout-dev.cf42e2mq2dxs.ap-northeast-2.rds.amazonaws.com:3306/sprout-dev
     username: sprout
     password: sprout123!!
     driver-class-name: org.mariadb.jdbc.Driver
