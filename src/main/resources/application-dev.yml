@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mariadb://sprout-dev.cf42e2mq2dxs.ap-northeast-2.rds.amazonaws.com:3306/sprout-dev
     username: sprout
-    password: sprout123!!
+    password: Sprout123!!
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
