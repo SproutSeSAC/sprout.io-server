@@ -42,6 +42,8 @@ dependencies {
 	// auth
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("com.squareup.retrofit2:retrofit:2.9.0")
+	implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
 	// db
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
@@ -71,4 +73,9 @@ kotlin {
 tasks.withType<Test> {
 	exclude("**/*")
 	useJUnitPlatform()
+}
+
+// spring boot 2.5.0 이후 버전일 경우 plain.jar 생성 방지
+tasks.jar {
+	enabled = false
 }
