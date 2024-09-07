@@ -15,10 +15,36 @@ spring:
     hibernate:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
+
+cors:
+  allowed-origins:
+    - http://localhost:9000/api
+    - http://localhost:3000/api
+
+url:
+  redirect-url: http://localhost:8080/api/login/success
+
+jwt:
+  access-token:
+    secret: sproutAccesswhereUAccess-whereUAccesssproutURegister
+    expiration: 3600
+  refresh-token:
+    secret: sproutRefreshwhereURefreshwhereURefresh-whereURegister
+    expiration: 864000
+
+server:
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+    session:
+      timeout: 1800
+  port: 8080
+
 
 #  security:
 #    oauth2:
@@ -30,19 +56,3 @@ spring:
 #            scope:
 #              - email
 #              - profile
-
-server:
-  servlet:
-    encoding:
-      charset: UTF-8
-    session:
-      timeout: 1800
-  port: 8080
-
-#  thymeleaf:
-#    cache: false
-#    prefix: classpath:/templates/
-#    suffix: .html
-#    encoding: UTF-8
-
-
