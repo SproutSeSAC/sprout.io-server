@@ -1,5 +1,6 @@
 package io.sprout.api.domain.user
 
+import io.sprout.api.domain.base.entity.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Enumerated
@@ -27,7 +28,7 @@ class UserEntity(
     @Column(nullable = false, length = 10)
     var status: UserStatus, // 유저 상태
 
-) {
+): BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
