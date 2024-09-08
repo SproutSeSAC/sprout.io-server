@@ -1,11 +1,51 @@
 package io.sprout.api.user.service
 
+import io.sprout.api.auth.token.domain.JwtToken
+import io.sprout.api.user.domain.RoleType
+import io.sprout.api.user.domain.UserEntity
+import io.sprout.api.user.domain.UserStatus
+import io.sprout.api.user.infra.UserRepository
+import io.sprout.api.utils.CookieUtils
+import io.sprout.api.utils.NicknameGenerator
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Service
 
 @Service
-class UserService {
+class UserService(
+    private val userRepository: UserRepository,
+    private val jwtToken: JwtToken
+) {
     fun checkAndJoinUser(email: String, response: HttpServletResponse) {
+        val user = userRepository.findByEmail(email)
+        val newNick = NicknameGenerator.generate()
+        if (user == null) {
+            // 사용자 생성
+            val newUser = UserEntity(
+                email = email,
+                name = newNick,
+                role = RoleType.User,
+                status = UserStatus.INACTIVE,
+                avatarImgUrl = null,
+                isEssential = false,
+            )
+            val savedUser = userRepository.save(newUser)
+            val userId = savedUser.id as Long
+            val accessToken = jwtToken.createAccessTokenFromMemberId(userId, savedUser.isEssential)
+            val refreshToken = jwtToken.createRefreshToken(userId);
+            val accessCookie = CookieUtils.createCookie("access_token", accessToken)
+            val refreshCookie = CookieUtils.createCookie("refresh_token", refreshToken)
+            response.addCookie(accessCookie)
+            response.addCookie(refreshCookie)
+        } else {
+            // 기존 사용자 처리
+            val userId = user.id
+            val accessToken = jwtToken.createAccessTokenFromMemberId(userId, user.isEssential)
+            val refreshToken = jwtToken.createRefreshToken(userId);
+            val accessCookie = CookieUtils.createCookie("access_token", accessToken)
+            val refreshCookie = CookieUtils.createCookie("refresh_token", refreshToken)
+            response.addCookie(accessCookie)
+            response.addCookie(refreshCookie)
+        }
 
     }
 }

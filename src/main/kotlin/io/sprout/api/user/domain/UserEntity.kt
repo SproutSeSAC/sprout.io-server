@@ -1,4 +1,4 @@
-package io.sprout.api.domain.user
+package io.sprout.api.user.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -27,6 +27,8 @@ class UserEntity(
     @Column(nullable = false, length = 10)
     var status: UserStatus, // 유저 상태
 
+
+    var isEssential: Boolean,
 ) {
 
     @Id
@@ -47,5 +49,5 @@ enum class UserStatus {
 }
 
 enum class RoleType {
-    ADMIN, TRAINEE, MANAGER
+    ADMIN, MANAGER , User
 }

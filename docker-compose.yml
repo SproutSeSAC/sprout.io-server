@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.5
+    container_name: mariadb
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: hiworld
+      MYSQL_DATABASE: sprout
+      MYSQL_USER: myuser  # 새로운 사용자
+      MYSQL_PASSWORD: mypassword  # 새로운 사용자의 비밀번호
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - sprout-network
+
+volumes:
+  db_data:
+
+networks:
+  sprout-network:
+    driver: bridge

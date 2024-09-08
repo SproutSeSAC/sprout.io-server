@@ -19,15 +19,44 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 249724125506-bk9tr0ic63i0lud55abb498v5qo0lbv1.apps.googleusercontent.com
+            client-secret: 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
+            redirect-uri: http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api/login/oauth2/code/google
+            scope:
+              - profile
+              - email
+              - openid
 
 server:
   servlet:
+    context-path: /api
     encoding:
       charset: UTF-8
     session:
       timeout: 1800
   port: 8080
 
+cors:
+  allowed-origins:
+    - http://localhost:8080/api
+    - http://localhost:3000/api
+    - http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api
+
+url:
+  redirect-url:  http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api/login/success
+
+jwt:
+  access-token:
+    secret: sproutAccesswhereUAccess-whereUAccesssproutURegister
+    expiration: 3600
+  refresh-token:
+    secret: sproutRefreshwhereURefreshwhereURefresh-whereURegister
+    expiration: 864000
 
 springdoc:
   swagger-ui:
