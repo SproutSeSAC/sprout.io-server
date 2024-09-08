@@ -29,7 +29,7 @@ class UserEntity(
     var status: UserStatus, // 유저 상태
 
     @ManyToOne
-    var course: Optional<CourseEntity>,
+    var course: CourseEntity,
 
     @Column(name = "is_essential")
     var isEssential: Boolean
