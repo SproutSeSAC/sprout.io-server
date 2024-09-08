@@ -17,14 +17,14 @@ import java.time.LocalDateTime
 class BaseEntity {
 
     @CreatedDate
-    @Column(name = "createdDateTime")
+    @Column(name = "created_date_time")
     @Comment("생성 시간")
     @ColumnDefault("now()")
     var createdDateTime: LocalDateTime = LocalDateTime.now()
 
     @LastModifiedDate
-    @Column(name = "updatedDateTime")
+    @Column(name = "modified_date_time")
     @Comment("수정 시간")
     @ColumnDefault("now()")
-    var updatedDateTime: LocalDateTime = LocalDateTime.now()
+    var modifiedDateTime: LocalDateTime = LocalDateTime.now()
 }
