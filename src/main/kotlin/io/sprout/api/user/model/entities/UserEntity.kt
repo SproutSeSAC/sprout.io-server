@@ -2,24 +2,23 @@ package io.sprout.api.user.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.course.model.entities.CourseEntity
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Enumerated
-import jakarta.persistence.Table
 import jakarta.persistence.*
 import java.time.LocalDateTime
+import java.util.*
+import kotlin.collections.LinkedHashSet
 
 @Entity
 @Table(name = "user")
 class UserEntity(
 
-    @Column(nullable = false, length = 100)
-    var name: String, // 유저명
+    @Column(nullable = false, length = 50)
+    var nickname: String, // 닉네임
 
-    @Column(unique = true, nullable = false, length = 100)
+    @Column(unique = true, nullable = false, length = 50)
     var email: String, // 이메일
 
-    var avatarImgUrl: String?, // 프로필 이미지 URL
+    @Column(name = "profile_image_url", nullable = true, length = 100)
+    var profileImageUrl: String?, // 프로필 이미지 URL
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
@@ -30,13 +29,19 @@ class UserEntity(
     var status: UserStatus, // 유저 상태
 
     @ManyToOne
-    var course: CourseEntity
+    var course: Optional<CourseEntity>,
+
+    @Column(name = "is_essential")
+    var isEssential: Boolean
 
 ) : BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
+
+    @Column(length = 20)
+    var name: String? = null // 유저명
 
     @Column(name = "refresh_token", length = 700)
     var refreshToken: String? = null // 리프레시 토큰
@@ -47,6 +52,15 @@ class UserEntity(
     @Column(name = "marketing_consent")
     var marketingConsent: Boolean = false // 마케팅 약관 동의여부
 
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var userJobList: MutableSet<UserJobEntity> = LinkedHashSet()
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var userDomainList: MutableSet<UserDomainEntity> = LinkedHashSet()
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var userTechStackList: MutableSet<UserTechStackEntity> = LinkedHashSet()
+
 }
 
 enum class UserStatus {
@@ -54,5 +68,5 @@ enum class UserStatus {
 }
 
 enum class RoleType {
-    ADMIN, TRAINEE, MANAGER
+    ADMIN, MANAGER , User
 }

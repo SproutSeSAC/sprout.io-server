@@ -6,6 +6,13 @@ import jakarta.servlet.http.HttpServletResponse
 
 object CookieUtils {
 
+    fun createCookie(name: String, value: String, httpOnly: Boolean = true, path: String = "/"): Cookie {
+        return Cookie(name, value).apply {
+            isHttpOnly = httpOnly
+            this.path = path
+        }
+    }
+
     fun addCookie(response: HttpServletResponse, name: String, value: String, maxAge: Int) {
         val cookie = Cookie(name, value)
         cookie.path = "/"

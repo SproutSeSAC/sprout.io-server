@@ -2,9 +2,9 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:mariadb://localhost:3306/sprout
-    username: root
-    password: hiworld
+    url: jdbc:mariadb://localhost:3307/sprout
+    username: myuser
+    password: mypassword
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
@@ -15,10 +15,22 @@ spring:
     hibernate:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 249724125506-bk9tr0ic63i0lud55abb498v5qo0lbv1.apps.googleusercontent.com
+            client-secret: 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
+            redirect-uri: http://localhost:8080/api/login/oauth2/code/google
+            scope:
+              - profile
+              - email
+              - openid
 
 cors:
   allowed-origins:
@@ -46,13 +58,4 @@ server:
   port: 8080
 
 
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          google:
-#            client-id: 1028775640743-0c62hhj7k55mefmiput6rl1freu9uihr.apps.googleusercontent.com
-#            client-secret: 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
-#            scope:
-#              - email
-#              - profile
+

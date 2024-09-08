@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
 data class JwtPropertiesConfig(
-    val accessToken: TokenProperties = TokenProperties(),
-    val refreshToken: TokenProperties = TokenProperties()
+    var accessToken: TokenProperties = TokenProperties(),
+    var refreshToken: TokenProperties = TokenProperties()
 ) {
     data class TokenProperties(
         var secret: String = "",
