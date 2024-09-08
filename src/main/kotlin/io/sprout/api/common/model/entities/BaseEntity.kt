@@ -1,4 +1,4 @@
-package io.sprout.api.domain.base.entity
+package io.sprout.api.common.model.entities
 
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners
@@ -27,5 +27,4 @@ class BaseEntity {
     @Comment("수정 시간")
     @ColumnDefault("now()")
     var updatedDateTime: LocalDateTime = LocalDateTime.now()
-
 }
