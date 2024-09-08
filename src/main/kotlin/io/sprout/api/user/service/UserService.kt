@@ -1,8 +1,8 @@
 package io.sprout.api.user.service
 
-import UserRepository
 import io.sprout.api.auth.token.domain.JwtToken
 import io.sprout.api.course.infra.CourseRepository
+import io.sprout.api.user.infra.UserRepository
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.model.entities.UserStatus
@@ -19,7 +19,7 @@ class UserService(
 ) {
     fun checkAndJoinUser(email: String, response: HttpServletResponse) {
         val user = userRepository.findByEmail(email)
-        val temporaryCourse = courseRepository.findById(1)
+        val temporaryCourse = courseRepository.findCourseById(1)
         val newNick = NicknameGenerator.generate()
         if (user == null) {
             // 사용자 생성
