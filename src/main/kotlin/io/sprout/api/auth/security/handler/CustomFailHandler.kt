@@ -28,6 +28,6 @@ class CustomAuthenticationFailureHandler(
         log.error("Authentication failed: {}", exception.message)
 
         // 실패 후 리다이렉트할 URL 설정
-        response.sendRedirect(redirectPropertiesConfig.redirectUrl)
+        response.sendRedirect("http://localhost:8080/api/login/failure")
     }
 }
