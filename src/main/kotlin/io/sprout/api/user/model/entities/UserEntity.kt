@@ -1,6 +1,5 @@
 package io.sprout.api.domain.user
 
-import io.sprout.api.domain.base.entity.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Enumerated
@@ -28,17 +27,22 @@ class UserEntity(
     @Column(nullable = false, length = 10)
     var status: UserStatus, // 유저 상태
 
-): BaseEntity() {
+    @ManyToOne
+    var course: CourseEntity
+
+) : BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
 
-    @Column(length = 700)
+    @Column(name = "refresh_token", length = 700)
     var refreshToken: String? = null // 리프레시 토큰
 
+    @Column(name = "last_login_date_time")
     var lastLoginDateTime: LocalDateTime? = null // 마지막 로그인 시간
 
+    @Column(name = "marketing_consent")
     var marketingConsent: Boolean = false // 마케팅 약관 동의여부
 
 }
