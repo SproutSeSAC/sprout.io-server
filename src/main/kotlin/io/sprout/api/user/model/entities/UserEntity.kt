@@ -1,5 +1,7 @@
-package io.sprout.api.domain.user
+package io.sprout.api.user.model.entities
 
+import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.course.model.entities.CourseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Enumerated

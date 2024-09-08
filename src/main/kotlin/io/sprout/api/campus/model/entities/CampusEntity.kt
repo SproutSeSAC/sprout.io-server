@@ -1,11 +1,11 @@
-package io.sprout.api.domain.campus
+package io.sprout.api.campus.model.entities
 
-import io.sprout.api.domain.base.entity.BaseEntity
+import io.sprout.api.common.model.entities.BaseEntity
 import jakarta.persistence.*
 
 @Entity
 @Table(name = "campus")
-class Campus(
+class CampusEntity(
 
     @Column(nullable = false, length = 50)
     var name: String, // 캠퍼스명
