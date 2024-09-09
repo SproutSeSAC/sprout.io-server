@@ -11,16 +11,18 @@ import org.springframework.web.bind.annotation.*
 class UserController(
     private val userService: UserService
 ) {
-    // TODO: 회원 가입하기
 
     @PostMapping("")
-    @Operation(summary = "유저 계정 생성", description = "유저 계정 생성")
-    fun createUser(@Valid request: UserDto.CreateUserRequest) {
-        return userService.createUser()
+    @Operation(summary = "계정 등록", description = "계정 등록")
+    fun createUser(@RequestBody @Valid request: UserDto.CreateUserRequest) {
+        userService.createUser(request)
     }
 
     // TODO: 회원 탈퇴하기
-    fun deleteUser() {
+    @PutMapping()
+    @Operation(summary = "계정 탈퇴", description = "계정 탈퇴(상태값 변경, 실제 삭제는 30일 후 따로 진행)")
+    fun deleteUser(@RequestBody @Valid request: UserDto.DeleteUserRequest) {
+        userService.deleteUser(request)
     }
 
 }
