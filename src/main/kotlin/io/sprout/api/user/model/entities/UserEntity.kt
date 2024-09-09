@@ -4,8 +4,6 @@ import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.course.model.entities.CourseEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
-import java.util.*
-import kotlin.collections.LinkedHashSet
 
 @Entity
 @Table(name = "user")
@@ -68,5 +66,5 @@ enum class UserStatus {
 }
 
 enum class RoleType {
-    ADMIN, MANAGER , User
+    ADMIN, TRAINEE, PRE_TRAINEE, CAMPUS_MANAGER, EDU_MANAGER, JOB_COORDINATOR,
 }

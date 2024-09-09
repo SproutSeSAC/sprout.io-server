@@ -1,4 +1,4 @@
-package io.sprout.api.selection.model.entities
+package io.sprout.api.techStack.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
 import jakarta.persistence.*
