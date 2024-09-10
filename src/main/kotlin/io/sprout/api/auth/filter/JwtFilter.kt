@@ -1,5 +1,6 @@
 package io.sprout.api.auth.filter
 
+import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.service.TokenValidatorService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.Cookie
@@ -10,7 +11,8 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 class JwtFilter(
-    private val tokenValidatorService: TokenValidatorService
+    private val tokenValidatorService: TokenValidatorService,
+    private val securityManager: SecurityManager
 ) : OncePerRequestFilter() {
 
 
@@ -64,7 +66,7 @@ class JwtFilter(
          *  필수정부 입력회원 아닐시 304호출
          */
         if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) return
-
+        securityManager.setUpSecurityContext(accessJws, request)
         filterChain.doFilter(request, response)
     }
 
