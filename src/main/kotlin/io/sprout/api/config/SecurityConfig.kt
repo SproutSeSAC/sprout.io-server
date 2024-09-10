@@ -1,5 +1,6 @@
 package io.sprout.api.config
 
+import io.sprout.api.auth.filter.JwtFilter
 import io.sprout.api.auth.security.handler.CustomAuthenticationFailureHandler
 import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
 import org.springframework.context.annotation.Bean
@@ -8,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
@@ -19,7 +21,7 @@ class SecurityConfig(
     private val whiteList = arrayOf("/api/**")
 
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    fun filterChain(http: HttpSecurity, jwtFilter: JwtFilter): SecurityFilterChain {
 
         http.csrf { it.disable() }
         http.cors { it.disable() }
@@ -35,6 +37,8 @@ class SecurityConfig(
             it.successHandler(customAuthenticationSuccessHandler)
             it.failureHandler(customAuthenticationFailureHandler)
         }
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
+
         return http.build()
     }
 }
