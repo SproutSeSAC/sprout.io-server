@@ -33,7 +33,7 @@ class UserService(
         val user = userRepository.findByEmail(email)
         val temporaryCourse = courseRepository.findCourseById(99) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
         val newNick = NicknameGenerator.generate()
-        if (user == null) {
+        val savedUser = if (user == null) {
             // 사용자 생성
             val newUser = UserEntity(
                 email = email,
@@ -44,25 +44,27 @@ class UserService(
                 isEssential = false,
                 course = temporaryCourse
             )
-            val savedUser = userRepository.save(newUser)
-            val userId = savedUser.id as Long
-            val accessToken = jwtToken.createAccessTokenFromMemberId(userId, savedUser.isEssential)
-            val refreshToken = jwtToken.createRefreshToken(userId);
-            val accessCookie = CookieUtils.createCookie("access_token", accessToken)
-            val refreshCookie = CookieUtils.createCookie("refresh_token", refreshToken)
-            response.addCookie(accessCookie)
-            response.addCookie(refreshCookie)
+            userRepository.save(newUser)
         } else {
-            // 기존 사용자 처리
-            val userId = user.id
-            val accessToken = jwtToken.createAccessTokenFromMemberId(userId, user.isEssential)
-            val refreshToken = jwtToken.createRefreshToken(userId);
-            val accessCookie = CookieUtils.createCookie("access_token", accessToken)
-            val refreshCookie = CookieUtils.createCookie("refresh_token", refreshToken)
-            response.addCookie(accessCookie)
-            response.addCookie(refreshCookie)
+            // 기존 사용자 반환
+            user
         }
+        val refreshToken = setTokenCookiesAndReturnRefresh(savedUser, response)
+        user!!.setRefreshToken(refreshToken)
+    }
+    private fun setTokenCookiesAndReturnRefresh(user: UserEntity, response: HttpServletResponse): String {
+        val userId = user.id as Long
+        val accessToken = jwtToken.createAccessTokenFromMemberId(userId, user.isEssential)
+        val refreshToken = jwtToken.createRefreshToken(userId)
+        val accessCookie = CookieUtils.createCookie("access_token", accessToken)
+        val refreshCookie = CookieUtils.createCookie("refresh_token", refreshToken)
+        response.addCookie(accessCookie)
+        response.addCookie(refreshCookie)
+        return refreshToken
+    }
 
+    fun getUserInfoFromRefreshToken(token: String): UserEntity? {
+        return userRepository.findByRefreshToken(token);
     }
 
     @Transactional
