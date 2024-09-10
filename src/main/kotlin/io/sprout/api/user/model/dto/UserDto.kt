@@ -5,15 +5,11 @@ import io.sprout.api.user.model.entities.JobType
 import io.sprout.api.user.model.entities.RoleType
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
-import org.apache.commons.lang3.mutable.Mutable
 
 class UserDto {
 
     @Schema(description = "유저 생성 request")
     data class CreateUserRequest(
-        @Schema(description = "캠퍼스 ID", nullable = false)
-        val campusId: Long,
-
         @Schema(description = "코스 ID", nullable = false)
         @field:NotNull val courseId: Long,
 
@@ -32,10 +28,10 @@ class UserDto {
         @Schema(description = "유저 타입", nullable = false)
         @field:NotNull val role: RoleType,
 
-        @Schema(description = "관심 직군 리스트")
+        @Schema(description = "관심 도메인 리스트")
         val domainList: MutableSet<DomainType> = mutableSetOf(),
 
-        @Schema(description = "관심 도메인 리스트")
+        @Schema(description = "관심 직군 리스트")
         val jobList: MutableSet<JobType> = mutableSetOf(),
 
         @Schema(description = "개인정보 취급 방침 동의 여부", nullable = false)
@@ -46,6 +42,28 @@ class UserDto {
     data class DeleteUserRequest(
         @Schema(description = "유저 아이디", nullable = false)
         @field:NotNull val userId: Long
+    )
+
+    @Schema(description = "계정 수정 request")
+    // 프로필 사진, 닉네임, 관심직군/도메인, 스택
+    data class UpdateUserRequest(
+        @Schema(description = "유저 아이디", nullable = false)
+        @field:NotNull val userId: Long,
+
+        @Schema(description = "프로필 사진 url 임시")
+        val profileImageUrl: String,
+
+        @Schema(description = "닉네임")
+        val nickname: String,
+
+        @Schema(description = "관심 도메인 리스트")
+        val updatedDomainList: MutableSet<DomainType> = mutableSetOf(),
+
+        @Schema(description = "관심 직군 리스트")
+        val updatedJobList: MutableSet<JobType> = mutableSetOf(),
+
+        @Schema(description = "기술 스택 리스트")
+        val updatedTechStackList: MutableSet<Long> = mutableSetOf()
     )
 
 

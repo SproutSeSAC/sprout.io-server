@@ -5,6 +5,9 @@ import io.sprout.api.auth.token.domain.JwtToken
 import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
+import io.sprout.api.techStack.repository.TechStackRepository
+import io.sprout.api.user.infra.UserDomainRepository
+import io.sprout.api.user.infra.UserJobRepository
 import io.sprout.api.user.infra.UserRepository
 import io.sprout.api.user.model.dto.UserDto
 import io.sprout.api.user.model.entities.*
@@ -19,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional
 class UserService(
     private val userRepository: UserRepository,
     private val courseRepository: CourseRepository,
+    private val userJobRepository: UserJobRepository,
+    private val userDomainRepository: UserDomainRepository,
+    private val techStackRepository: TechStackRepository,
     private val jwtToken: JwtToken
 ) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
@@ -105,7 +111,6 @@ class UserService(
         }
     }
 
-    @Transactional
     fun deleteUser(request: UserDto.DeleteUserRequest) {
         val user = userRepository.findById(request.userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
         user.status = UserStatus.LEAVE
@@ -116,6 +121,56 @@ class UserService(
         } catch (e: Exception) {
             throw BaseException(ExceptionCode.DELETE_FAIL)
         }
+    }
+
+    fun updateUser(request: UserDto.UpdateUserRequest) {
+        val user = userRepository.findById(request.userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
+
+        if (user.status == UserStatus.LEAVE || user.status == UserStatus.SLEEP) {
+            throw BaseException(ExceptionCode.UPDATE_FAIL)
+        }
+
+        val techStackList = techStackRepository.findAll()
+
+        user.profileImageUrl = request.profileImageUrl
+        user.nickname = request.nickname
+
+        if (request.updatedJobList.isNotEmpty()) {
+            val deleteUserJobList = user.userJobList
+            user.userJobList.removeAll(deleteUserJobList)
+            userJobRepository.deleteAll(deleteUserJobList)
+
+            user.userJobList.plusAssign(
+                request.updatedJobList.map {
+                    UserJobEntity(
+                        user = user,
+                        jobType = it
+                    )
+                }
+            )
+        }
+
+        if (request.updatedDomainList.isNotEmpty()) {
+            val deleteUserDomainList = user.userDomainList
+            user.userDomainList.removeAll(deleteUserDomainList)
+            userDomainRepository.deleteAll(deleteUserDomainList)
+
+            user.userJobList.plusAssign(
+                request.updatedJobList.map {
+                    UserJobEntity(
+                        user = user,
+                        jobType = it
+                    )
+                }
+            )
+        }
+
+//        if (request.updatedTechStackList.isNotEmpty()) {
+//
+//        }
+
+
+
     }
 
 
