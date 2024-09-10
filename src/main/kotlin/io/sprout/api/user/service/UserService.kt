@@ -53,6 +53,10 @@ class UserService(
 
     }
 
+    fun getUserInfoFromRefreshToken(token: String): UserEntity? {
+        return userRepository.findByRefreshToken(token);
+    }
+
     fun createUser() {
 
     }
