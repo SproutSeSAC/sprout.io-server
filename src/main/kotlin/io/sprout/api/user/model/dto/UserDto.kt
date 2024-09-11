@@ -8,7 +8,28 @@ import jakarta.validation.constraints.NotNull
 
 class UserDto {
 
-    @Schema(description = "유저 생성 request")
+    @Schema(description = "계정 정보 조회 response")
+    data class GetUserResponse(
+        @Schema(description = "유저 명", nullable = false)
+        val name: String?,
+
+        @Schema(description = "닉네임")
+        val nickname: String,
+
+        @Schema(description = "프로필 사진 url")
+        val profileImageUrl: String?,
+
+        @Schema(description = "관심 도메인 리스트")
+        val domainList: MutableSet<DomainType>,
+
+        @Schema(description = "관심 직군 리스트")
+        val jobList: MutableSet<JobType>,
+
+        @Schema(description = "기술 스택 리스트")
+        val techStackList: MutableSet<String>
+    )
+
+    @Schema(description = "추가 정보 입력에 따른 계정 생성 request")
     data class CreateUserRequest(
         @Schema(description = "코스 ID", nullable = false)
         @field:NotNull val courseId: Long,
@@ -45,7 +66,6 @@ class UserDto {
     )
 
     @Schema(description = "계정 수정 request")
-    // 프로필 사진, 닉네임, 관심직군/도메인, 스택
     data class UpdateUserRequest(
         @Schema(description = "유저 아이디", nullable = false)
         @field:NotNull val userId: Long,
@@ -63,7 +83,7 @@ class UserDto {
         val updatedJobList: MutableSet<JobType> = mutableSetOf(),
 
         @Schema(description = "기술 스택 리스트")
-        val updatedTechStackList: MutableSet<Long> = mutableSetOf()
+        val updatedTechStackIdList: MutableSet<Long> = mutableSetOf()
     )
 
 

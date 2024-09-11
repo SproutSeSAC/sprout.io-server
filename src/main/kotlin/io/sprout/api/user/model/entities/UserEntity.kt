@@ -59,9 +59,9 @@ class UserEntity(
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userTechStackList: MutableSet<UserTechStackEntity> = LinkedHashSet()
 
-    fun setRefreshToken(refreshToken: String){
-        this.refreshToken = refreshToken
-    }
+//    fun setRefreshToken(refreshToken: String){
+//        this.refreshToken = refreshToken
+//    }
 
 }
 

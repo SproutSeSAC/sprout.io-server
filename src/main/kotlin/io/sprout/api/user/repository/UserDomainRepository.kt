@@ -1,4 +1,4 @@
-package io.sprout.api.user.infra
+package io.sprout.api.user.repository
 
 import io.sprout.api.user.model.entities.UserDomainEntity
 import org.springframework.data.jpa.repository.JpaRepository

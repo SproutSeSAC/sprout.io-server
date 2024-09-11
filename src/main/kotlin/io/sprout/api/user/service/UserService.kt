@@ -6,11 +6,12 @@ import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.techStack.repository.TechStackRepository
-import io.sprout.api.user.infra.UserDomainRepository
-import io.sprout.api.user.infra.UserJobRepository
-import io.sprout.api.user.infra.UserRepository
 import io.sprout.api.user.model.dto.UserDto
 import io.sprout.api.user.model.entities.*
+import io.sprout.api.user.repository.UserDomainRepository
+import io.sprout.api.user.repository.UserJobRepository
+import io.sprout.api.user.repository.UserRepository
+import io.sprout.api.user.repository.UserTechStackRepository
 import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
 import jakarta.servlet.http.HttpServletResponse
@@ -24,6 +25,7 @@ class UserService(
     private val courseRepository: CourseRepository,
     private val userJobRepository: UserJobRepository,
     private val userDomainRepository: UserDomainRepository,
+    private val userTechStackRepository: UserTechStackRepository,
     private val techStackRepository: TechStackRepository,
     private val jwtToken: JwtToken
 ) {
@@ -50,7 +52,7 @@ class UserService(
             user
         }
         val refreshToken = setTokenCookiesAndReturnRefresh(savedUser, response)
-        user!!.setRefreshToken(refreshToken)
+//        user!!.setRefreshToken(refreshToken)
     }
     private fun setTokenCookiesAndReturnRefresh(user: UserEntity, response: HttpServletResponse): String {
         val userId = user.id as Long
@@ -63,9 +65,9 @@ class UserService(
         return refreshToken
     }
 
-    fun getUserInfoFromRefreshToken(token: String): UserEntity? {
-        return userRepository.findByRefreshToken(token);
-    }
+//    fun getUserInfoFromRefreshToken(token: String): UserEntity? {
+//        return userRepository.findByRefreshToken(token);
+//    }
 
     @Transactional
     fun createUser(request: UserDto.CreateUserRequest) {
@@ -113,6 +115,7 @@ class UserService(
         }
     }
 
+    @Transactional
     fun deleteUser(request: UserDto.DeleteUserRequest) {
         val user = userRepository.findById(request.userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
         user.status = UserStatus.LEAVE
@@ -125,6 +128,7 @@ class UserService(
         }
     }
 
+    @Transactional
     fun updateUser(request: UserDto.UpdateUserRequest) {
         val user = userRepository.findById(request.userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
 
@@ -132,15 +136,14 @@ class UserService(
             throw BaseException(ExceptionCode.UPDATE_FAIL)
         }
 
-        val techStackList = techStackRepository.findAll()
+        val allTechStackList = techStackRepository.findAll()
 
         user.profileImageUrl = request.profileImageUrl
         user.nickname = request.nickname
 
         if (request.updatedJobList.isNotEmpty()) {
-            val deleteUserJobList = user.userJobList
-            user.userJobList.removeAll(deleteUserJobList)
-            userJobRepository.deleteAll(deleteUserJobList)
+            userJobRepository.deleteAll(user.userJobList)
+            user.userJobList.clear()
 
             user.userJobList.plusAssign(
                 request.updatedJobList.map {
@@ -153,26 +156,51 @@ class UserService(
         }
 
         if (request.updatedDomainList.isNotEmpty()) {
-            val deleteUserDomainList = user.userDomainList
-            user.userDomainList.removeAll(deleteUserDomainList)
-            userDomainRepository.deleteAll(deleteUserDomainList)
+            userDomainRepository.deleteAll(user.userDomainList)
+            user.userDomainList.clear()
 
-            user.userJobList.plusAssign(
-                request.updatedJobList.map {
-                    UserJobEntity(
+            user.userDomainList.plusAssign(
+                request.updatedDomainList.map {
+                    UserDomainEntity(
                         user = user,
-                        jobType = it
+                        domainType = it
                     )
                 }
             )
         }
 
-//        if (request.updatedTechStackList.isNotEmpty()) {
-//
-//        }
+        if (request.updatedTechStackIdList.isNotEmpty()) {
+            userTechStackRepository.deleteAll(user.userTechStackList)
+            user.userTechStackList.clear()
 
+            user.userTechStackList.plusAssign(
+                request.updatedTechStackIdList.map { techStackId ->
+                    UserTechStackEntity(
+                        techStackEntity = allTechStackList.first { it.id == techStackId },
+                        user = user
+                    )
+                }
+            )
+        }
 
+        try {
+            userRepository.save(user)
+        } catch (e: Exception) {
+            throw BaseException(ExceptionCode.UPDATE_FAIL)
+        }
+    }
 
+    fun getUserInfo(userId: Long): UserDto.GetUserResponse {
+        val user = userRepository.findUserById(userId) ?: throw BaseException(ExceptionCode.NOT_FOUND_MEMBER)
+
+        return UserDto.GetUserResponse(
+            name = user.name,
+            nickname = user.nickname,
+            profileImageUrl = user.profileImageUrl,
+            jobList = user.userJobList.map { it.jobType }.toMutableSet(),
+            domainList = user.userDomainList.map { it.domainType }.toMutableSet(),
+            techStackList = user.userTechStackList.map { it.techStackEntity.name }.toMutableSet()
+        )
     }
 
 

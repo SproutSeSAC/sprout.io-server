@@ -3,6 +3,7 @@ package io.sprout.api.auth.token.domain
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import io.sprout.api.config.properties.JwtPropertiesConfig
+import io.sprout.api.user.repository.UserRepository
 import io.sprout.api.user.service.UserService
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
@@ -12,7 +13,8 @@ import javax.crypto.SecretKey
 @Service
 class JwtToken(
     private val jwtPropertiesConfig: JwtPropertiesConfig,
-    private val userService: UserService
+//    private val userService: UserService,
+    private val userRepository: UserRepository
 ) {
 
     // 비밀 키 생성 (여기선 256비트 HMAC 키를 생성)
@@ -51,7 +53,7 @@ class JwtToken(
     fun createAccessFromRefreshToken(refreshJws: String): String {
 
         val currentMs = System.currentTimeMillis()
-        val user = userService.getUserInfoFromRefreshToken(refreshJws)
+        val user = userRepository.findByRefreshToken(refreshJws)
         return Jwts.builder()
             .setSubject(user!!.id.toString())  // memberId를 subject로 설정
             .claim("isEssential", user.isEssential)  // universityEmail 클레임 추가
