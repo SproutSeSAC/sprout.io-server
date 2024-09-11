@@ -11,7 +11,12 @@ import org.springframework.web.bind.annotation.*
 class UserController(
     private val userService: UserService
 ) {
-    // TODO: 유저 정보 조회하기
+
+    @GetMapping("/{id}")
+    @Operation(summary = "계정 조회", description = "계정 조회")
+    fun getUserInfo(@PathVariable("id") userId: Long): UserDto.GetUserResponse {
+        return userService.getUserInfo(userId)
+    }
 
     @PostMapping("")
     @Operation(summary = "계정 등록", description = "계정 등록")
@@ -20,7 +25,7 @@ class UserController(
     }
 
     // TODO: 회원 탈퇴
-    @PutMapping("")
+    @PutMapping("/leave")
     @Operation(summary = "계정 탈퇴", description = "계정 탈퇴(상태값 변경, 실제 삭제는 30일 후 따로 진행)")
     fun deleteUser(@RequestBody @Valid request: UserDto.DeleteUserRequest) {
         userService.deleteUser(request)

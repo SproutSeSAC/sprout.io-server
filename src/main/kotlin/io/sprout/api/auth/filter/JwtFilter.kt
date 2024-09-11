@@ -52,21 +52,21 @@ class JwtFilter(
         logger.info { "accessJws: $accessJws" }
         logger.info { "refreshJws: $refreshJws" }
 
-        /**
-         *  토큰 header 없을시 404
-         */
-        if (tokenValidatorService.isNotExistToken(accessJws, refreshJws, response)) return
-
-        logger.debug { "accessToken: $accessJws" }
-        /**
-         ** 토큰 만료시 401 refresh 로 다시 요망
-         */
-        if (tokenValidatorService.isInvalidAccessToken(accessJws, response)) return
-        /**
-         *  필수정부 입력회원 아닐시 304호출
-         */
-        if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) return
-        securityManager.setUpSecurityContext(accessJws, request)
+//        /**
+//         *  토큰 header 없을시 404
+//         */
+//        if (tokenValidatorService.isNotExistToken(accessJws, refreshJws, response)) return
+//
+//        logger.debug { "accessToken: $accessJws" }
+//        /**
+//         ** 토큰 만료시 401 refresh 로 다시 요망
+//         */
+//        if (tokenValidatorService.isInvalidAccessToken(accessJws, response)) return
+//        /**
+//         *  필수정부 입력회원 아닐시 304호출
+//         */
+//        if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) return
+//        securityManager.setUpSecurityContext(accessJws, request)
         filterChain.doFilter(request, response)
     }
 

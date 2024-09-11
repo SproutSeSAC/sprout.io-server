@@ -37,7 +37,7 @@ class SecurityConfig(
             it.successHandler(customAuthenticationSuccessHandler)
             it.failureHandler(customAuthenticationFailureHandler)
         }
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
+//        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
