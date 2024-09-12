@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys
 import io.sprout.api.config.properties.JwtPropertiesConfig
 import io.sprout.api.user.repository.UserRepository
 import io.sprout.api.user.service.UserService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -16,7 +17,6 @@ class JwtToken(
 //    private val userService: UserService,
     private val userRepository: UserRepository
 ) {
-
     // 비밀 키 생성 (여기선 256비트 HMAC 키를 생성)
     private val accessSecretKey =
         Keys.hmacShaKeyFor(jwtPropertiesConfig.accessToken.secret.toByteArray(StandardCharsets.UTF_8))
@@ -77,12 +77,19 @@ class JwtToken(
 
     fun getIsEssentialEnsFromAccessToken(token: String): Boolean {
 
-        return Jwts.parserBuilder()
+        val claims = Jwts.parserBuilder()
             .setSigningKey(accessSecretKey)
             .build()
             .parseClaimsJws(token)
             .body
-            .get("isEssential", Boolean::class.java)
+
+        // 명시적으로 Boolean 값 변환
+        val isEssential = claims["isEssential"]
+        return when (isEssential) {
+            is Boolean -> isEssential
+            is String -> isEssential.toBoolean() // 클레임이 문자열로 저장된 경우
+            else -> throw IllegalArgumentException("Invalid claim type for 'isEssential'")
+        }
     }
 
 

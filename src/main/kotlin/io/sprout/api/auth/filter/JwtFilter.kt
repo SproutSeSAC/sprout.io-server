@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.aspectj.weaver.tools.cache.SimpleCacheFactory.path
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
@@ -18,27 +19,28 @@ class JwtFilter(
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         val excludePath = arrayOf(
-            "/swagger-ui/swagger-initializer.js",
-            "/swagger-ui/index.css",
-            "/swagger-ui/swagger-ui-bundle.js",
-            "/swagger-ui/swagger-ui-standalone-preset.js",
-            "/v3/api-docs/swagger-config",
-            "/swagger-ui/swagger-ui-standalone-preset.js",
-            "/swagger-ui/index.html",
-            "/swagger-ui/swagger-ui.css",
-            "/v3/api-docs", // swagger
+            "/api/swagger-ui/swagger-initializer.js",
+            "/api/swagger-ui/index.css",
+            "/api/swagger-ui/swagger-ui-bundle.js",
+            "/api/swagger-ui/swagger-ui-standalone-preset.js",
+            "/api/v3/api-docs/swagger-config",
+            "/api/swagger-ui/swagger-ui-standalone-preset.js",
+            "/api/swagger-ui/index.html",
+            "/api/swagger-ui/swagger-ui.css",
+            "/api/v3/api-docs", // swagger
             "/api/refresh",
-            "/login",
             "/api/login",
             "/api/login/success",
             "/api/login/fail",
             "/h2-console",
-            "/favicon.ico" // Corrected path
+            "/favicon.ico",
+            "/api/oauth2/authorization/google"// Corrected path
         )
         val path = request.requestURI
-        logger.info { "Request Path: $path" }
+        logger.info ( "Request Path: $path" )
 
-        return excludePath.any { path.startsWith(it.trim()) }
+        // 경로가 정확히 일치하는 경우에만 필터링을 통과시킴
+        return excludePath.any { exclude -> path == exclude }
     }
 
     override fun doFilterInternal(
@@ -49,24 +51,23 @@ class JwtFilter(
         extractTokensFromRequest(request)
         val accessJws = request.getAttribute("accessJws") as String?
         val refreshJws = request.getAttribute("refreshJws") as String?
-        logger.info { "accessJws: $accessJws" }
-        logger.info { "refreshJws: $refreshJws" }
+        logger.info("accessJws: $accessJws")
+        logger.info("refreshJws: $refreshJws")
+        /**
+         *  토큰 header 없을시 404
+         */
+        if (tokenValidatorService.isNotExistToken(accessJws, refreshJws, response)) return
+        logger.debug { "accessToken: $accessJws" }
+        /**
+         ** 토큰 만료시 401 refresh 로 다시 요망
+         */
+        if (tokenValidatorService.isInvalidAccessToken(accessJws, response)) return
+        /**
+         *  필수정부 입력회원 아닐시 304호출
+         */
+        if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) return
+        securityManager.setUpSecurityContext(accessJws, request)
 
-//        /**
-//         *  토큰 header 없을시 404
-//         */
-//        if (tokenValidatorService.isNotExistToken(accessJws, refreshJws, response)) return
-//
-//        logger.debug { "accessToken: $accessJws" }
-//        /**
-//         ** 토큰 만료시 401 refresh 로 다시 요망
-//         */
-//        if (tokenValidatorService.isInvalidAccessToken(accessJws, response)) return
-//        /**
-//         *  필수정부 입력회원 아닐시 304호출
-//         */
-//        if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) return
-//        securityManager.setUpSecurityContext(accessJws, request)
         filterChain.doFilter(request, response)
     }
 
@@ -75,13 +76,14 @@ class JwtFilter(
     }
 
     private fun extractTokensFromRequest(request: HttpServletRequest) {
-        var accessJws: String? = request.getHeader("access-token")
-        var refreshJws: String? = request.getHeader("refresh-token")
+        var accessJws: String? = request.getHeader("access_token")
+        var refreshJws: String? = request.getHeader("refresh_token")
+
 
         if (accessJws == null && refreshJws == null) {
             val cookies = request.cookies
-            accessJws = getTokenFromCookies(cookies, "access-token")
-            refreshJws = getTokenFromCookies(cookies, "refresh-token")
+            accessJws = getTokenFromCookies(cookies, "access_token")
+            refreshJws = getTokenFromCookies(cookies, "refresh_token")
         }
 
         request.setAttribute("accessJws", accessJws)
