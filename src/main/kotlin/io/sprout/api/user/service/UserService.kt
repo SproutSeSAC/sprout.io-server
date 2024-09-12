@@ -33,10 +33,11 @@ class UserService(
 
     fun checkAndJoinUser(email: String, response: HttpServletResponse) {
         val user = userRepository.findByEmail(email)
-        val temporaryCourse = courseRepository.findCourseById(99) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
+        val temporaryCourse = courseRepository.findCourseById(1) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
         val newNick = NicknameGenerator.generate()
-        val savedUser = if (user == null) {
-            // 사용자 생성
+        val savedUser: UserEntity
+        if (user == null) {
+            // 새 유저 생성
             val newUser = UserEntity(
                 email = email,
                 nickname = newNick,
@@ -46,14 +47,27 @@ class UserService(
                 isEssential = false,
                 course = temporaryCourse
             )
-            userRepository.save(newUser)
+            savedUser = userRepository.save(newUser)
+            println("New user created with ID: ${savedUser.id}")
+
         } else {
-            // 기존 사용자 반환
-            user
+            // 기존 유저 처리
+            savedUser = user
+            println("Existing user with ID: ${savedUser.id}")
         }
+
+        // 저장된 사용자 객체 기반으로 토큰 생성
         val refreshToken = setTokenCookiesAndReturnRefresh(savedUser, response)
-//        user!!.setRefreshToken(refreshToken)
+        println("refreshToken: $refreshToken")
+
+        // 유저의 refreshToken 업데이트
+        savedUser.addRefreshToken(refreshToken)
+
+        // 변경 사항 저장
+        userRepository.save(savedUser)
+
     }
+
     private fun setTokenCookiesAndReturnRefresh(user: UserEntity, response: HttpServletResponse): String {
         val userId = user.id as Long
         val accessToken = jwtToken.createAccessTokenFromMemberId(userId, user.isEssential)
@@ -64,10 +78,6 @@ class UserService(
         response.addCookie(refreshCookie)
         return refreshToken
     }
-
-//    fun getUserInfoFromRefreshToken(token: String): UserEntity? {
-//        return userRepository.findByRefreshToken(token);
-//    }
 
     @Transactional
     fun createUser(request: UserDto.CreateUserRequest) {

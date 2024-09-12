@@ -30,5 +30,10 @@ class CustomAuthenticationSuccessHandler(
         val attributes: Map<String, Any> = user.attributes
         val email = attributes["email"] as String
 
+        log.info("email is: {}", email)
+
+        userService.checkAndJoinUser(email, response)
+
+        response.sendRedirect(redirectPropertiesConfig.redirectUrl)
     }
 }

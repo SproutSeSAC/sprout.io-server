@@ -1,5 +1,6 @@
 package io.sprout.api.user.controller
 
+import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
 import io.sprout.api.user.service.UserService
 import io.sprout.api.utils.CookieUtils
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/login")
 class LoginController(
-    private val jwtToken: JwtToken
+    private val jwtToken: JwtToken,
+    private val securityManager: SecurityManager
 ) {
     /**
      *  Login 성공시 200번 응답
@@ -35,10 +37,16 @@ class LoginController(
      *  refresh 로 access 재생성
      */
     @GetMapping("/refresh")
-    fun refresh(@RequestHeader("refreshJws") refreshToken: String, response: HttpServletResponse): ResponseEntity<String> {
+    fun refresh(@RequestHeader("refresh_token") refreshToken: String, response: HttpServletResponse): ResponseEntity<String> {
         val newAccessToken=jwtToken.createAccessFromRefreshToken(refreshToken)
         val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
         response.addCookie(accessCookie)
+        return ResponseEntity.ok("success")
+    }
+
+    @GetMapping("/test")
+    fun test(): ResponseEntity<String> {
+        println("securty :{${securityManager.getAuthenticatedUserName()}}")
         return ResponseEntity.ok("success")
     }
 }
