@@ -4,10 +4,12 @@ plugins {
 	id("org.springframework.boot") version "3.3.3"
 	id("io.spring.dependency-management") version "1.1.6"
 	kotlin("plugin.jpa") version "1.9.25"
+	id("org.jetbrains.kotlin.kapt") version "1.9.24"
 }
 
 group = "io.sprout"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
+
 
 java {
 	toolchain {
@@ -32,6 +34,7 @@ noArg {
 	annotation("com.fasterxml.jackson.annotation.JsonInclude")
 }
 
+
 dependencies {
 
 	implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -50,6 +53,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 
+
+	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+
+	//개발환경 변경 감지 재시작
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+
 	// jwt
 	val jwtVersion = "0.11.5"
 	implementation("io.jsonwebtoken:jjwt-api:$jwtVersion")
@@ -62,6 +71,18 @@ dependencies {
 
 	//swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
+
+	//QueryDsl
+	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")  // QueryDSL JPA 지원
+	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")  // Annotation Processor
+	kapt("jakarta.persistence:jakarta.persistence-api")  // JPA API
+
+	//test code 관련
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+	testImplementation("org.springframework.security:spring-security-test")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testRuntimeOnly("com.h2database:h2")
 }
 
 kotlin {
@@ -73,6 +94,10 @@ kotlin {
 tasks.withType<Test> {
 	exclude("**/*")
 	useJUnitPlatform()
+}
+
+tasks.withType<JavaCompile> {
+	options.generatedSourceOutputDirectory.set(file("build/generated/sources/annotationProcessor/java/main"))
 }
 
 // spring boot 2.5.0 이후 버전일 경우 plain.jar 생성 방지
