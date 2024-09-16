@@ -6,9 +6,6 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "project_position")
 class ProjectPositionEntity(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
@@ -18,5 +15,9 @@ class ProjectPositionEntity(
     @JoinColumn(name = "position_id")
     val position: PositionEntity,
 ) {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long = 0
 }
 

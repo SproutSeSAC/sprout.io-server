@@ -1,5 +1,6 @@
 package io.sprout.api.auth.token.domain
 
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import io.sprout.api.config.properties.JwtPropertiesConfig
@@ -99,10 +100,15 @@ class JwtToken(
             val claims = Jwts.parserBuilder()
                 .setSigningKey(accessSecretKey)
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(token) // 이 부분에서 만료된 토큰이면 ExpiredJwtException 발생
             val expiration = claims.body.expiration
+
             return expiration.before(Date())
+        } catch (e: ExpiredJwtException) {
+            // 토큰이 만료되었을 경우 이 예외를 캐치
+            return true // 만료되었음을 반환
         } catch (e: Exception) {
+            // 그 외의 예외 처리
             return false
         }
     }

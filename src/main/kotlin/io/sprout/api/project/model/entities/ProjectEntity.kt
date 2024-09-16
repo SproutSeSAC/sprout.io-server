@@ -3,6 +3,8 @@ package io.sprout.api.project.model.entities
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.project.model.enum.ContactMethod
 import io.sprout.api.project.model.enum.MeetingType
+import io.sprout.api.project.model.enum.PType
+import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
 import java.time.LocalDate
 
@@ -16,14 +18,22 @@ class ProjectEntity(
     @Column(nullable = false)
     val title: String,
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "writer")
+    val writer: UserEntity,
+
     @Column(nullable = false)
     val description: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val pType : PType,
 
     @Column(nullable = false)
     val recruitmentCount: Int,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "contact_method", nullable = false)
     val contactMethod: ContactMethod,
 
     @Column(nullable = false)
@@ -33,15 +43,15 @@ class ProjectEntity(
     val recruitmentEnd: LocalDate,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "meeting_type" ,nullable = false)
     val meetingType: MeetingType,
 
-    @OneToMany(mappedBy = "project" ,  cascade = [CascadeType.ALL], )
+    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
     val projectParticipations: List<ProjectParticipationEntity> = listOf(),
 
-    @OneToMany(mappedBy = "project",  cascade = [CascadeType.ALL], )
+    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
     val positions: List<ProjectPositionEntity> = listOf(),
 
-    @OneToMany(mappedBy = "project",  cascade = [CascadeType.ALL], )
+    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
     val techStacks: List<ProjectTechStackEntity> = listOf()
 ) : BaseEntity()

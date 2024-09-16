@@ -23,6 +23,7 @@ class TokenValidatorService(private val tokenService: JwtToken) {
 
     @Throws(IOException::class)
     fun isInvalidAccessToken(accessToken: String?, response: HttpServletResponse): Boolean {
+        println("ㅇㅇㅇ")
         if (accessToken != null && tokenService.isExpiredAccessToken(accessToken)) {
             log.debug("Token InValidated")
             response.status = HttpStatus.UNAUTHORIZED.value()
