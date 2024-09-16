@@ -21,10 +21,10 @@ class SecurityManager(private val jwtToken: JwtToken){
         SecurityContextHolder.getContext().authentication = authToken
     }
 
-    fun getAuthenticatedUserName(): String? {
+    fun getAuthenticatedUserName(): Long? {
         val authentication = SecurityContextHolder.getContext().authentication
         return if (authentication != null && authentication.principal is UserDetails) {
-            (authentication.principal as UserDetails).username
+            (authentication.principal as UserDetails).username.toLong()
         } else {
             null // 인증된 사용자가 없는 경우
         }

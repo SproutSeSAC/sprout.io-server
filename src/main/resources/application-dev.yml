@@ -43,12 +43,12 @@ server:
 
 cors:
   allowed-origins:
-    - http://localhost:8080/api
-    - http://localhost:3000/api
-    - http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api
+    - http://localhost:8080
+    - http://localhost:3000
+    - http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com
 
 url:
-  redirect-url:  http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api/login/success
+  redirect-url: http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api/login/success
 
 jwt:
   access-token:

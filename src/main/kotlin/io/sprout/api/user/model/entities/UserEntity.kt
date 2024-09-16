@@ -63,6 +63,18 @@ class UserEntity(
         this.refreshToken = refreshToken
     }
 
+    constructor(id: Long) : this(
+        nickname = "",
+        email = "",
+        profileImageUrl = null,
+        role = RoleType.TRAINEE, // 기본 값 설정
+        status = UserStatus.ACTIVE, // 기본 값 설정
+        course = CourseEntity("", LocalDateTime.now(),LocalDateTime.now(),null),
+        isEssential = false
+    ) {
+        this.id = id
+    }
+
 }
 
 enum class UserStatus {

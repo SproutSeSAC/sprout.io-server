@@ -21,7 +21,7 @@ class CourseEntity(
     var endDate: LocalDateTime, // 코스 수료일
 
     @ManyToOne
-    var campus: CampusEntity
+    var campus: CampusEntity?
 
 ): BaseEntity()  {
 
