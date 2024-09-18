@@ -26,6 +26,7 @@ class JwtFilter(
             "/api/swagger-ui/favicon-32x32.png",
             "/api/v3/api-docs/swagger-config",
             "/api/v3/api-docs/Sprout-dev%20API",
+            "/api/api-docs/Sprout-dev%20API",
             "/api/api-docs/swagger-config",
             "/api/swagger-ui/index.html",
             "/api/swagger-ui/swagger-ui.css",
