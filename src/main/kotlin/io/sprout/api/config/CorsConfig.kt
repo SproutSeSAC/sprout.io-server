@@ -8,8 +8,8 @@ class CorsConfig(private val corsConfig: CorsPropertiesConfig) : WebMvcConfigure
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
-            .allowedOriginPatterns("http://*:3000","http://*:8080")  // 3000 포트로 오는 모든 IP 요청 허용
-            //.allowedOrigins(*corsConfig.allowedOrigins)
+            //.allowedOriginPatterns("http://*:3000","http://*:8080")  // 3000 포트로 오는 모든 IP 요청 허용
+            .allowedOrigins("http://localhost:3000")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true)
