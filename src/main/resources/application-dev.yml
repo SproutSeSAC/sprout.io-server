@@ -48,7 +48,7 @@ cors:
     - http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com
 
 url:
-  redirect-url: http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api/login/success
+  redirect-url: http://localhost:3000/
 
 jwt:
   access-token:
