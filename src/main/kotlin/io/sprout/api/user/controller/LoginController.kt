@@ -7,6 +7,7 @@ import io.sprout.api.utils.CookieUtils
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -24,21 +25,23 @@ class LoginController(
      */
     @GetMapping("/success")
     fun success(request: HttpServletRequest, response: HttpServletResponse) {
-        // 쿠키 값을 읽어옴
+        val log = LoggerFactory.getLogger(this::class.java)
+
+        // 쿠키 값을 가져옴
         val cookies = request.cookies
         if (cookies != null) {
             for (cookie in cookies) {
                 if (cookie.name == "access_token" || cookie.name == "refresh_token") {
-                    // 리디렉션 전에 다시 쿠키 설정
-                    val newCookie = Cookie(cookie.name, cookie.value)
-                    newCookie.path = "/"  // 루트 경로에서 쿠키 유효
-                    newCookie.maxAge = cookie.maxAge
-                    newCookie.isHttpOnly = cookie.isHttpOnly
-                    newCookie.secure = cookie.secure
-                    response.addCookie(newCookie)
+                    log.info("Cookie Name: {}, Value: {}", cookie.name, cookie.value)
+
+                    // 쿠키 값을 헤더에 추가
+                    response.addHeader("Set-Cookie", "${cookie.name}=${cookie.value}; Path=/; HttpOnly")
                 }
             }
+        } else {
+            log.info("No cookies found in the request.")
         }
+
         // 리디렉션
         response.sendRedirect("http://localhost:3000")
     }
