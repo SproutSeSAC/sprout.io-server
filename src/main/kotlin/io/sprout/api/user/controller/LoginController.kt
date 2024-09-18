@@ -34,8 +34,16 @@ class LoginController(
                 if (cookie.name == "access_token" || cookie.name == "refresh_token") {
                     log.info("Cookie Name: {}, Value: {}", cookie.name, cookie.value)
 
-                    // 쿠키 값을 헤더에 추가
-                    response.addHeader("Set-Cookie", "${cookie.name}=${cookie.value}; Path=/; HttpOnly")
+                    // 쿠키를 다시 설정하여 응답에 추가
+                    val newCookie = Cookie(cookie.name, cookie.value)
+                    newCookie.path = "/" // 모든 경로에서 쿠키가 유효하도록 설정
+                    newCookie.domain = "localhost" // 도메인을 localhost로 설정
+                    newCookie.isHttpOnly = cookie.isHttpOnly
+                    newCookie.secure = false // HTTP 환경에서는 false, HTTPS 환경에서는 true로 변경 가능
+                    newCookie.setAttribute("SameSite", "Lax") // HTTP 환경에서 Lax 사용
+
+                    // 응답에 새로운 쿠키 추가
+                    response.addCookie(newCookie)
                 }
             }
         } else {
