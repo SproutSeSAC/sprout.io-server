@@ -12,7 +12,7 @@ object CookieUtils {
             this.secure = false // HTTP 환경이므로 secure는 false로
             this.isHttpOnly = httpOnly
             this.domain = "localhost" // 도메인을 명시적으로 설정
-            this.setAttribute("SameSite", "None") // CORS를 허용하려면 SameSite=None 필요
+            this.setAttribute("SameSite", "Lax") // CORS를 허용하려면 SameSite=None 필요
         }
     }
 
