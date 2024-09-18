@@ -22,6 +22,7 @@ class LoginController(
     /**
      *  Login 성공시 200번 응답
      */
+    @GetMapping("/success")
     fun success(request: HttpServletRequest, response: HttpServletResponse) {
         // 쿠키 값을 읽어옴
         val cookies = request.cookies
