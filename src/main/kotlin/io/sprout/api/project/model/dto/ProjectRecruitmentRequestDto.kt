@@ -8,7 +8,7 @@ import io.sprout.api.user.model.entities.UserEntity
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-data class ProjectRecruitmentRequestDTO(
+data class ProjectRecruitmentRequestDto(
     @Schema(
         description = "모집 구분 (프로젝트, 스터디) - 대소문자 상관없이 'project' 또는 'study' 값만 허용됩니다.",
         example = "Project"

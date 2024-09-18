@@ -1,10 +1,8 @@
 package io.sprout.api.project.controller
 
-import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDTO
+import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.service.ProjectService
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -22,7 +20,7 @@ class ProjectController(
         summary = "프로젝트 등록 API", // 간단한 설명
         description = "프로젝트 및 스터디 모집 관련 정보를 받아 프로젝트를 생성하는 API입니다.", // 상세 설명
     )
-    fun postProject(@RequestBody dto: ProjectRecruitmentRequestDTO): ResponseEntity<Boolean> {
+    fun postProject(@RequestBody dto: ProjectRecruitmentRequestDto): ResponseEntity<Boolean> {
         val result = projectService.postProject(dto)
         return ResponseEntity.ok(result)
     }
