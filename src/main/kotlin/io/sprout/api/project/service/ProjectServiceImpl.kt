@@ -5,7 +5,7 @@ import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationExceptio
 import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
 import io.sprout.api.position.model.entities.PositionEntity
-import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDTO
+import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.model.entities.ProjectPositionEntity
 import io.sprout.api.project.model.entities.ProjectTechStackEntity
 import io.sprout.api.project.repository.ProjectPositionRepository
@@ -23,7 +23,7 @@ class ProjectServiceImpl(
     private val projectPositionRepository: ProjectPositionRepository,
     private val projectTechStackRepository: ProjectTechStackRepository
 ) : ProjectService {
-    override fun postProject(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDTO): Boolean {
+    override fun postProject(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean {
         try {
             val projectEntity = projectRecruitmentRequestDTO.toEntity(securityManager.getAuthenticatedUserName())
 
