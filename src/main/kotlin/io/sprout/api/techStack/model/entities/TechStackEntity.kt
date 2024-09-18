@@ -1,6 +1,6 @@
 package io.sprout.api.techStack.model.entities
 
-import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.techStack.model.dto.TechStackResponseDto
 import jakarta.persistence.*
 
 @Entity
@@ -14,4 +14,9 @@ class TechStackEntity(
     @Column(nullable = false, length = 50)
     var name: String, // 기술명
 
-)
+) {
+    fun toDto() = TechStackResponseDto(
+        id = this.id,
+        name = this.name
+    )
+}
