@@ -4,8 +4,8 @@ name: Java CI with Gradle
 
 on:
     push:
-        tags:
-            - 'dev[0-9]+.[0-9]+.[0-9]+'
+        branches:
+            - dev
 
 jobs:
     build:
