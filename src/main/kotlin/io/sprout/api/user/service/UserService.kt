@@ -1,11 +1,15 @@
 package io.sprout.api.user.service
 
 import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
+import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
 import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
-import io.sprout.api.techStack.repository.TechStackRepository
+import io.sprout.api.specification.model.dto.SpecificationDto
+import io.sprout.api.specification.repository.DomainRepository
+import io.sprout.api.specification.repository.JobRepository
+import io.sprout.api.specification.repository.TechStackRepository
 import io.sprout.api.user.model.dto.UserDto
 import io.sprout.api.user.model.entities.*
 import io.sprout.api.user.repository.UserDomainRepository
@@ -23,10 +27,13 @@ import org.springframework.transaction.annotation.Transactional
 class UserService(
     private val userRepository: UserRepository,
     private val courseRepository: CourseRepository,
+    private val jobRepository: JobRepository,
+    private val domainRepository: DomainRepository,
+    private val techStackRepository: TechStackRepository,
     private val userJobRepository: UserJobRepository,
     private val userDomainRepository: UserDomainRepository,
     private val userTechStackRepository: UserTechStackRepository,
-    private val techStackRepository: TechStackRepository,
+    private val securityManager: SecurityManager,
     private val jwtToken: JwtToken
 ) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
@@ -81,9 +88,12 @@ class UserService(
 
     @Transactional
     fun createUser(request: UserDto.CreateUserRequest) {
+        val userId = securityManager.getAuthenticatedUserName()
         val user = userRepository.findByEmail(request.email) ?: throw BaseException(ExceptionCode.NOT_FOUND_MEMBER)
         val course =
             courseRepository.findCourseById(request.courseId) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
+        val allDomainList = domainRepository.findAll()
+        val allJobList = jobRepository.findAll()
 
         if (!user.isEssential) {
             user.course = course
@@ -95,19 +105,19 @@ class UserService(
             user.isEssential = true
 
             user.userJobList.plusAssign(
-                request.jobList.map {
+                request.jobIdList.map { jobId ->
                     UserJobEntity(
-                        user = user,
-                        jobType = it
+                        job = allJobList.first { it.id == jobId },
+                        user = user
                     )
                 }
             )
 
             user.userDomainList.plusAssign(
-                request.domainList.map {
+                request.domainIdList.map { domainId ->
                     UserDomainEntity(
-                        user = user,
-                        domainType = it
+                        domain = allDomainList.first { it.id == domainId },
+                        user = user
                     )
                 }
             )
@@ -146,34 +156,37 @@ class UserService(
             throw BaseException(ExceptionCode.UPDATE_FAIL)
         }
 
+        val allDomainList = domainRepository.findAll()
+        val allJobList = jobRepository.findAll()
         val allTechStackList = techStackRepository.findAll()
 
-        user.profileImageUrl = request.profileImageUrl
-        user.nickname = request.nickname
 
-        if (request.updatedJobList.isNotEmpty()) {
+        user.profileImageUrl = request.profileImageUrl
+        user.nickname = request.nickname.toString()
+
+        if (request.updatedJobIdList.isNotEmpty()) {
             userJobRepository.deleteAll(user.userJobList)
             user.userJobList.clear()
 
             user.userJobList.plusAssign(
-                request.updatedJobList.map {
+                request.updatedJobIdList.map { jobId ->
                     UserJobEntity(
-                        user = user,
-                        jobType = it
+                        job = allJobList.first { it.id == jobId },
+                        user = user
                     )
                 }
             )
         }
 
-        if (request.updatedDomainList.isNotEmpty()) {
+        if (request.updatedDomainIdList.isNotEmpty()) {
             userDomainRepository.deleteAll(user.userDomainList)
             user.userDomainList.clear()
 
             user.userDomainList.plusAssign(
-                request.updatedDomainList.map {
+                request.updatedDomainIdList.map { domainId ->
                     UserDomainEntity(
-                        user = user,
-                        domainType = it
+                        domain = allDomainList.first { it.id == domainId },
+                        user = user
                     )
                 }
             )
@@ -186,7 +199,7 @@ class UserService(
             user.userTechStackList.plusAssign(
                 request.updatedTechStackIdList.map { techStackId ->
                     UserTechStackEntity(
-                        techStackEntity = allTechStackList.first { it.id == techStackId },
+                        techStack = allTechStackList.first { it.id == techStackId },
                         user = user
                     )
                 }
@@ -201,15 +214,31 @@ class UserService(
     }
 
     fun getUserInfo(userId: Long): UserDto.GetUserResponse {
-        val user = userRepository.findUserById(userId) ?: throw BaseException(ExceptionCode.NOT_FOUND_MEMBER)
+        val userId2 = securityManager.getAuthenticatedUserName()!!
+        val user = userRepository.findUserById(userId2) ?: throw BaseException(ExceptionCode.NOT_FOUND_MEMBER)
 
         return UserDto.GetUserResponse(
             name = user.name,
             nickname = user.nickname,
             profileImageUrl = user.profileImageUrl,
-            jobList = user.userJobList.map { it.jobType }.toMutableSet(),
-            domainList = user.userDomainList.map { it.domainType }.toMutableSet(),
-            techStackList = user.userTechStackList.map { it.techStackEntity.name }.toMutableSet()
+            jobList = user.userJobList.map {
+                SpecificationDto.JobInfoDto(
+                    id = it.id,
+                    job = it.job.jobType.name
+                )
+            }.toMutableSet(),
+            domainList = user.userDomainList.map {
+                SpecificationDto.DomainInfoDto(
+                    id = it.id,
+                    domain = it.domain.domainType.name
+                )
+            }.toMutableSet(),
+            techStackList = user.userTechStackList.map {
+                SpecificationDto.TechStackInfoDto(
+                    id = it.id,
+                    techStack = it.techStack.techStackType.name
+                )
+            }.toMutableSet()
         )
     }
 
