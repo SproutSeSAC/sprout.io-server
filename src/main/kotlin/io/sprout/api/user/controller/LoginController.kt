@@ -21,8 +21,8 @@ class LoginController(
      *  Login 성공시 200번 응답
      */
     @GetMapping("/success")
-    fun success(): ResponseEntity<String> {
-        return ResponseEntity.ok("success")
+    fun success(response: HttpServletResponse) {
+        response.sendRedirect("http://localhost:3000")
     }
 
     /**
