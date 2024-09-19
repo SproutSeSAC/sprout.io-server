@@ -56,8 +56,8 @@ class JwtFilter(
         filterChain: FilterChain
     ) {
         extractTokensFromRequest(request)
-        val accessJws = request.getAttribute("access_token") as String?
-        val refreshJws = request.getAttribute("refresh_token") as String?
+        val accessJws = request.getAttribute("accessJws") as String?
+        val refreshJws = request.getAttribute("refreshJws") as String?
         logger.info("accessJws: $accessJws")
         logger.info("refreshJws: $refreshJws")
         /**
