@@ -34,6 +34,6 @@ class CustomAuthenticationSuccessHandler(
 
         userService.checkAndJoinUser(email, response)
 
-        response.sendRedirect("http://localhost:3000")
+        response.sendRedirect(redirectPropertiesConfig.redirectUrl)
     }
 }

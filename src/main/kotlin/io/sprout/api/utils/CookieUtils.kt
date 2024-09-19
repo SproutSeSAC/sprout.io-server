@@ -9,10 +9,7 @@ object CookieUtils {
     fun createCookie(name: String, value: String, httpOnly: Boolean = true, path: String = "/"): Cookie {
         return Cookie(name, value).apply {
             this.path = path
-            this.secure = false // HTTP 환경이므로 secure는 false로
             this.isHttpOnly = httpOnly
-            this.domain = "localhost" // 도메인을 명시적으로 설정
-            this.setAttribute("SameSite", "Lax") // CORS를 허용하려면 SameSite=None 필요
         }
     }
 
