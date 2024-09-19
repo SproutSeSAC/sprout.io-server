@@ -27,32 +27,36 @@ class LoginController(
     fun success(request: HttpServletRequest, response: HttpServletResponse) {
         val log = LoggerFactory.getLogger(this::class.java)
 
-        // 쿠키 값을 가져옴
+        // 쿠키에서 access_token과 refresh_token 값을 추출
+        var accessToken: String? = null
+        var refreshToken: String? = null
+
         val cookies = request.cookies
         if (cookies != null) {
             for (cookie in cookies) {
-                if (cookie.name == "access_token" || cookie.name == "refresh_token") {
-                    log.info("Cookie Name: {}, Value: {}", cookie.name, cookie.value)
-
-                    // 쿠키를 다시 설정하여 응답에 추가
-                    val newCookie = Cookie(cookie.name, cookie.value)
-                    newCookie.path = "/" // 모든 경로에서 쿠키가 유효하도록 설정
-                    newCookie.domain = "localhost" // 도메인을 localhost로 설정
-                    newCookie.isHttpOnly = cookie.isHttpOnly
-                    newCookie.secure = false // HTTP 환경에서는 false, HTTPS 환경에서는 true로 변경 가능
-                    newCookie.setAttribute("SameSite", "Lax") // HTTP 환경에서 Lax 사용
-
-                    // 응답에 새로운 쿠키 추가
-                    response.addCookie(newCookie)
+                when (cookie.name) {
+                    "access_token" -> accessToken = cookie.value
+                    "refresh_token" -> refreshToken = cookie.value
                 }
             }
         } else {
             log.info("No cookies found in the request.")
         }
 
-        // 리디렉션
-        response.sendRedirect("http://localhost:3000")
+        // 리디렉션할 URL에 쿼리 파라미터로 access_token과 refresh_token 추가
+        val redirectUrl = buildString {
+            append("http://localhost:3000")
+            if (accessToken != null && refreshToken != null) {
+                append("?access_token=$accessToken&refresh_token=$refreshToken")
+            }
+        }
+
+        log.info("Redirecting to: {}", redirectUrl)
+
+        // 리디렉션 처리
+        response.sendRedirect(redirectUrl)
     }
+
     /**
      *  Login 실패시 401
      */
