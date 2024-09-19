@@ -34,6 +34,6 @@ class CustomAuthenticationSuccessHandler(
 
         userService.checkAndJoinUser(email, response)
 
-        response.sendRedirect("http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api/login/success")
+        response.sendRedirect("http://localhost:3000")
     }
 }
