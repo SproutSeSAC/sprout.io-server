@@ -1,9 +1,7 @@
 package io.sprout.api.project.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
-import io.sprout.api.project.model.enum.ContactMethod
-import io.sprout.api.project.model.enum.MeetingType
-import io.sprout.api.project.model.enum.PType
+import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -27,7 +25,7 @@ class ProjectEntity(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val pType : PType,
+    var pType: PType,
 
     @Column(nullable = false)
     val recruitmentCount: Int,
@@ -43,7 +41,7 @@ class ProjectEntity(
     val recruitmentEnd: LocalDate,
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "meeting_type" ,nullable = false)
+    @Column(name = "meeting_type", nullable = false)
     val meetingType: MeetingType,
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
@@ -54,4 +52,34 @@ class ProjectEntity(
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
     val techStacks: List<ProjectTechStackEntity> = listOf()
-) : BaseEntity()
+) : BaseEntity() {
+    fun toDto(): ProjectResponseDto {
+        return ProjectResponseDto(
+            id = this.id,
+            title = this.title,
+            description = this.description,
+            recruitmentCount = this.recruitmentCount,
+            meetingType = this.meetingType.name,
+            contactMethod = this.contactMethod.name,
+            recruitmentStart = this.recruitmentStart,
+            recruitmentEnd = this.recruitmentEnd
+        )
+    }
+}
+
+enum class PType {
+    PROJECT,
+    STUDY,
+}
+
+enum class MeetingType {
+    ONLINE,
+    OFFLINE,
+    HYBRID  // 혼합형
+}
+
+enum class ContactMethod {
+    EMAIL,
+    PHONE,
+    MESSENGER
+}
