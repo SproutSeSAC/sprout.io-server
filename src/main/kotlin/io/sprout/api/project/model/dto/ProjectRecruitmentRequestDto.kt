@@ -1,9 +1,9 @@
 package io.sprout.api.project.model.dto
 
+import io.sprout.api.project.model.entities.ContactMethod
+import io.sprout.api.project.model.entities.MeetingType
+import io.sprout.api.project.model.entities.PType
 import io.sprout.api.project.model.entities.ProjectEntity
-import io.sprout.api.project.model.enum.ContactMethod
-import io.sprout.api.project.model.enum.MeetingType
-import io.sprout.api.project.model.enum.PType
 import io.sprout.api.user.model.entities.UserEntity
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate

@@ -20,6 +20,15 @@ class LoginController(
     private val jwtToken: JwtToken,
     private val securityManager: SecurityManager
 ) {
+
+    /**
+     *  access 와  refresh 검증을 위한 토큰
+     */
+    @GetMapping("/check")
+    fun loginCheck() : ResponseEntity<String>{
+        return ResponseEntity.ok("OK")
+    }
+
     /**
      *  Login 성공시 200번 응답
      */
@@ -45,7 +54,7 @@ class LoginController(
 
         // 리디렉션할 URL에 쿼리 파라미터로 access_token과 refresh_token 추가
         val redirectUrl = buildString {
-            append("http://localhost:3000")
+            append("http://localhost:3000/login-check")
             if (accessToken != null && refreshToken != null) {
                 append("?access_token=$accessToken&refresh_token=$refreshToken")
             }

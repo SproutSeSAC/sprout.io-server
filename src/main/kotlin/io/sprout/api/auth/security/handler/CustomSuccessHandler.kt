@@ -35,5 +35,6 @@ class CustomAuthenticationSuccessHandler(
         userService.checkAndJoinUser(email, response)
 
         response.sendRedirect(redirectPropertiesConfig.redirectUrl)
+
     }
 }
