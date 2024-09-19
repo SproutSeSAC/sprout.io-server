@@ -8,8 +8,8 @@ object CookieUtils {
 
     fun createCookie(name: String, value: String, httpOnly: Boolean = true, path: String = "/"): Cookie {
         return Cookie(name, value).apply {
-            isHttpOnly = httpOnly
             this.path = path
+            this.isHttpOnly = httpOnly
         }
     }
 
@@ -19,6 +19,7 @@ object CookieUtils {
         cookie.isHttpOnly = true
         cookie.maxAge = maxAge
         cookie.secure = false
+
         response.addCookie(cookie)
     }
 
