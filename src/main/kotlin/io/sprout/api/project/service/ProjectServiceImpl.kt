@@ -5,7 +5,9 @@ import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationExceptio
 import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
 import io.sprout.api.position.model.entities.PositionEntity
+import io.sprout.api.project.model.dto.ProjectFilterRequest
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
+import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.project.model.entities.ProjectPositionEntity
 import io.sprout.api.project.model.entities.ProjectTechStackEntity
 import io.sprout.api.project.repository.ProjectPositionRepository
@@ -54,5 +56,9 @@ class ProjectServiceImpl(
             // 예상치 못한 오류 처리
             throw CustomUnexpectedException("An unexpected error occurred: ${e.message}")
         }
+    }
+
+    override fun getFilteredProjects(filterRequest: ProjectFilterRequest): Pair<List<ProjectResponseDto>, Long> {
+        return projectRepository.filterProjects(filterRequest)
     }
 }
