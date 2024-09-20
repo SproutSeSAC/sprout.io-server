@@ -53,18 +53,7 @@ class ProjectEntity(
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
     val techStacks: List<ProjectTechStackEntity> = listOf()
 ) : BaseEntity() {
-    fun toDto(): ProjectResponseDto {
-        return ProjectResponseDto(
-            id = this.id,
-            title = this.title,
-            description = this.description,
-            recruitmentCount = this.recruitmentCount,
-            meetingType = this.meetingType.name,
-            contactMethod = this.contactMethod.name,
-            recruitmentStart = this.recruitmentStart,
-            recruitmentEnd = this.recruitmentEnd
-        )
-    }
+
 }
 
 enum class PType {
