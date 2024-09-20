@@ -83,8 +83,8 @@ class JwtFilter(
     }
 
     private fun extractTokensFromRequest(request: HttpServletRequest) {
-        var accessJws: String? = request.getHeader("access_token")
-        var refreshJws: String? = request.getHeader("refresh_token")
+        var accessJws: String? = request.getHeader("Access-Token")
+        var refreshJws: String? = request.getHeader("Refresh-Token")
 
 
         if (accessJws == null && refreshJws == null) {
