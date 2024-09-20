@@ -13,7 +13,7 @@ import io.sprout.api.project.model.entities.ProjectTechStackEntity
 import io.sprout.api.project.repository.ProjectPositionRepository
 import io.sprout.api.project.repository.ProjectRepository
 import io.sprout.api.project.repository.ProjectTechStackRepository
-import io.sprout.api.techStack.model.entities.TechStackEntity
+import io.sprout.api.specification.model.entities.TechStackEntity
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
@@ -34,12 +34,12 @@ class ProjectServiceImpl(
             val projectId = savedProjectEntity.id
             //it 에 id 값들이 들어 있음
             projectRecruitmentRequestDTO.positions.map {
-                val selectedPosition=PositionEntity(it)
+                val selectedPosition = PositionEntity(it)
                 val projectPositionEntity = ProjectPositionEntity(savedProjectEntity, selectedPosition)
                 projectPositionRepository.save(projectPositionEntity)
             }
             projectRecruitmentRequestDTO.requiredStacks.map {
-                val requiredTechStack = TechStackEntity(it,"")
+                val requiredTechStack = TechStackEntity(it, true)
                 val techStack = ProjectTechStackEntity(savedProjectEntity, requiredTechStack)
                 projectTechStackRepository.save(techStack)
             }
