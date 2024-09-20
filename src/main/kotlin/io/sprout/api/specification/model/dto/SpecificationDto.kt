@@ -13,7 +13,7 @@ class SpecificationDto {
         val job: String
     )
 
-    @Schema(description = "도메인 조 dto")
+    @Schema(description = "도메인 조회 dto")
     data class DomainInfoDto(
         @Schema(description = "도메인 Id", nullable = false)
         val id: Long,

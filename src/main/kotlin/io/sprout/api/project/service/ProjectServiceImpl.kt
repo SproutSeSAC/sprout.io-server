@@ -13,7 +13,7 @@ import io.sprout.api.project.model.entities.ProjectTechStackEntity
 import io.sprout.api.project.repository.ProjectPositionRepository
 import io.sprout.api.project.repository.ProjectRepository
 import io.sprout.api.project.repository.ProjectTechStackRepository
-import io.sprout.api.specification.model.entities.TechStackEntity
+import io.sprout.api.techStack.model.entities.TechStackEntity
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
@@ -39,7 +39,7 @@ class ProjectServiceImpl(
                 projectPositionRepository.save(projectPositionEntity)
             }
             projectRecruitmentRequestDTO.requiredStacks.map {
-                val requiredTechStack = TechStackEntity(it, true)
+                val requiredTechStack = TechStackEntity(it, "")
                 val techStack = ProjectTechStackEntity(savedProjectEntity, requiredTechStack)
                 projectTechStackRepository.save(techStack)
             }

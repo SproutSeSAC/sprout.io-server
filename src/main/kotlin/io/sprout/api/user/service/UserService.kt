@@ -9,7 +9,7 @@ import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.specification.model.dto.SpecificationDto
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
-import io.sprout.api.specification.repository.TechStackRepository
+import io.sprout.api.techStack.repository.TechStackRepository
 import io.sprout.api.user.model.dto.UserDto
 import io.sprout.api.user.model.entities.*
 import io.sprout.api.user.repository.UserDomainRepository
@@ -236,7 +236,7 @@ class UserService(
             techStackList = user.userTechStackList.map {
                 SpecificationDto.TechStackInfoDto(
                     id = it.id,
-                    techStack = it.techStack.techStackType.name
+                    techStack = it.techStack.name
                 )
             }.toMutableSet()
         )
