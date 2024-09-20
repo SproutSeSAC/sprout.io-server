@@ -54,8 +54,6 @@ dependencies {
 	runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 
 
-	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
-
 	//개발환경 변경 감지 재시작
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
