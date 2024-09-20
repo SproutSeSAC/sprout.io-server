@@ -39,6 +39,7 @@ class JwtFilter(
             "/api/login",
             "/api/login/success",
             "/api/login/fail",
+            "/api/login/test",
             "/h2-console",
             "/favicon.ico",
             "/api/oauth2/authorization/google"// Corrected path
