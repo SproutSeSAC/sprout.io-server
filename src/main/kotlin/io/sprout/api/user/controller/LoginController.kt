@@ -87,7 +87,6 @@ class LoginController(
 
     @GetMapping("/test")
     fun test(): ResponseEntity<String> {
-        println("securty :{${securityManager.getAuthenticatedUserName()}}")
         return ResponseEntity.ok("success")
     }
 }
