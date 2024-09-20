@@ -1,5 +1,6 @@
 package io.sprout.api.config
 
+import com.querydsl.jpa.JPQLTemplates
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
 import org.springframework.context.annotation.Bean
@@ -13,7 +14,7 @@ class QueryDslConfig(
 
     @Bean
     fun queryDsl(): JPAQueryFactory {
-        return JPAQueryFactory(em)
+        return JPAQueryFactory(JPQLTemplates.DEFAULT,em)
     }
 
 }
