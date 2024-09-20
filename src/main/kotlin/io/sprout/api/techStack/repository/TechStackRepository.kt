@@ -1,6 +1,6 @@
-package io.sprout.api.specification.repository
+package io.sprout.api.techStack.repository
 
-import io.sprout.api.specification.model.entities.TechStackEntity
+import io.sprout.api.techStack.model.entities.TechStackEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
