@@ -22,6 +22,7 @@ class SpecificationDto {
         val domain: String
     )
 
+    // 삭제 예정
     @Schema(description = "기술스택 조회 dto")
     data class TechStackInfoDto(
         @Schema(description = "기술스택 Id", nullable = false)

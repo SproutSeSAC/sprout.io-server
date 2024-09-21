@@ -233,6 +233,7 @@ class UserService(
                     domain = it.domain.domainType.name
                 )
             }.toMutableSet(),
+            // FIXME: 수정 필요
             techStackList = user.userTechStackList.map {
                 SpecificationDto.TechStackInfoDto(
                     id = it.id,

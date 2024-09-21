@@ -1,6 +1,7 @@
 package io.sprout.api.user.model.dto
 
 import io.sprout.api.specification.model.dto.SpecificationDto
+import io.sprout.api.techStack.model.dto.TechStackResponseDto
 import io.sprout.api.user.model.entities.RoleType
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull

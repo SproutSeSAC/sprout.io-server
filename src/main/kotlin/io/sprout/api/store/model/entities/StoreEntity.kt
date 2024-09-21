@@ -10,6 +10,9 @@ class StoreEntity(
     @Column(nullable = false, length = 100)
     var name: String, // 가게명
 
+    @Column(nullable = false, length = 100)
+    var address: String, // 주소
+
     @Column(nullable = false, length = 20)
     var contact: String, // 연락처
 

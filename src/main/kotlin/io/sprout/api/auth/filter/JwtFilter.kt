@@ -42,7 +42,8 @@ class JwtFilter(
             "/api/login/test",
             "/h2-console",
             "/favicon.ico",
-            "/api/oauth2/authorization/google"// Corrected path
+            "/api/oauth2/authorization/google",// Corrected path,
+            "/api/store/list"
         )
         val path = request.requestURI
         logger.info ( "Request Path: $path" )
