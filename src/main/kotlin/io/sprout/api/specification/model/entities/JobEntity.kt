@@ -8,6 +8,7 @@ import jakarta.persistence.*
 @Table(name = "job")
 class JobEntity(
 
+    @Enumerated(EnumType.STRING)
     @Column(name= "job_type", nullable = false, length = 30)
     var jobType: JobType, // 직군 타입
 

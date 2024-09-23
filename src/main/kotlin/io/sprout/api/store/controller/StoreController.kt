@@ -18,17 +18,17 @@ class StoreController(
     @GetMapping("/list")
     @Operation(summary = "맛집 리스트 조회", description = "맛집 리스트 조회")
     fun getStoreList(
-        @RequestParam isZeropay: Boolean?,
-        @RequestParam underPrice: Boolean?,
-        @RequestParam overFivePerson: Boolean?,
-        @RequestParam walkTimeWithinFiveMinutes: Boolean?,
-        @RequestParam foodTypeList: List<FoodType>,
+        @RequestParam isZeropay: Boolean,
+        @RequestParam underPrice: Boolean,
+        @RequestParam overFivePerson: Boolean,
+        @RequestParam walkTimeWithinFiveMinutes: Boolean,
+        @RequestParam foodTypeList: List<FoodType> = mutableListOf(),
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int
-    ): StoreDto.GetStoreListResponse {
+    ): StoreDto.StoreListResponse {
 
         val pageIndex = page - 1
-        val filterRequest = StoreDto.GetStoreListRequest(
+        val filterRequest = StoreDto.StoreListRequest(
             isZeropay,
             underPrice,
             overFivePerson,
@@ -40,5 +40,10 @@ class StoreController(
 
         return storeService.getStoreList(filterRequest)
     }
+
+//    @GetMapping("filterCount")
+//    fun getFilterCount(){
+//
+//    }
 
 }

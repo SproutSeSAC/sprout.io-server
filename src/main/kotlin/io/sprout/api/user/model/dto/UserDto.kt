@@ -1,7 +1,6 @@
 package io.sprout.api.user.model.dto
 
-import io.sprout.api.specification.model.dto.SpecificationDto
-import io.sprout.api.techStack.model.dto.TechStackResponseDto
+import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.user.model.entities.RoleType
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
@@ -16,17 +15,17 @@ class UserDto {
         @Schema(description = "닉네임", nullable = false)
         val nickname: String,
 
-        @Schema(description = "프로필 사진 url", nullable = true)
+        @Schema(description = "프로필 사진 url", nullable = false)
         val profileImageUrl: String?,
 
         @Schema(description = "관심 직군 리스트")
-        val jobList: MutableSet<SpecificationDto.JobInfoDto>,
+        val jobList: MutableSet<SpecificationsDto.JobInfoDto>,
 
         @Schema(description = "관심 도메인 리스트")
-        val domainList: MutableSet<SpecificationDto.DomainInfoDto>,
+        val domainList: MutableSet<SpecificationsDto.DomainInfoDto>,
 
         @Schema(description = "기술 스택 리스트")
-        val techStackList: MutableSet<SpecificationDto.TechStackInfoDto>
+        val techStackList: MutableSet<SpecificationsDto.TechStackInfoDto>
     )
 
     @Schema(description = "추가 정보 입력에 따른 계정 생성 request")
@@ -40,17 +39,17 @@ class UserDto {
         @Schema(description = "닉네임", nullable = false)
         @field:NotNull val nickname: String,
 
-        @Schema(description = "유저 프로필 이미지 URL", nullable = false)
-        val avatarImgUrl: String? = null,
-
-        @Schema(description = "유저 타입", nullable = false, example = "ADMIN, TRAINEE, PRE_TRAINEE, CAMPUS_MANAGER, EDU_MANAGER, JOB_COORDINATOR" )
+        @Schema(description = "유저 타입", nullable = false, example = "ADMIN, TRAINEE, PRE_TRAINEE, CAMPUS_MANAGER, EDU_MANAGER, JOB_COORDINATOR")
         @field:NotNull val role: RoleType,
 
-        @Schema(description = "관심 도메인 리스트")
+        @Schema(description = "관심 도메인 ID 리스트")
         val domainIdList: MutableSet<Long> = mutableSetOf(),
 
-        @Schema(description = "관심 직군 리스트")
+        @Schema(description = "관심 직군 ID 리스트")
         val jobIdList: MutableSet<Long> = mutableSetOf(),
+
+        @Schema(description = "기술 스택 ID 리스트")
+        val techStackIdList: MutableSet<Long> = mutableSetOf(),
 
         @Schema(description = "개인정보 취급 방침 동의 여부", nullable = false)
         @field:NotNull val marketingConsent: Boolean

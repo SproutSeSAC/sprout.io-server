@@ -6,7 +6,7 @@ import io.sprout.api.auth.token.domain.JwtToken
 import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
-import io.sprout.api.specification.model.dto.SpecificationDto
+import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
 import io.sprout.api.techStack.repository.TechStackRepository
@@ -83,6 +83,7 @@ class UserService(
             courseRepository.findCourseById(request.courseId) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
         val allDomainList = domainRepository.findAll()
         val allJobList = jobRepository.findAll()
+        val allTechStackList = techStackRepository.findAll()
 
         if (!user.isEssential) {
             user.course = course
@@ -111,6 +112,15 @@ class UserService(
                 }
             )
 
+            user.userTechStackList.plusAssign(
+                request.techStackIdList.map { techStackId ->
+                    UserTechStackEntity(
+                        techStack = allTechStackList.first { it.id == techStackId },
+                        user = user
+                    )
+                }
+            )
+
         } else {
             // 이미 회원 가입이 완료된 경우
             throw BaseException(ExceptionCode.ALREADY_REGISTERED_USER)
@@ -131,6 +141,7 @@ class UserService(
         val userId = securityManager.getAuthenticatedUserName()!!
         val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
         user.status = UserStatus.LEAVE
+        user.refreshToken = ""
 
         try {
             userRepository.save(user)
@@ -215,20 +226,20 @@ class UserService(
             nickname = user.nickname,
             profileImageUrl = user.profileImageUrl,
             jobList = user.userJobList.map {
-                SpecificationDto.JobInfoDto(
+                SpecificationsDto.JobInfoDto(
                     id = it.id,
                     job = it.job.jobType.name
                 )
             }.toMutableSet(),
             domainList = user.userDomainList.map {
-                SpecificationDto.DomainInfoDto(
+                SpecificationsDto.DomainInfoDto(
                     id = it.id,
                     domain = it.domain.domainType.name
                 )
             }.toMutableSet(),
             // FIXME: 수정 필요
             techStackList = user.userTechStackList.map {
-                SpecificationDto.TechStackInfoDto(
+                SpecificationsDto.TechStackInfoDto(
                     id = it.id,
                     techStack = it.techStack.name
                 )
