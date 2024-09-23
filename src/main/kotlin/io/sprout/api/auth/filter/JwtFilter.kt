@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.aspectj.weaver.tools.cache.SimpleCacheFactory.path
 import org.springframework.stereotype.Component
+import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
@@ -43,13 +44,25 @@ class JwtFilter(
             "/h2-console",
             "/favicon.ico",
             "/api/oauth2/authorization/google",// Corrected path,
-            "/api/store/list"
+
+            // 테스트를 위한 임시 url
+            "/api/store/list",
+            "/api/course/list/**",
+            "/api/campus/list",
+            "/api/specifications/**",
+            "/api/user"
         )
         val path = request.requestURI
         logger.info ( "Request Path: $path" )
 
+        val pathMatcher = AntPathMatcher()
+
         // 경로가 정확히 일치하는 경우에만 필터링을 통과시킴
-        return excludePath.any { exclude -> path == exclude }
+//        return excludePath.any { exclude -> path == exclude }
+
+        // 테스트를 위한 임시 url 허용
+        return excludePath.any { exclude -> pathMatcher.match(exclude, path) }
+
     }
 
     override fun doFilterInternal(

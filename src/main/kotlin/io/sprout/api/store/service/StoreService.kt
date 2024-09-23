@@ -9,12 +9,12 @@ class StoreService(
     private val storeRepository: StoreRepository
 
 ) {
-    fun getStoreList(filterRequest: StoreDto.GetStoreListRequest): StoreDto.GetStoreListResponse {
+    fun getStoreList(filterRequest: StoreDto.StoreListRequest): StoreDto.StoreListResponse {
         val storeList = storeRepository.findStoreList(filterRequest)
 
         val result = storeList.map { store ->
             // 여기에서
-            StoreDto.GetStoreListResponse.StoreDetail(
+            StoreDto.StoreListResponse.StoreDetail(
                 name = store.name,
                 storeImage = store.storeImageList.first().path ?: "",
                 workingDay = store.workingDay,
@@ -22,7 +22,7 @@ class StoreService(
             )
         }
 
-        return StoreDto.GetStoreListResponse(
+        return StoreDto.StoreListResponse(
             storeList = result
         )
     }

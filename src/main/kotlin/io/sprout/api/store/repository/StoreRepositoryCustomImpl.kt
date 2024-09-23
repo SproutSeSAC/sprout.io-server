@@ -17,7 +17,7 @@ class StoreRepositoryCustomImpl(
 ): StoreRepositoryCustom {
 
     // 여기서 필터링 필요
-    override fun findStoreList(request: StoreDto.GetStoreListRequest): List<StoreProjectionDto.StoreInfoDto> {
+    override fun findStoreList(request: StoreDto.StoreListRequest): List<StoreProjectionDto.StoreInfoDto> {
         val store = QStoreEntity.storeEntity
         val storeImage = QStoreImageEntity.storeImageEntity
         val storeMenu = QStoreMenuEntity.storeMenuEntity

@@ -37,14 +37,23 @@ class UserController(
     // TODO: 회원 탈퇴
     @PutMapping("/leave")
     @Operation(summary = "계정 탈퇴", description = "계정 탈퇴 (상태값 변경, 실제 삭제는 30일 후 따로 진행)")
-    fun deleteUser(@RequestBody @Valid request: UserDto.DeleteUserRequest) {
+    fun deleteUser(@RequestBody @Valid request: UserDto.DeleteUserRequest, response: HttpServletResponse): ResponseEntity<String> {
         userService.deleteUser(request)
+        // 계정 탈퇴 시, 두 토큰 초기화
+        val accessCookie = CookieUtils.createCookie("access_token", "")
+        val refreshCookie = CookieUtils.createCookie("refresh_token", "")
+        response.addCookie(accessCookie)
+        response.addCookie(refreshCookie)
+
+        return ResponseEntity.ok("success")
     }
 
     @PutMapping("")
-    @Operation(summary = "계정 수정", description = "계정 수정")
-    fun updateUser(@RequestBody @Valid request: UserDto.UpdateUserRequest) {
+    @Operation(summary = "계정 수정", description = "계정 수정 - 도메인, 직군, 기술 스택은 업데이트 되는 내용만 보낼 것")
+    fun updateUser(@RequestBody @Valid request: UserDto.UpdateUserRequest): ResponseEntity<String> {
         userService.updateUser(request)
+
+        return ResponseEntity.ok("success")
     }
 
 }

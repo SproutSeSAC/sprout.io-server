@@ -8,6 +8,7 @@ import jakarta.persistence.*
 @Table(name = "domain")
 class DomainEntity(
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "domain_type", nullable = false, length = 20)
     var domainType: DomainType, // 도메인 타입
 
