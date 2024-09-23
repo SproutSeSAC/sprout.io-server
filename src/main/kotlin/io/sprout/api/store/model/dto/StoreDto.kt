@@ -6,11 +6,21 @@ import io.swagger.v3.oas.annotations.media.Schema
 class StoreDto {
 
     data class GetStoreListRequest(
-        val isZeropay: Boolean,
-        val price: Int,
-        val person: Int,
-        val walkTime: Int,
+        @Schema(description = "제로페이 사용가능 유무", nullable = true)
+        val isZeropay: Boolean? = false,
+
+        @Schema(description = "만원 이하 메뉴 여부", nullable = true)
+        val underPrice: Boolean? = false,
+
+        @Schema(description = "5인 이상 가능 여부", nullable = true)
+        val overFivePerson: Boolean? = false,
+
+        @Schema(description = "도보 시간 - 5분 이내 여부", nullable = true)
+        val walkTimeWithinFiveMinutes: Boolean? = false,
+
+        @Schema(description = "요리 타입 - 복수 선택 가능", nullable = true)
         val foodTypeList: List<FoodType>,
+
         val page: Int,
         val size: Int
     )
@@ -32,14 +42,14 @@ class StoreDto {
             @Schema(description = "브레이크 시간")
             val breakTime: String,
 
-            @Schema(description = "도보 시간 - 5분 이내 여부", nullable = true)
-            val walkTimeWithinFiveMinutes: Boolean?,
-
-            @Schema(description = "5인 이상 가능 여부", nullable = true)
-            val overFivePerson: Boolean?,
-
-            @Schema(description = "만원 이하 메뉴 여부", nullable = true)
-            val underPrice: Boolean?
+//            @Schema(description = "도보 시간 - 5분 이내 여부", nullable = true)
+//            val walkTimeWithinFiveMinutes: Boolean?,
+//
+//            @Schema(description = "5인 이상 가능 여부", nullable = true)
+//            val overFivePerson: Boolean?,
+//
+//            @Schema(description = "만원 이하 메뉴 여부", nullable = true)
+//            val underPrice: Boolean?
         )
     }
 

@@ -13,14 +13,12 @@ class StoreService(
         val storeList = storeRepository.findStoreList(filterRequest)
 
         val result = storeList.map { store ->
+            // 여기에서
             StoreDto.GetStoreListResponse.StoreDetail(
                 name = store.name,
                 storeImage = store.storeImageList.first().path ?: "",
                 workingDay = store.workingDay,
-                breakTime = store.breakTime,
-                walkTimeWithinFiveMinutes = true,
-                overFivePerson = true,
-                underPrice = true
+                breakTime = store.breakTime
             )
         }
 

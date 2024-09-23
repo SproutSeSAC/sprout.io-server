@@ -75,21 +75,10 @@ class UserService(
 
     }
 
-    private fun setTokenCookiesAndReturnRefresh(user: UserEntity, response: HttpServletResponse): String {
-        val userId = user.id as Long
-        val accessToken = jwtToken.createAccessTokenFromMemberId(userId, user.isEssential)
-        val refreshToken = jwtToken.createRefreshToken(userId)
-        val accessCookie = CookieUtils.createCookie("access_token", accessToken)
-        val refreshCookie = CookieUtils.createCookie("refresh_token", refreshToken)
-        response.addCookie(accessCookie)
-        response.addCookie(refreshCookie)
-        return refreshToken
-    }
-
     @Transactional
-    fun createUser(request: UserDto.CreateUserRequest) {
-        val userId = securityManager.getAuthenticatedUserName()
-        val user = userRepository.findByEmail(request.email) ?: throw BaseException(ExceptionCode.NOT_FOUND_MEMBER)
+    fun createUser(request: UserDto.CreateUserRequest, response: HttpServletResponse): String {
+        val userId = securityManager.getAuthenticatedUserName()!!
+        val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
         val course =
             courseRepository.findCourseById(request.courseId) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
         val allDomainList = domainRepository.findAll()
@@ -133,11 +122,14 @@ class UserService(
         } catch (e: Exception) {
             throw BaseException(ExceptionCode.CREATE_FAIL)
         }
+
+        return user.refreshToken!!
     }
 
     @Transactional
     fun deleteUser(request: UserDto.DeleteUserRequest) {
-        val user = userRepository.findById(request.userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
+        val userId = securityManager.getAuthenticatedUserName()!!
+        val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
         user.status = UserStatus.LEAVE
 
         try {
@@ -150,7 +142,8 @@ class UserService(
 
     @Transactional
     fun updateUser(request: UserDto.UpdateUserRequest) {
-        val user = userRepository.findById(request.userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
+        val userId = securityManager.getAuthenticatedUserName()!!
+        val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
 
         if (user.status == UserStatus.LEAVE || user.status == UserStatus.SLEEP) {
             throw BaseException(ExceptionCode.UPDATE_FAIL)
@@ -213,9 +206,9 @@ class UserService(
         }
     }
 
-    fun getUserInfo(userId: Long): UserDto.GetUserResponse {
-        val userId2 = securityManager.getAuthenticatedUserName()!!
-        val user = userRepository.findUserById(userId2) ?: throw BaseException(ExceptionCode.NOT_FOUND_MEMBER)
+    fun getUserInfo(): UserDto.GetUserResponse {
+        val userId = securityManager.getAuthenticatedUserName()!!
+        val user = userRepository.findUserById(userId) ?: throw BaseException(ExceptionCode.NOT_FOUND_MEMBER)
 
         return UserDto.GetUserResponse(
             name = user.name,
@@ -241,6 +234,17 @@ class UserService(
                 )
             }.toMutableSet()
         )
+    }
+
+    private fun setTokenCookiesAndReturnRefresh(user: UserEntity, response: HttpServletResponse): String {
+        val userId = user.id as Long
+        val accessToken = jwtToken.createAccessTokenFromMemberId(userId, user.isEssential)
+        val refreshToken = jwtToken.createRefreshToken(userId)
+        val accessCookie = CookieUtils.createCookie("access_token", accessToken)
+        val refreshCookie = CookieUtils.createCookie("refresh_token", refreshToken)
+        response.addCookie(accessCookie)
+        response.addCookie(refreshCookie)
+        return refreshToken
     }
 
 
