@@ -40,13 +40,10 @@ class UserDto {
         @Schema(description = "닉네임", nullable = false)
         @field:NotNull val nickname: String,
 
-        @Schema(description = "유저 이메일", nullable = false)
-        @field:NotNull val email: String,
-
         @Schema(description = "유저 프로필 이미지 URL", nullable = false)
         val avatarImgUrl: String? = null,
 
-        @Schema(description = "유저 타입", nullable = false)
+        @Schema(description = "유저 타입", nullable = false, example = "ADMIN, TRAINEE, PRE_TRAINEE, CAMPUS_MANAGER, EDU_MANAGER, JOB_COORDINATOR" )
         @field:NotNull val role: RoleType,
 
         @Schema(description = "관심 도메인 리스트")
@@ -67,22 +64,19 @@ class UserDto {
 
     @Schema(description = "계정 수정 request")
     data class UpdateUserRequest(
-        @Schema(description = "유저 아이디", nullable = false)
-        @field:NotNull val userId: Long,
-
         @Schema(description = "프로필 사진 url 임시", nullable = true)
         val profileImageUrl: String?,
 
         @Schema(description = "닉네임", nullable = true)
         val nickname: String?,
 
-        @Schema(description = "관심 도메인 업데이트 ID 리스트")
+        @Schema(description = "관심 도메인 업데이트 ID 리스트 - 업데이트되는 내용만 보낼 것")
         val updatedDomainIdList: MutableSet<Long> = mutableSetOf(),
 
-        @Schema(description = "관심 직군 업데이트 ID 리스트")
+        @Schema(description = "관심 직군 업데이트 ID 리스트 - 업데이트되는 내용만 보낼 것")
         val updatedJobIdList: MutableSet<Long> = mutableSetOf(),
 
-        @Schema(description = "수정된 기술 스택 업데이트 ID 리스트")
+        @Schema(description = "수정된 기술 스택 업데이트 ID 리스트 - 업데이트되는 내용만 보낼 것")
         val updatedTechStackIdList: MutableSet<Long> = mutableSetOf()
     )
 
