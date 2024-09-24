@@ -40,6 +40,9 @@ class ProjectEntity(
     @Column(nullable = false)
     val recruitmentEnd: LocalDate,
 
+    @Column(nullable = false)
+    var viewCount: Int = 0 ,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "meeting_type", nullable = false)
     val meetingType: MeetingType,

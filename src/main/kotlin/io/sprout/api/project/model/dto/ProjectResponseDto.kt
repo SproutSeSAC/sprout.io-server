@@ -13,5 +13,7 @@ data class ProjectResponseDto @QueryProjection constructor(
     val recruitmentStart: LocalDate,
     val recruitmentEnd: LocalDate,
     val pType: String,
-    val positionNames: List<String>
+    val positionNames: List<String>,
+    val isScraped: Boolean,
+    val viewCount: Int
 )

@@ -12,6 +12,7 @@ import io.sprout.api.project.model.dto.QProjectResponseDto
 import io.sprout.api.project.model.entities.MeetingType
 import io.sprout.api.project.model.entities.QProjectEntity
 import io.sprout.api.project.model.entities.QProjectPositionEntity
+import io.sprout.api.project.model.entities.QScrapedProjectEntity
 import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import org.springframework.stereotype.Repository
 
@@ -20,11 +21,14 @@ class ProjectCustomRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : ProjectCustomRepository {
 
-    override fun filterProjects(filterRequest: ProjectFilterRequest): Pair<List<ProjectResponseDto>, Long> {
+    override fun filterProjects(
+        filterRequest: ProjectFilterRequest,
+        userId: Long
+    ): Pair<List<ProjectResponseDto>, Long> {
         val projectEntity = QProjectEntity.projectEntity
         val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
         val positionEntity = QPositionEntity.positionEntity
-
+        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
         val builder = BooleanBuilder()
 
         // 기술 스택 필터링
@@ -64,7 +68,10 @@ class ProjectCustomRepositoryImpl(
             .from(projectEntity)
             .leftJoin(projectEntity.positions, projectPositionEntity)
             .leftJoin(projectPositionEntity.position, positionEntity)
-            .where(projectEntity.id.`in`(projectIds))  // 첫 번째 쿼리에서 가져온 ID 목록을 사용
+            .leftJoin(scrapedProjectEntity)
+            .where(projectEntity.id.`in`(projectIds))
+            .on(scrapedProjectEntity.project.id.eq(projectEntity.id)
+                .and(scrapedProjectEntity.user.id.eq(userId))) // 스크랩 여부 필터링// 첫 번째 쿼리에서 가져온 ID 목록을 사용
             .orderBy(projectEntity.id.desc())
             .transform(
                 GroupBy.groupBy(projectEntity.id).list(
@@ -79,7 +86,9 @@ class ProjectCustomRepositoryImpl(
                         projectEntity.recruitmentStart,
                         projectEntity.recruitmentEnd,
                         projectEntity.pType.stringValue(),
-                        GroupBy.list(projectPositionEntity.position.name)  // 포지션 이름을 리스트로 묶음
+                        GroupBy.list(projectPositionEntity.position.name),
+                        scrapedProjectEntity.id.isNotNull,// 포지션 이름을 리스트로 묶음
+                        projectEntity.viewCount
                     )
                 )
             )

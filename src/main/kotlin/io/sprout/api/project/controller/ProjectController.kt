@@ -66,6 +66,27 @@ class ProjectController(
         return ResponseEntity.ok(responseBody)
     }
 
+    @Operation(
+        summary = "프로젝트 스크랩/스크랩 취소 API", // 간단한 설명
+        description = "사용자가 특정 프로젝트를 스크랩 또는 스크랩을 취소하는 API입니다. false 반환 -> 스크랩 취소됨 , true 반환 -> 스크랩 됨", // 상세 설명
+    )
+    @PostMapping("/{projectId}/scrap")
+    fun toggleScrapProject(
+        @PathVariable projectId: Long,
+        @RequestParam userId: Long  // 현재 사용자의 ID를 받아옴
+    ): ResponseEntity<Boolean> {
+        val result = projectService.toggleScrapProject(userId, projectId)
+        return ResponseEntity.ok(result)
+    }
 
+    @Operation(
+        summary = "프로젝트 조회수 증가 API", // 간단한 설명
+        description = "특정 프로젝트의 조회수를 증가시키는 API입니다. 1 증가시 true 반환", // 상세 설명
+    )
+    @PostMapping("/{projectId}/view")
+    fun increaseViewCount(@PathVariable projectId: Long): ResponseEntity<Boolean> {
+        val result = projectService.increaseViewCount(projectId)
+        return ResponseEntity.ok(result)
+    }
 
 }

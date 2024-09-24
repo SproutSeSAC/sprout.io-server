@@ -23,7 +23,7 @@ class CourseEntity(
     @ManyToOne
     var campus: CampusEntity?
 
-): BaseEntity()  {
+) {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
