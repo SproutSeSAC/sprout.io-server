@@ -3,17 +3,12 @@ package io.sprout.api.project.repository
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy
 import com.querydsl.core.types.Projections
-import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import io.sprout.api.position.model.entities.QPositionEntity
 import io.sprout.api.project.model.dto.ProjectFilterRequest
 import io.sprout.api.project.model.dto.ProjectResponseDto
-import io.sprout.api.project.model.dto.QProjectResponseDto
-import io.sprout.api.project.model.entities.MeetingType
-import io.sprout.api.project.model.entities.QProjectEntity
-import io.sprout.api.project.model.entities.QProjectPositionEntity
-import io.sprout.api.project.model.entities.QScrapedProjectEntity
-import org.springframework.data.jpa.domain.AbstractPersistable_.id
+import io.sprout.api.project.model.entities.*
+import io.sprout.api.techStack.model.entities.QTechStackEntity
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -29,6 +24,8 @@ class ProjectCustomRepositoryImpl(
         val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
         val positionEntity = QPositionEntity.positionEntity
         val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+        val projectTechStackEntity = QProjectTechStackEntity.projectTechStackEntity
+        val techStackEntity = QTechStackEntity.techStackEntity
         val builder = BooleanBuilder()
 
         // 기술 스택 필터링
@@ -66,6 +63,8 @@ class ProjectCustomRepositoryImpl(
         // 프로젝트와 포지션 정보를 가져오기
         val projects = queryFactory
             .from(projectEntity)
+            .leftJoin(projectEntity.techStacks, projectTechStackEntity) // Join project tech stacks
+            .leftJoin(projectTechStackEntity.techStack, techStackEntity)
             .leftJoin(projectEntity.positions, projectPositionEntity)
             .leftJoin(projectPositionEntity.position, positionEntity)
             .leftJoin(scrapedProjectEntity)
@@ -87,6 +86,7 @@ class ProjectCustomRepositoryImpl(
                         projectEntity.recruitmentEnd,
                         projectEntity.pType.stringValue(),
                         GroupBy.list(projectPositionEntity.position.name),
+                        GroupBy.list(projectTechStackEntity.techStack.name),
                         scrapedProjectEntity.id.isNotNull,// 포지션 이름을 리스트로 묶음
                         projectEntity.viewCount
                     )
@@ -94,8 +94,9 @@ class ProjectCustomRepositoryImpl(
             )
 
 
+        val distinctProjects = projects.map { it.toDistinct() }
 
-        return Pair(projects, totalCount ?: 0L)
+        return Pair(distinctProjects, totalCount ?: 0L)
     }
 }
 

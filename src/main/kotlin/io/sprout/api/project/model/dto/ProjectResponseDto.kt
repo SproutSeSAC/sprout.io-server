@@ -14,6 +14,25 @@ data class ProjectResponseDto @QueryProjection constructor(
     val recruitmentEnd: LocalDate,
     val pType: String,
     val positionNames: List<String>,
+    val techStackNames: List<String>,
     val isScraped: Boolean,
     val viewCount: Int
-)
+){
+   fun toDistinct(): ProjectResponseDto{
+       return ProjectResponseDto(
+           id = this.id,
+           title = this.title,
+           description = this.description,
+           recruitmentCount = this.recruitmentCount,
+           meetingType = this.meetingType,
+           contactMethod = this.contactMethod,
+           recruitmentStart = this.recruitmentStart,
+           recruitmentEnd = this.recruitmentEnd,
+           pType = this.pType,
+           positionNames = this.positionNames.distinct(),
+           techStackNames = this.techStackNames.distinct(),
+           isScraped = this.isScraped,
+           viewCount = this.viewCount
+       )
+   }
+}
