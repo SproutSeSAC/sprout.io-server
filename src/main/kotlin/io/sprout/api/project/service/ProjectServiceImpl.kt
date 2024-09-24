@@ -67,9 +67,10 @@ class ProjectServiceImpl(
         return projectRepository.filterProjects(filterRequest, securityManager.getAuthenticatedUserName()!!)
     }
 
-    override fun toggleScrapProject(userId: Long, projectId: Long): Boolean {
+    override fun toggleScrapProject(projectId: Long): Boolean {
         val user = UserEntity(securityManager.getAuthenticatedUserName()!!)
-        val project = projectRepository.findById(projectId).orElseThrow { IllegalArgumentException("Project not found") }
+        val project =
+            projectRepository.findById(projectId).orElseThrow { IllegalArgumentException("Project not found") }
 
         // 이미 스크랩했는지 확인
         val existingScrap = scrapedProjectRepository.findByUserAndProject(user, project)
