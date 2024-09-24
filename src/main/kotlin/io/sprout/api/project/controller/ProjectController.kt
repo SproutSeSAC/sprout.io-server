@@ -73,9 +73,8 @@ class ProjectController(
     @PostMapping("/{projectId}/scrap")
     fun toggleScrapProject(
         @PathVariable projectId: Long,
-        @RequestParam userId: Long  // 현재 사용자의 ID를 받아옴
     ): ResponseEntity<Boolean> {
-        val result = projectService.toggleScrapProject(userId, projectId)
+        val result = projectService.toggleScrapProject(projectId)
         return ResponseEntity.ok(result)
     }
 
