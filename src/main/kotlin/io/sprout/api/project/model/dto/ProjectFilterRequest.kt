@@ -10,5 +10,6 @@ data class ProjectFilterRequest(
     val size: Int = 20,
     val onlyScraped: Boolean = false,
     val pType: PType? ,
-    val sort: String = "latest"
+    val sort: String = "latest",
+    val keyWord: String?
 )

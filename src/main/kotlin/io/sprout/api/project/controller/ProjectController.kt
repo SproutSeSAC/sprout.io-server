@@ -2,7 +2,6 @@ package io.sprout.api.project.controller
 
 import io.sprout.api.project.model.dto.ProjectFilterRequest
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
-import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.project.model.entities.PType
 import io.sprout.api.project.service.ProjectService
 import io.swagger.v3.oas.annotations.Operation
@@ -35,7 +34,8 @@ class ProjectController(
         @RequestParam(defaultValue = "20") size: Int,    // 기본값 20 설정
         @RequestParam(defaultValue = "false") onlyScraped: Boolean,
         @RequestParam(required = false) pType: PType?,
-        @RequestParam(defaultValue = "latest") sort: String
+        @RequestParam(defaultValue = "latest") sort: String,
+        @RequestParam(required = false) keyWord: String?,
     ): ResponseEntity<Map<String, Any?>> {
         val filterRequest = ProjectFilterRequest(
             techStack = techStack,
@@ -45,7 +45,8 @@ class ProjectController(
             size = size,
             onlyScraped = onlyScraped,
             pType = pType,
-            sort = sort
+            sort = sort,
+            keyWord = keyWord
         )
 
         val (filteredProjects, totalCount) = projectService.getFilteredProjects(filterRequest)

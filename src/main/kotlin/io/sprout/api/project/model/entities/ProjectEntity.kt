@@ -20,7 +20,7 @@ class ProjectEntity(
     @JoinColumn(name = "writer")
     val writer: UserEntity,
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     val description: String,
 
     @Enumerated(EnumType.STRING)
