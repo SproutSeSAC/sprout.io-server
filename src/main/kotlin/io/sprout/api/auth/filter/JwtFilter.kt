@@ -36,7 +36,7 @@ class JwtFilter(
             "/api/swagger-ui/swagger-ui-bundle.js.map",
             "/api/swagger-ui/swagger-ui-standalone-preset.js.map",
             "/api/v3/api-docs", // swagger
-            "/api/refresh",
+            "/api/login/refresh",
             "/api/login",
             "/api/login/success",
             "/api/login/fail",

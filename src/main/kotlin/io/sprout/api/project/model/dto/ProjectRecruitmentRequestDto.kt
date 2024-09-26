@@ -23,7 +23,7 @@ data class ProjectRecruitmentRequestDto(
     val meetingType: String,      // 모집 유형 (온라인, 오프라인, 혼합)
     val contactMethod: String,    // 연락 방법 (이메일, 전화 등)
     val projectTitle: String,     // 프로젝트 제목
-    val projectDescription: String // 프로젝트 상세 설명
+    val projectDescription: String, // 프로젝트 상세 설명
 ) {
     fun toEntity(userId: Long?): ProjectEntity {
         return ProjectEntity(
