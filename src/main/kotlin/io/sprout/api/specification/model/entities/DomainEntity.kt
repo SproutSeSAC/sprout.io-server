@@ -8,21 +8,19 @@ import jakarta.persistence.*
 @Table(name = "domain")
 class DomainEntity(
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "domain_type", nullable = false, length = 20)
-    var domainType: DomainType, // 도메인 타입
+    @Column(nullable = false, length = 20)
+    var name: String, // 도메인 명
 
     @Column(name = "is_active")
     var isActive: Boolean // 활성화 여부
 
-) : BaseEntity() {
+) {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
 
-}
+    @OneToMany(mappedBy = "domain", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var userDomainList: MutableSet<UserDomainEntity> = LinkedHashSet()
 
-enum class DomainType {
-    SOCIAL, MOBILITY, FASHION, FOOD_TECH, COMMERCE, HEALTH, FIN_TECH, PROP_TECH, AI, EDUCATION, WEB3, GAME, SECURITY
 }

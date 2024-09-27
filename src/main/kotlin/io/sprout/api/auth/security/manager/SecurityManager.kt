@@ -2,7 +2,6 @@ package io.sprout.api.auth.security.manager
 
 import io.sprout.api.auth.token.domain.JwtToken
 import jakarta.servlet.http.HttpServletRequest
-import org.hibernate.query.sqm.tree.SqmNode.log
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.User
@@ -11,9 +10,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component
 
 @Component
-class SecurityManager(private val jwtToken: JwtToken){
+class SecurityManager(private val jwtToken: JwtToken) {
 
-     fun setUpSecurityContext(accessToken: String, request: HttpServletRequest) {
+    fun setUpSecurityContext(accessToken: String, request: HttpServletRequest) {
         val memberId = jwtToken.getUserIdFromAccessToken(accessToken)
         val userDetails: UserDetails = User(memberId, "", emptyList())
         val authToken = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)

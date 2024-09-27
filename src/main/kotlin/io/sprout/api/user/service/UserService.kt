@@ -3,6 +3,9 @@ package io.sprout.api.user.service
 import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
+import io.sprout.api.common.exeption.custom.CustomBadRequestException
+import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
+import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
@@ -20,6 +23,8 @@ import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -40,7 +45,7 @@ class UserService(
 
     fun checkAndJoinUser(email: String, response: HttpServletResponse) {
         val user = userRepository.findByEmail(email)
-        val temporaryCourse = courseRepository.findCourseById(1) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
+        val temporaryCourse = courseRepository.findCourseById(99) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
         val newNick = NicknameGenerator.generate()
         val savedUser: UserEntity
         if (user == null) {
@@ -77,63 +82,71 @@ class UserService(
 
     @Transactional
     fun createUser(request: UserDto.CreateUserRequest, response: HttpServletResponse): String {
-        val userId = securityManager.getAuthenticatedUserName()!!
-        val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
-        val course =
-            courseRepository.findCourseById(request.courseId) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
-        val allDomainList = domainRepository.findAll()
-        val allJobList = jobRepository.findAll()
-        val allTechStackList = techStackRepository.findAll()
-
-        if (!user.isEssential) {
-            user.course = course
-            user.name = request.name
-            user.nickname = request.nickname
-            user.role = request.role
-            user.status = UserStatus.ACTIVE
-            user.marketingConsent = request.marketingConsent
-            user.isEssential = true
-
-            user.userJobList.plusAssign(
-                request.jobIdList.map { jobId ->
-                    UserJobEntity(
-                        job = allJobList.first { it.id == jobId },
-                        user = user
-                    )
-                }
-            )
-
-            user.userDomainList.plusAssign(
-                request.domainIdList.map { domainId ->
-                    UserDomainEntity(
-                        domain = allDomainList.first { it.id == domainId },
-                        user = user
-                    )
-                }
-            )
-
-            user.userTechStackList.plusAssign(
-                request.techStackIdList.map { techStackId ->
-                    UserTechStackEntity(
-                        techStack = allTechStackList.first { it.id == techStackId },
-                        user = user
-                    )
-                }
-            )
-
-        } else {
-            // 이미 회원 가입이 완료된 경우
-            throw BaseException(ExceptionCode.ALREADY_REGISTERED_USER)
-        }
-
         try {
+            val userId = securityManager.getAuthenticatedUserName()!!
+            val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
+            val course =
+                courseRepository.findCourseById(request.courseId) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
+            val allDomainList = domainRepository.findAll()
+            val allJobList = jobRepository.findAll()
+            val allTechStackList = techStackRepository.findAll()
+
+            if (!user.isEssential) {
+                user.course = course
+                user.name = request.name
+                user.nickname = request.nickname
+                user.role = request.role
+                user.status = UserStatus.ACTIVE
+                user.marketingConsent = request.marketingConsent
+                user.isEssential = true
+
+                user.userJobList.plusAssign(
+                    request.jobIdList.map { jobId ->
+                        UserJobEntity(
+                            job = allJobList.first { it.id == jobId },
+                            user = user
+                        )
+                    }
+                )
+
+                user.userDomainList.plusAssign(
+                    request.domainIdList.map { domainId ->
+                        UserDomainEntity(
+                            domain = allDomainList.first { it.id == domainId },
+                            user = user
+                        )
+                    }
+                )
+
+                user.userTechStackList.plusAssign(
+                    request.techStackIdList.map { techStackId ->
+                        UserTechStackEntity(
+                            techStack = allTechStackList.first { it.id == techStackId },
+                            user = user
+                        )
+                    }
+                )
+
+            } else {
+                // 이미 회원 가입이 완료된 경우
+                throw BaseException(ExceptionCode.ALREADY_REGISTERED_USER)
+            }
+
             userRepository.save(user)
             log.debug("createUser, userId is: ${user.id}")
-        } catch (e: Exception) {
-            throw BaseException(ExceptionCode.CREATE_FAIL)
-        }
 
-        return user.refreshToken!!
+            return user.refreshToken!!
+
+        } catch (e: DataIntegrityViolationException) {
+            // 데이터 무결성 예외 처리
+            throw CustomDataIntegrityViolationException("User data integrity violation: ${e.message}")
+        } catch (e: JpaSystemException) {
+            // 시스템 오류 처리
+            throw CustomSystemException("System error occurred while saving the user: ${e.message}")
+        } catch (e: Exception) {
+            // Bad Request
+            throw CustomBadRequestException("Bad Request: ${e.message}")
+        }
     }
 
     @Transactional
@@ -218,33 +231,39 @@ class UserService(
     }
 
     fun getUserInfo(): UserDto.GetUserResponse {
-        val userId = securityManager.getAuthenticatedUserName()!!
-        val user = userRepository.findUserById(userId) ?: throw BaseException(ExceptionCode.NOT_FOUND_MEMBER)
-
-        return UserDto.GetUserResponse(
-            name = user.name,
-            nickname = user.nickname,
-            profileImageUrl = user.profileImageUrl,
-            jobList = user.userJobList.map {
-                SpecificationsDto.JobInfoDto(
-                    id = it.id,
-                    job = it.job.jobType.name
-                )
-            }.toMutableSet(),
-            domainList = user.userDomainList.map {
-                SpecificationsDto.DomainInfoDto(
-                    id = it.id,
-                    domain = it.domain.domainType.name
-                )
-            }.toMutableSet(),
-            // FIXME: 수정 필요
-            techStackList = user.userTechStackList.map {
-                SpecificationsDto.TechStackInfoDto(
-                    id = it.id,
-                    techStack = it.techStack.name
-                )
-            }.toMutableSet()
-        )
+        try {
+            val user = userRepository.findUserById(0L)
+            return UserDto.GetUserResponse(
+                name = user!!.name,
+                nickname = user.nickname,
+                profileImageUrl = user.profileImageUrl,
+                jobList = user.userJobList.map {
+                    SpecificationsDto.JobInfoDto(
+                        id = it.id,
+                        job = it.job.name
+                    )
+                }.toMutableSet(),
+                domainList = user.userDomainList.map {
+                    SpecificationsDto.DomainInfoDto(
+                        id = it.id,
+                        domain = it.domain.name
+                    )
+                }.toMutableSet(),
+                // FIXME: techStack 수정 필요
+                techStackList = user.userTechStackList.map {
+                    SpecificationsDto.TechStackInfoDto(
+                        id = it.id,
+                        techStack = it.techStack.name
+                    )
+                }.toMutableSet()
+            )
+        } catch (e: JpaSystemException) {
+            // 시스템 오류 처리
+            throw CustomSystemException("System error occurred while saving the project: ${e.message}")
+        } catch (e: Exception) {
+            // Bad Request
+            throw CustomBadRequestException("Bad Request: ${e.message}")
+        }
     }
 
     private fun setTokenCookiesAndReturnRefresh(user: UserEntity, response: HttpServletResponse): String {
@@ -258,5 +277,10 @@ class UserService(
         return refreshToken
     }
 
+//    private fun getUserIdFromAccessToken(request: HttpServletRequest): Long {
+//        val accessJws: String? = request.getHeader("Access-Token")
+//        val userId = jwtToken.getUserIdFromAccessToken(accessJws!!)
+//        return userId.toLong()
+//    }
 
 }

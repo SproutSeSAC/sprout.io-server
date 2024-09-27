@@ -14,7 +14,8 @@ class StoreProjectionDto{
         val breakTime: String,
         val holiday: String,
         val isZeropay: Boolean,
-        val walkTime: Int,
+        val isWalkTime: Boolean,
+        val isOverPerson: Boolean,
         val storeImageList: List<StoreImageDto>,
         val storeMenuList: List<StoreMenuDto>
     )

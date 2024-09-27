@@ -5,8 +5,6 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import io.sprout.api.config.properties.JwtPropertiesConfig
 import io.sprout.api.user.repository.UserRepository
-import io.sprout.api.user.service.UserService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -15,7 +13,6 @@ import javax.crypto.SecretKey
 @Service
 class JwtToken(
     private val jwtPropertiesConfig: JwtPropertiesConfig,
-//    private val userService: UserService,
     private val userRepository: UserRepository
 ) {
     // 비밀 키 생성 (여기선 256비트 HMAC 키를 생성)
