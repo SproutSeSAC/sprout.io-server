@@ -4,6 +4,7 @@ import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.entities.FoodType
 import io.sprout.api.store.service.StoreService
 import io.swagger.v3.oas.annotations.Operation
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -16,16 +17,16 @@ class StoreController(
 ) {
 
     @GetMapping("/list")
-    @Operation(summary = "맛집 리스트 조회", description = "맛집 리스트 조회")
+    @Operation(summary = "맛집 리스트 조회", description = "맛집 리스트 조회, 필터 체크되는 경우만 true, 아닐 경우 false")
     fun getStoreList(
         @RequestParam isZeropay: Boolean,
         @RequestParam underPrice: Boolean,
         @RequestParam overFivePerson: Boolean,
         @RequestParam walkTimeWithinFiveMinutes: Boolean,
-        @RequestParam foodTypeList: List<FoodType> = mutableListOf(),
+        @RequestParam foodTypeList: MutableSet<FoodType> = LinkedHashSet(),
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int
-    ): StoreDto.StoreListResponse {
+    ): ResponseEntity<Map<String, Any?>> {
 
         val pageIndex = page - 1
         val filterRequest = StoreDto.StoreListRequest(
@@ -38,7 +39,26 @@ class StoreController(
             size
         )
 
-        return storeService.getStoreList(filterRequest)
+        val (storeList, totalCount) = storeService.getStoreList(filterRequest)
+
+        val totalPages = if (totalCount % size == 0L) {
+            totalCount / size
+        } else {
+            totalCount / size + 1
+        }
+
+        val nextPage = if (page < totalPages) page + 1 else null
+
+        val responseBody = mapOf(
+            "storeList" to storeList,
+            "totalCount" to totalCount,
+            "currentPage" to page,  // 프론트에서 보낸 페이지 번호 반환 (1부터 시작)
+            "pageSize" to size,
+            "totalPages" to totalPages,  // 총 페이지 수
+            "nextPage" to nextPage  // 다음 페이지 (마지막 페이지일 경우 null)
+        )
+
+        return ResponseEntity.ok(responseBody)
     }
 
 //    @GetMapping("filterCount")

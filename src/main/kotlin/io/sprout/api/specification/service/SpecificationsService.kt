@@ -18,7 +18,7 @@ class SpecificationsService(
         val response = jobList.map { job ->
             SpecificationsDto.JobInfoDto(
                 id = job.id,
-                job = job.jobType.name
+                job = job.name
             )
         }
 
@@ -32,7 +32,7 @@ class SpecificationsService(
         val response = domainList.map { domain ->
             SpecificationsDto.DomainInfoDto(
                 id = domain.id,
-                domain = domain.domainType.name
+                domain = domain.name
             )
         }
 

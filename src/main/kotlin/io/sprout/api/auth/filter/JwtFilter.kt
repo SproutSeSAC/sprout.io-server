@@ -86,6 +86,7 @@ class JwtFilter(
         if (tokenValidatorService.isInvalidAccessToken(accessJws, response)) return
         /**
          *  필수정부 입력회원 아닐시 304호출
+         *  필수정보 입력하는 경우에는 해당 필터 적용 안된도록 수정하겠음 ()
          */
         if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) return
         securityManager.setUpSecurityContext(accessJws, request)
