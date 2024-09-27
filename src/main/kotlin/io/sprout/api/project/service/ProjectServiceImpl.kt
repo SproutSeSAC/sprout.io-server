@@ -64,6 +64,10 @@ class ProjectServiceImpl(
     }
 
     override fun getFilteredProjects(filterRequest: ProjectFilterRequest): Pair<List<ProjectResponseDto>, Long> {
+        println("page:"+ filterRequest.page)
+        val validPage = if (filterRequest.page < 1) 1 else filterRequest.page
+        val validSize = if (filterRequest.size <= 0) 20 else filterRequest.size
+        val updatedFilterRequest = filterRequest.copy(page = validPage, size = validSize)
         return projectRepository.filterProjects(filterRequest, securityManager.getAuthenticatedUserName()!!)
     }
 
