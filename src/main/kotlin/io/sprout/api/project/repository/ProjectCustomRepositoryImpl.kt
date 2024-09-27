@@ -20,58 +20,133 @@ class ProjectCustomRepositoryImpl(
         filterRequest: ProjectFilterRequest,
         userId: Long
     ): Pair<List<ProjectResponseDto>, Long> {
+        val builder = createFilterBuilder(filterRequest, userId)
+
+        // 스크랩 여부에 따라 조인
+        val totalCount = fetchTotalCount(builder, userId, filterRequest)
+        val projectIds = fetchProjectIds(filterRequest, builder)
+        val projects = fetchProjectDetails(filterRequest, projectIds, userId)
+
+        val distinctProjects = projects
+            .distinctBy { it.id }
+            .map { it.toDistinct() }
+
+        return Pair(distinctProjects, totalCount)
+    }
+
+    private fun createFilterBuilder(
+        filterRequest: ProjectFilterRequest,
+        userId: Long
+    ): BooleanBuilder {
+        val builder = BooleanBuilder()
+        val projectEntity = QProjectEntity.projectEntity
+        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+
+        filterRequest.techStack?.let {
+            builder.and(projectEntity.techStacks.any().techStack.id.`in`(it))
+        }
+
+        filterRequest.position?.let {
+            builder.and(projectEntity.positions.any().id.`in`(it))
+        }
+
+        filterRequest.meetingType?.let {
+            builder.and(projectEntity.meetingType.eq(MeetingType.valueOf(it.uppercase())))
+        }
+
+        filterRequest.pType?.let {
+            builder.and(projectEntity.pType.eq(it))
+        }
+
+        if (filterRequest.onlyScraped) {
+            builder.and(scrapedProjectEntity.user.id.eq(userId))
+        }
+
+        filterRequest.keyWord?.let {
+            builder.and(projectEntity.title.containsIgnoreCase(it)) // 대소문자 구분 없이 title 필터링
+        }
+
+        return builder
+    }
+
+    private fun fetchTotalCount(
+        builder: BooleanBuilder,
+        userId: Long,
+        filterRequest: ProjectFilterRequest
+    ): Long {
+        val projectEntity = QProjectEntity.projectEntity
+        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+
+        val query = queryFactory
+            .select(projectEntity.count())
+            .from(projectEntity)
+
+        // 스크랩 필터링이 있는 경우에만 조인
+        if (filterRequest.onlyScraped) {
+            query.leftJoin(scrapedProjectEntity).on(scrapedProjectEntity.project.id.eq(projectEntity.id))
+        }
+
+        return query
+            .where(builder)
+            .fetchOne() ?: 0L
+    }
+
+    private fun fetchProjectIds(
+        filterRequest: ProjectFilterRequest,
+        builder: BooleanBuilder
+    ): List<Long> {
+        val projectEntity = QProjectEntity.projectEntity
+        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+
+        val orderSpecifier = when (filterRequest.sort) {
+            "popularity" -> projectEntity.viewCount.desc()
+            else -> projectEntity.id.desc()
+        }
+
+        return queryFactory
+            .select(projectEntity.id)
+            .from(projectEntity)
+            .apply {
+                if (filterRequest.onlyScraped) {
+                    leftJoin(scrapedProjectEntity).on(scrapedProjectEntity.project.id.eq(projectEntity.id))
+                }
+            }
+            .where(builder)
+            .orderBy(orderSpecifier)
+            .limit(filterRequest.size.toLong())
+            .offset((filterRequest.page - 1).toLong() * filterRequest.size.toLong())
+            .fetch()
+    }
+
+    private fun fetchProjectDetails(
+        filterRequest: ProjectFilterRequest,
+        projectIds: List<Long>,
+        userId: Long
+    ): List<ProjectResponseDto> {
         val projectEntity = QProjectEntity.projectEntity
         val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
         val positionEntity = QPositionEntity.positionEntity
         val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
         val projectTechStackEntity = QProjectTechStackEntity.projectTechStackEntity
         val techStackEntity = QTechStackEntity.techStackEntity
-        val builder = BooleanBuilder()
 
-        // 기술 스택 필터링
-        if (!filterRequest.techStack.isNullOrEmpty()) {
-            builder.and(projectEntity.techStacks.any().techStack.id.`in`(filterRequest.techStack))
+        val orderSpecifier = if (filterRequest.sort == "popularity") {
+            projectEntity.viewCount.desc()
+        } else {
+            projectEntity.id.desc()
         }
 
-        // 포지션 필터링
-        if (!filterRequest.position.isNullOrEmpty()) {
-            builder.and(projectEntity.positions.any().id.`in`(filterRequest.position))
-        }
-
-        // 진행 방식 필터링
-        if (!filterRequest.meetingType.isNullOrEmpty()) {
-            builder.and(projectEntity.meetingType.eq(MeetingType.valueOf(filterRequest.meetingType.uppercase())))
-        }
-
-        // 총 갯수 계산 (조인 없이 필터 조건에 맞는 프로젝트의 전체 개수만 계산)
-        val totalCount = queryFactory
-            .select(projectEntity.count())
+        return queryFactory
             .from(projectEntity)
-            .where(builder)
-            .fetchOne()
-
-        val projectIds = queryFactory
-            .select(projectEntity.id)
-            .from(projectEntity)
-            .where(builder)
-            .orderBy(projectEntity.id.desc())
-            .limit(filterRequest.size.toLong())
-            .offset((filterRequest.page * filterRequest.size).toLong())
-            .fetch()
-
-
-        // 프로젝트와 포지션 정보를 가져오기
-        val projects = queryFactory
-            .from(projectEntity)
-            .leftJoin(projectEntity.techStacks, projectTechStackEntity) // Join project tech stacks
+            .leftJoin(projectEntity.techStacks, projectTechStackEntity)
             .leftJoin(projectTechStackEntity.techStack, techStackEntity)
             .leftJoin(projectEntity.positions, projectPositionEntity)
             .leftJoin(projectPositionEntity.position, positionEntity)
             .leftJoin(scrapedProjectEntity)
-            .where(projectEntity.id.`in`(projectIds))
             .on(scrapedProjectEntity.project.id.eq(projectEntity.id)
-                .and(scrapedProjectEntity.user.id.eq(userId))) // 스크랩 여부 필터링// 첫 번째 쿼리에서 가져온 ID 목록을 사용
-            .orderBy(projectEntity.id.desc())
+                .and(scrapedProjectEntity.user.id.eq(userId)))
+            .where(projectEntity.id.`in`(projectIds))
+            .orderBy(orderSpecifier)
             .transform(
                 GroupBy.groupBy(projectEntity.id).list(
                     Projections.constructor(
@@ -87,17 +162,10 @@ class ProjectCustomRepositoryImpl(
                         projectEntity.pType.stringValue(),
                         GroupBy.list(projectPositionEntity.position.name),
                         GroupBy.list(projectTechStackEntity.techStack.name),
-                        scrapedProjectEntity.id.isNotNull,// 포지션 이름을 리스트로 묶음
+                        scrapedProjectEntity.id.isNotNull,
                         projectEntity.viewCount
                     )
                 )
             )
-
-
-        val distinctProjects = projects.map { it.toDistinct() }
-
-        return Pair(distinctProjects, totalCount ?: 0L)
     }
 }
-
-
