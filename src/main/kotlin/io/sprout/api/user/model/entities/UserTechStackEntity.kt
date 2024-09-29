@@ -1,7 +1,7 @@
 package io.sprout.api.user.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
-import io.sprout.api.techStack.model.entities.TechStackEntity
+import io.sprout.api.specification.model.entities.TechStackEntity
 import jakarta.persistence.*
 
 @Entity

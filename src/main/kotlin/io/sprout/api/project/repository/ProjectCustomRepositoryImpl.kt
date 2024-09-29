@@ -8,7 +8,7 @@ import io.sprout.api.position.model.entities.QPositionEntity
 import io.sprout.api.project.model.dto.ProjectFilterRequest
 import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.project.model.entities.*
-import io.sprout.api.techStack.model.entities.QTechStackEntity
+import io.sprout.api.specification.model.entities.QTechStackEntity
 import org.springframework.stereotype.Repository
 
 @Repository

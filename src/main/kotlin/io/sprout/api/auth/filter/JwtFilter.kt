@@ -50,7 +50,8 @@ class JwtFilter(
             "/api/course/list/**",
             "/api/campus/list",
             "/api/specifications/**",
-            "/api/user"
+            "/api/user/check",
+            "/api/user/register"
         )
         val path = request.requestURI
         logger.info ( "Request Path: $path" )

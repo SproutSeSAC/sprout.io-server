@@ -44,6 +44,9 @@ class SpecificationsDto {
         val id: Long,
 
         @Schema(description = "이름", nullable = false)
-        val techStack: String
+        val techStack: String,
+
+        @Schema(description = "기술스택 아이콘 url", nullable = false)
+        val iconImageUrl: String
     )
 }

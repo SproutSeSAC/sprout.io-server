@@ -41,7 +41,11 @@ class ProjectEntity(
     val recruitmentEnd: LocalDate,
 
     @Column(nullable = false)
-    var viewCount: Int = 0 ,
+    var viewCount: Int = 0,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "project_status", nullable = false)
+    val projectStatus: ProjectStatus,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "meeting_type", nullable = false)
@@ -74,4 +78,10 @@ enum class ContactMethod {
     EMAIL,
     PHONE,
     MESSENGER
+}
+
+enum class ProjectStatus {
+    ACTIVE, // 모집 중
+    INACTIVE, // 중지
+    END // 마감
 }

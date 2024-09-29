@@ -55,12 +55,6 @@ class UserDto {
         @field:NotNull val marketingConsent: Boolean
     )
 
-    @Schema(description = "계정 탈퇴 request")
-    data class DeleteUserRequest(
-        @Schema(description = "유저 아이디", nullable = false)
-        @field:NotNull val userId: Long
-    )
-
     @Schema(description = "계정 수정 request")
     data class UpdateUserRequest(
         @Schema(description = "프로필 사진 url 임시", nullable = true)

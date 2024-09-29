@@ -1,6 +1,5 @@
 package io.sprout.api.specification.model.entities
 
-import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.user.model.entities.UserJobEntity
 import jakarta.persistence.*
 
