@@ -20,7 +20,7 @@ class CourseEntity(
     @Column(name = "end_date", nullable = false)
     var endDate: LocalDateTime, // 코스 수료일
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     var campus: CampusEntity?
 
 ) {

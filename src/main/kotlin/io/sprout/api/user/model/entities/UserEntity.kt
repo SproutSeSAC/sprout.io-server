@@ -59,6 +59,10 @@ class UserEntity(
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userTechStackList: MutableSet<UserTechStackEntity> = LinkedHashSet()
 
+    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
+    var googleToken: GoogleTokenEntity? = null
+
+
     fun addRefreshToken(refreshToken: String){
         this.refreshToken = refreshToken
     }

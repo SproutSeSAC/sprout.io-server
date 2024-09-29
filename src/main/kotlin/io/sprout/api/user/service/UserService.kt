@@ -20,6 +20,7 @@ import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -38,7 +39,7 @@ class UserService(
 ) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
-    fun checkAndJoinUser(email: String, response: HttpServletResponse) {
+    fun checkAndJoinUser(email: String, response: HttpServletResponse): UserEntity {
         val user = userRepository.findByEmail(email)
         val temporaryCourse = courseRepository.findCourseById(1) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
         val newNick = NicknameGenerator.generate()
@@ -71,7 +72,7 @@ class UserService(
         savedUser.addRefreshToken(refreshToken)
 
         // 변경 사항 저장
-        userRepository.save(savedUser)
+        return userRepository.save(savedUser)
 
     }
 

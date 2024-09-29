@@ -3,6 +3,7 @@ package io.sprout.api.config
 import io.sprout.api.auth.filter.JwtFilter
 import io.sprout.api.auth.security.handler.CustomAuthenticationFailureHandler
 import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
+import io.sprout.api.auth.security.manager.CustomAuthorizationRequestResolver
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -15,7 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 class SecurityConfig(
     private val customAuthenticationSuccessHandler: CustomAuthenticationSuccessHandler,
-    private val customAuthenticationFailureHandler: CustomAuthenticationFailureHandler
+    private val customAuthenticationFailureHandler: CustomAuthenticationFailureHandler,
+    private val customAuthorizationRequestResolver: CustomAuthorizationRequestResolver,
 ) {
 
     private val whiteList = arrayOf("/api/**")
@@ -33,7 +35,10 @@ class SecurityConfig(
         http.sessionManagement {
             it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
-        http.oauth2Login {
+        http.oauth2Login { it ->
+            it.authorizationEndpoint {
+                it.authorizationRequestResolver(customAuthorizationRequestResolver)
+            }
             it.successHandler(customAuthenticationSuccessHandler)
             it.failureHandler(customAuthenticationFailureHandler)
         }
