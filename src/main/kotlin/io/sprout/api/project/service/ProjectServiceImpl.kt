@@ -17,6 +17,7 @@ import io.sprout.api.project.repository.ProjectTechStackRepository
 import io.sprout.api.project.repository.ScrapedProjectRepository
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
+import io.sprout.api.user.service.GoogleUserService
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
