@@ -1,9 +1,6 @@
 package io.sprout.api.project.model.dto
 
-import io.sprout.api.project.model.entities.ContactMethod
-import io.sprout.api.project.model.entities.MeetingType
-import io.sprout.api.project.model.entities.PType
-import io.sprout.api.project.model.entities.ProjectEntity
+import io.sprout.api.project.model.entities.*
 import io.sprout.api.user.model.entities.UserEntity
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -36,6 +33,7 @@ data class ProjectRecruitmentRequestDto(
             recruitmentCount = this.recruitmentCount,
             meetingType = MeetingType.valueOf(this.meetingType.uppercase()),
             contactMethod = ContactMethod.valueOf(this.contactMethod.uppercase()),
+            projectStatus = ProjectStatus.ACTIVE
         )
     }
 }

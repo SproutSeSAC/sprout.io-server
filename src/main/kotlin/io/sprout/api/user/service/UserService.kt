@@ -12,7 +12,7 @@ import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
-import io.sprout.api.techStack.repository.TechStackRepository
+import io.sprout.api.specification.repository.TechStackRepository
 import io.sprout.api.user.model.dto.UserDto
 import io.sprout.api.user.model.entities.*
 import io.sprout.api.user.repository.UserDomainRepository
@@ -21,6 +21,7 @@ import io.sprout.api.user.repository.UserRepository
 import io.sprout.api.user.repository.UserTechStackRepository
 import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
@@ -81,12 +82,16 @@ class UserService(
     }
 
     @Transactional
-    fun createUser(request: UserDto.CreateUserRequest, response: HttpServletResponse): String {
+    fun createUser(
+        request: UserDto.CreateUserRequest,
+        httpServletRequest: HttpServletRequest,
+        response: HttpServletResponse
+    ): String {
         try {
-            val userId = securityManager.getAuthenticatedUserName()!!
-            val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
+            val userId = getUserIdFromAccessToken(httpServletRequest)
+            val user = userRepository.findById(userId).orElseThrow { CustomBadRequestException("Not found user") }
             val course =
-                courseRepository.findCourseById(request.courseId) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
+                courseRepository.findCourseById(request.courseId) ?: throw CustomBadRequestException("Not found course")
             val allDomainList = domainRepository.findAll()
             val allJobList = jobRepository.findAll()
             val allTechStackList = techStackRepository.findAll()
@@ -129,11 +134,11 @@ class UserService(
 
             } else {
                 // 이미 회원 가입이 완료된 경우
-                throw BaseException(ExceptionCode.ALREADY_REGISTERED_USER)
+                throw CustomDataIntegrityViolationException("Already registered user")
             }
 
             userRepository.save(user)
-            log.debug("createUser, userId is: ${user.id}")
+            log.debug("createUser, userId is: {}", user.id)
 
             return user.refreshToken!!
 
@@ -150,24 +155,24 @@ class UserService(
     }
 
     @Transactional
-    fun deleteUser(request: UserDto.DeleteUserRequest) {
-        val userId = securityManager.getAuthenticatedUserName()!!
-        val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
+    fun deleteUser() {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Check reissued access token")
+        val user = userRepository.findById(userId).orElseThrow { CustomBadRequestException("Not found user") }
         user.status = UserStatus.LEAVE
         user.refreshToken = ""
 
         try {
             userRepository.save(user)
             log.debug("deleteUser, userId is: ${user.id}")
-        } catch (e: Exception) {
-            throw BaseException(ExceptionCode.DELETE_FAIL)
+        } catch (e: JpaSystemException) {
+            throw CustomSystemException("System error occurred while deleting user: ${e.message}")
         }
     }
 
     @Transactional
     fun updateUser(request: UserDto.UpdateUserRequest) {
-        val userId = securityManager.getAuthenticatedUserName()!!
-        val user = userRepository.findById(userId).orElseThrow { BaseException(ExceptionCode.NOT_FOUND_MEMBER) }
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Check reissued access token")
+        val user = userRepository.findById(userId).orElseThrow { CustomBadRequestException("Not found user") }
 
         if (user.status == UserStatus.LEAVE || user.status == UserStatus.SLEEP) {
             throw BaseException(ExceptionCode.UPDATE_FAIL)
@@ -225,16 +230,19 @@ class UserService(
 
         try {
             userRepository.save(user)
-        } catch (e: Exception) {
-            throw BaseException(ExceptionCode.UPDATE_FAIL)
+            log.debug("updateUser, userId is: ${user.id}")
+        } catch (e: JpaSystemException) {
+            throw CustomSystemException("System error occurred while updating user: ${e.message}")
         }
     }
 
-    fun getUserInfo(): UserDto.GetUserResponse {
+    fun getUserInfo(request: HttpServletRequest): UserDto.GetUserResponse {
         try {
-            val user = userRepository.findUserById(0L)
+            val userId = getUserIdFromAccessToken(request)
+            val user = userRepository.findUserById(userId) ?: throw CustomBadRequestException("Not found user")
+
             return UserDto.GetUserResponse(
-                name = user!!.name,
+                name = user.name,
                 nickname = user.nickname,
                 profileImageUrl = user.profileImageUrl,
                 jobList = user.userJobList.map {
@@ -253,21 +261,21 @@ class UserService(
                 techStackList = user.userTechStackList.map {
                     SpecificationsDto.TechStackInfoDto(
                         id = it.id,
-                        techStack = it.techStack.name
+                        techStack = it.techStack.name,
+                        iconImageUrl = it.techStack.path ?: ""
                     )
                 }.toMutableSet()
             )
         } catch (e: JpaSystemException) {
-            // 시스템 오류 처리
             throw CustomSystemException("System error occurred while saving the project: ${e.message}")
         } catch (e: Exception) {
             // Bad Request
-            throw CustomBadRequestException("Bad Request: ${e.message}")
+            throw CustomBadRequestException("Authorization error: ${e.message}")
         }
     }
 
     private fun setTokenCookiesAndReturnRefresh(user: UserEntity, response: HttpServletResponse): String {
-        val userId = user.id as Long
+        val userId = user.id
         val accessToken = jwtToken.createAccessTokenFromMemberId(userId, user.isEssential)
         val refreshToken = jwtToken.createRefreshToken(userId)
         val accessCookie = CookieUtils.createCookie("access_token", accessToken)
@@ -277,10 +285,10 @@ class UserService(
         return refreshToken
     }
 
-//    private fun getUserIdFromAccessToken(request: HttpServletRequest): Long {
-//        val accessJws: String? = request.getHeader("Access-Token")
-//        val userId = jwtToken.getUserIdFromAccessToken(accessJws!!)
-//        return userId.toLong()
-//    }
+    private fun getUserIdFromAccessToken(request: HttpServletRequest): Long {
+        val accessJws: String? = request.getHeader("Access-Token")
+        val userId = jwtToken.getUserIdFromAccessToken(accessJws!!)
+        return userId.toLong()
+    }
 
 }

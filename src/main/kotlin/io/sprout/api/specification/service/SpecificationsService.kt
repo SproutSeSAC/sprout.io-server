@@ -3,7 +3,7 @@ package io.sprout.api.specification.service
 import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
-import io.sprout.api.techStack.repository.TechStackRepository
+import io.sprout.api.specification.repository.TechStackRepository
 import org.springframework.stereotype.Service
 
 @Service
@@ -46,7 +46,8 @@ class SpecificationsService(
         val response = techStackList.map { techStack ->
             SpecificationsDto.TechStackInfoDto(
                 id = techStack.id,
-                techStack = techStack.name
+                techStack = techStack.name,
+                iconImageUrl = techStack.path ?: ""
             )
         }
 
