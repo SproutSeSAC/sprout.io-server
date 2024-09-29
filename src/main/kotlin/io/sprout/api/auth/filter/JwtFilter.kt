@@ -91,7 +91,7 @@ class JwtFilter(
          */
         if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) return
         securityManager.setUpSecurityContext(accessJws, request)
-
+        println("여기")
         filterChain.doFilter(request, response)
     }
 
