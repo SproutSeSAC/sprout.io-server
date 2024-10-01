@@ -4,11 +4,15 @@ import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
+import io.sprout.api.common.exeption.custom.CustomUnexpectedException
 import io.sprout.api.position.model.entities.QPositionEntity
+import io.sprout.api.project.model.dto.ProjectCommentResponseDto
+import io.sprout.api.project.model.dto.ProjectDetailResponseDto
 import io.sprout.api.project.model.dto.ProjectFilterRequest
 import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.project.model.entities.*
 import io.sprout.api.specification.model.entities.QTechStackEntity
+import io.sprout.api.user.model.entities.QUserEntity
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -32,6 +36,53 @@ class ProjectCustomRepositoryImpl(
             .map { it.toDistinct() }
 
         return Pair(distinctProjects, totalCount)
+    }
+
+    override fun findProjectDetailById(id: Long): ProjectDetailResponseDto? {
+        val projectEntity = QProjectEntity.projectEntity
+        val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
+        val positionEntity = QPositionEntity.positionEntity
+        val projectTechStackEntity = QProjectTechStackEntity.projectTechStackEntity
+        val techStackEntity = QTechStackEntity.techStackEntity
+        val userEntity = QUserEntity.userEntity
+        val project = queryFactory
+            .selectFrom(projectEntity)
+            .leftJoin(projectEntity.writer, userEntity).fetchJoin()
+            .leftJoin(projectEntity.positions, projectPositionEntity).fetchJoin()
+            .leftJoin(projectPositionEntity.position, positionEntity).fetchJoin()
+            .where(projectEntity.id.eq(id))
+            .fetchOne()
+
+        // 프로젝트가 없으면 null 반환
+        project ?: return null
+
+        // 엔티티를 DTO로 변환
+        return project.toDto()
+    }
+
+    override fun getCommentsByProjectId(projectId: Long): List<ProjectCommentResponseDto> {
+        val projectComment = QProjectCommentEntity.projectCommentEntity
+        val user = QUserEntity.userEntity
+        val project = QProjectEntity.projectEntity
+
+        // QueryDSL을 사용하여 ProjectCommentResponseDto 리스트를 가져오는 쿼리
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    ProjectCommentResponseDto::class.java,
+                    projectComment.id,
+                    projectComment.content,
+                    projectComment.createdAt,
+                    user.nickname, // 닉네임
+                    project.id
+                )
+            )
+            .from(projectComment)
+            .leftJoin(projectComment.writer, user) // 작성자와 조인
+            .leftJoin(projectComment.project, project) // 프로젝트와 조인
+            .where(project.id.eq(projectId)) // 프로젝트 ID 필터링
+            .orderBy(projectComment.createdAt.asc()) // 생성일자 오름차순 정렬
+            .fetch()
     }
 
     private fun createFilterBuilder(
@@ -143,8 +194,10 @@ class ProjectCustomRepositoryImpl(
             .leftJoin(projectEntity.positions, projectPositionEntity)
             .leftJoin(projectPositionEntity.position, positionEntity)
             .leftJoin(scrapedProjectEntity)
-            .on(scrapedProjectEntity.project.id.eq(projectEntity.id)
-                .and(scrapedProjectEntity.user.id.eq(userId)))
+            .on(
+                scrapedProjectEntity.project.id.eq(projectEntity.id)
+                    .and(scrapedProjectEntity.user.id.eq(userId))
+            )
             .where(projectEntity.id.`in`(projectIds))
             .orderBy(orderSpecifier)
             .transform(
