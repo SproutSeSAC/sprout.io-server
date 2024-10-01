@@ -26,7 +26,7 @@ class UserEntity(
     @Column(nullable = false, length = 10)
     var status: UserStatus, // 유저 상태
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     var course: CourseEntity,
 
     @Column(name = "is_essential")
@@ -59,8 +59,6 @@ class UserEntity(
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userTechStackList: MutableSet<UserTechStackEntity> = LinkedHashSet()
 
-    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
-    var googleToken: GoogleTokenEntity? = null
 
 
     fun addRefreshToken(refreshToken: String){

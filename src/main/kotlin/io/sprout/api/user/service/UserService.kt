@@ -47,7 +47,7 @@ class UserService(
 
     fun checkAndJoinUser(email: String, response: HttpServletResponse): UserEntity {
         val user = userRepository.findByEmail(email)
-        val temporaryCourse = courseRepository.findCourseById(99) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
+        val temporaryCourse = courseRepository.findCourseById(1) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
         val newNick = NicknameGenerator.generate()
         val savedUser: UserEntity
         if (user == null) {
@@ -263,7 +263,8 @@ class UserService(
                     SpecificationsDto.TechStackInfoDto(
                         id = it.id,
                         techStack = it.techStack.name,
-                        iconImageUrl = it.techStack.path ?: ""
+                        iconImageUrl = it.techStack.path ?: "",
+                        jobId = it.techStack.jobId ?: 1
                     )
                 }.toMutableSet()
             )

@@ -5,16 +5,12 @@ import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationExceptio
 import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
 import io.sprout.api.position.model.entities.PositionEntity
-import io.sprout.api.project.model.dto.ProjectFilterRequest
-import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
-import io.sprout.api.project.model.dto.ProjectResponseDto
+import io.sprout.api.project.model.dto.*
+import io.sprout.api.project.model.entities.ProjectCommentEntity
 import io.sprout.api.project.model.entities.ProjectPositionEntity
 import io.sprout.api.project.model.entities.ProjectTechStackEntity
 import io.sprout.api.project.model.entities.ScrapedProjectEntity
-import io.sprout.api.project.repository.ProjectPositionRepository
-import io.sprout.api.project.repository.ProjectRepository
-import io.sprout.api.project.repository.ProjectTechStackRepository
-import io.sprout.api.project.repository.ScrapedProjectRepository
+import io.sprout.api.project.repository.*
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.service.GoogleUserService
@@ -29,6 +25,7 @@ class ProjectServiceImpl(
     private val projectPositionRepository: ProjectPositionRepository,
     private val projectTechStackRepository: ProjectTechStackRepository,
     private val scrapedProjectRepository: ScrapedProjectRepository,
+    private val projectCommentRepository: ProjectCommentRepository
 ) : ProjectService {
     override fun postProject(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean {
         try {
@@ -64,7 +61,7 @@ class ProjectServiceImpl(
     }
 
     override fun getFilteredProjects(filterRequest: ProjectFilterRequest): Pair<List<ProjectResponseDto>, Long> {
-        println("page:"+ filterRequest.page)
+        println("page:" + filterRequest.page)
         val validPage = if (filterRequest.page < 1) 1 else filterRequest.page
         val validSize = if (filterRequest.size <= 0) 20 else filterRequest.size
         val updatedFilterRequest = filterRequest.copy(page = validPage, size = validSize)
@@ -105,5 +102,57 @@ class ProjectServiceImpl(
         // 변경된 값 저장
         projectRepository.save(project)
         return true
+    }
+
+    override fun findProjectDetailById(projectId: Long): ProjectDetailResponseDto? {
+        return try {
+            val projectDetail = projectRepository.findProjectDetailById(projectId)
+            projectDetail ?: throw IllegalArgumentException("Project with ID $projectId not found")
+        } catch (e: IllegalArgumentException) {
+            throw CustomUnexpectedException("Error occurred while fetching project details: ${e.message}")
+        } catch (e: JpaSystemException) {
+            throw CustomSystemException("Database system error occurred while fetching project details: ${e.message}")
+        } catch (e: Exception) {
+            throw CustomUnexpectedException("An unexpected error occurred: ${e.message}")
+        }
+    }
+
+    override fun getCommentsByProjectId(projectId: Long): List<ProjectCommentResponseDto> {
+        // 댓글을 생성일자(createdAt) 기준으로 오름차순으로 정렬하여 가져옴
+        return projectRepository.getCommentsByProjectId(projectId)
+    }
+
+    override fun postComment(projectId: Long, content: String): Boolean {
+        return try {
+            // 인증된 사용자의 정보를 가져옴
+            val writer = UserEntity(securityManager.getAuthenticatedUserName()!!)
+
+            // 프로젝트 존재 여부 확인 및 예외 처리
+            val project = projectRepository.findById(projectId)
+                .orElseThrow { IllegalArgumentException("Invalid project ID: $projectId") }
+
+            // 댓글 엔티티 생성
+            val comment = ProjectCommentEntity(
+                content = content,
+                writer = writer,
+                project = project
+            )
+
+            // 댓글 저장
+            projectCommentRepository.save(comment)
+            true // 성공 시 true 반환
+        } catch (e: IllegalArgumentException) {
+            // 프로젝트 ID가 잘못되었을 때
+            throw CustomDataIntegrityViolationException("Invalid project ID: ${e.message}")
+        } catch (e: DataIntegrityViolationException) {
+            // 데이터 무결성 예외 (예: null 값 또는 데이터베이스 무결성 제약 조건 위반)
+            throw CustomDataIntegrityViolationException("Data integrity violation: ${e.message}")
+        } catch (e: JpaSystemException) {
+            // 시스템 오류 (예: 데이터베이스 시스템 관련 문제)
+            throw CustomSystemException("System error while saving comment: ${e.message}")
+        } catch (e: Exception) {
+            // 예상치 못한 오류
+            throw CustomUnexpectedException("Unexpected error occurred: ${e.message}")
+        }
     }
 }

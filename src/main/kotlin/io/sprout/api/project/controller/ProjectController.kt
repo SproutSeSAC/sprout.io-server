@@ -1,10 +1,11 @@
 package io.sprout.api.project.controller
 
-import io.sprout.api.project.model.dto.ProjectFilterRequest
-import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
+import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.PType
+import io.sprout.api.project.model.entities.ProjectCommentEntity
 import io.sprout.api.project.service.ProjectService
 import io.swagger.v3.oas.annotations.Operation
+import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -89,4 +90,46 @@ class ProjectController(
         return ResponseEntity.ok(result)
     }
 
+    @GetMapping("/{projectId}")
+    @Operation(
+        summary = "프로젝트 상세 조회 API", // 간단한 설명
+        description = "특정 프로젝트의 상세 정보를 조회하는 API입니다.", // 상세 설명
+    )
+    fun getProjectDetail(@PathVariable projectId: Long): ResponseEntity<ProjectDetailResponseDto?> {
+        val projectDetail = projectService.findProjectDetailById(projectId)
+        return if (projectDetail != null) {
+            ResponseEntity.ok(projectDetail)
+        } else {
+            ResponseEntity.notFound().build()
+        }
+    }
+
+    @GetMapping("/{projectId}/comment")
+    @Operation(
+        summary = "프로젝트 댓글 조회 API",
+        description = "특정 프로젝트에 달린 모든 댓글을 조회하는 API입니다."
+    )
+    fun getComments(@PathVariable projectId: Long): ResponseEntity<List<ProjectCommentResponseDto>> {
+        val comments = projectService.getCommentsByProjectId(projectId)
+        return ResponseEntity.ok(comments)
+    }
+
+
+    @PostMapping("/{projectId}/comment")
+    @Operation(
+        summary = "프로젝트 댓글 등록 API",
+        description = "특정 프로젝트에 댓글을 작성하는 API입니다."
+    )
+    fun postComment(
+        @PathVariable projectId: Long,
+        @RequestBody projectCommentRequestDto: ProjectCommentRequestDto
+    ): ResponseEntity<Boolean> {
+        println("content:${projectCommentRequestDto.content}")
+        val result = projectService.postComment(projectId,projectCommentRequestDto.content)
+        return if (result) {
+            ResponseEntity.ok(true)
+        } else {
+            ResponseEntity.badRequest().body(false)
+        }
+    }
 }

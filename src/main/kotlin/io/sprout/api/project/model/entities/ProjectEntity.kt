@@ -1,6 +1,7 @@
 package io.sprout.api.project.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.project.model.dto.ProjectDetailResponseDto
 import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
@@ -58,9 +59,31 @@ class ProjectEntity(
     val positions: List<ProjectPositionEntity> = listOf(),
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
-    val techStacks: List<ProjectTechStackEntity> = listOf()
+    val techStacks: List<ProjectTechStackEntity> = listOf(),
+
+    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val comments: List<ProjectCommentEntity> = listOf() // 댓글 리스트
 ) : BaseEntity() {
 
+    fun toDto(): ProjectDetailResponseDto {
+        return ProjectDetailResponseDto(
+            id = this.id,
+            title = this.title,
+            writerId = this.writer.id,
+            writerNickName = this.writer.nickname,
+            description = this.description,
+            pType = this.pType,
+            recruitmentCount = this.recruitmentCount,
+            contactMethod = this.contactMethod,
+            recruitmentStart = this.recruitmentStart,
+            recruitmentEnd = this.recruitmentEnd,
+            viewCount = this.viewCount,
+            projectStatus = this.projectStatus,
+            meetingType = this.meetingType,
+            createdAt =  this.createdAt,
+            positionNames = this.positions.map { it.position.name }, // Position의 name 필드로 가정
+        )
+    }
 }
 
 enum class PType {

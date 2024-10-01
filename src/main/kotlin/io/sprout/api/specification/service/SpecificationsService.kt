@@ -47,7 +47,8 @@ class SpecificationsService(
             SpecificationsDto.TechStackInfoDto(
                 id = techStack.id,
                 techStack = techStack.name,
-                iconImageUrl = techStack.path ?: ""
+                iconImageUrl = techStack.path ?: "",
+                jobId = techStack.jobId ?: 1,
             )
         }
 
