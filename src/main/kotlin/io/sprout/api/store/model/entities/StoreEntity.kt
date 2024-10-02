@@ -35,8 +35,8 @@ class StoreEntity(
     @Column(name = "is_zeropay", nullable = false)
     var isZeropay: Boolean, // 제로페이 사용가능 유무
 
-    @Column(name = "is_walk_time", nullable = false)
-    var isWalkTime: Boolean, // 도보 시간 5분 이내
+    @Column(name = "walk_time", nullable = false)
+    var walkTime: Int, // 도보 시간 5분 이내
 
     @Column(name = "is_over_person", nullable = false)
     var isOverPerson: Boolean, // 5인 이상 가능

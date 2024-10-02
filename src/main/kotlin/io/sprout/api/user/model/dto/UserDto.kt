@@ -4,6 +4,7 @@ import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.user.model.entities.RoleType
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
 
 class UserDto {
 
@@ -24,8 +25,14 @@ class UserDto {
         @Schema(description = "캠퍼스 명", nullable = false)
         val campusName: String,
 
-        @Schema(description = "담당 교육과정", nullable = false)
+        @Schema(description = "코스 명", nullable = false)
         val courseTitle: String,
+
+        @Schema(description = "코스 시작일", nullable = false)
+        val courseStartDate: LocalDate,
+
+        @Schema(description = "코스 수료일", nullable = false)
+        val courseEndDate: LocalDate,
 
         @Schema(description = "관심 직군 리스트")
         val jobList: MutableSet<SpecificationsDto.JobInfoDto>,

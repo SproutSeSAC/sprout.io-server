@@ -1,5 +1,6 @@
 package io.sprout.api.store.service
 
+import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.entities.FoodType
 import io.sprout.api.store.repository.StoreRepository
@@ -20,7 +21,7 @@ class StoreService(
                 storeImage = store.storeImageList.first().path ?: "",
                 workingDay = store.workingDay,
                 breakTime = store.breakTime,
-                walkTimeWithinFiveMinutes = store.isWalkTime,
+                walkTimeWithinFiveMinutes = store.walkTime <= 5,
                 overFivePerson = store.isOverPerson,
                 // TODO: 쿼리 결과에는 어짜피 제외되서 오기 때문에, 일단 request로 처리
                 underPrice = filterRequest.underPrice
@@ -32,13 +33,14 @@ class StoreService(
     }
 
     fun getFilterCount(): StoreDto.StoreFilterResponse {
+
         val storeList = storeRepository.findStoreFilterList()
 
         return StoreDto.StoreFilterResponse(
             zeropayCount = storeList.count { it.isZeropay },
             underPriceCount = storeList.map { it.storeMenuList.filter { menu -> menu.price!! <= 10000L } }.count(),
             overPersonCount = storeList.count { it.isOverPerson },
-            walkTimeCount = storeList.count { it.isWalkTime },
+            walkTimeCount = storeList.count { it.walkTime <= 5 },
             koreanFoodCount = storeList.count { it.foodType == FoodType.KOREAN },
             chineseFoodCount = storeList.count { it.foodType == FoodType.CHINESE },
             japanesesFoodCount = storeList.count { it.foodType == FoodType.JAPANESE },
@@ -47,4 +49,22 @@ class StoreService(
             snackCount = storeList.count { it.foodType == FoodType.SNACK }
         )
     }
+
+//    fun getStoreDetail(storeId: Long): StoreDto.StoreDetailResponse {
+//        val store = storeRepository.findById(storeId).orElseThrow { throw CustomBadRequestException("Not found store") }
+//
+//        return StoreDto.StoreDetailResponse(
+//            name = store.name,
+//            storeImage = ,
+//            breakTime = ,
+//            workingDay = ,
+//            phoneNumber = ,
+//            walkTimeWithinFiveMinutes = ,
+//            overFivePerson = ,
+//            underPrice = ,
+//            storeMenuList = ,
+//        )
+//
+//
+//    }
 }

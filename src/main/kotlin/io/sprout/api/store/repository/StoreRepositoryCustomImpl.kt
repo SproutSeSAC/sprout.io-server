@@ -71,7 +71,7 @@ class StoreRepositoryCustomImpl(
                         store.breakTime,
                         store.holiday,
                         store.isZeropay,
-                        store.isWalkTime,
+                        store.walkTime,
                         store.isOverPerson,
                         list(
                             Projections.constructor(
@@ -111,7 +111,7 @@ class StoreRepositoryCustomImpl(
                         store.name,
                         store.foodType,
                         store.isZeropay,
-                        store.isWalkTime,
+                        store.walkTime,
                         store.isOverPerson,
                         list(
                             Projections.constructor(
@@ -137,7 +137,7 @@ class StoreRepositoryCustomImpl(
 
     private fun searchInWalkTime(walkTimeWithinFiveMinutes: Boolean): BooleanExpression? {
         return if (walkTimeWithinFiveMinutes) {
-            QStoreEntity.storeEntity.isWalkTime.eq(true)
+            QStoreEntity.storeEntity.walkTime.loe(5)
         } else {
             null
         }

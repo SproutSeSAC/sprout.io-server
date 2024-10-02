@@ -67,10 +67,10 @@ class StoreDto {
         @Schema(description = "만원 이하 메뉴 키운트")
         val underPriceCount: Int,
 
-        @Schema(description = "5인 이상 가능 여부")
+        @Schema(description = "5인 이상 가능 여부 카운트")
         val overPersonCount: Int,
 
-        @Schema(description = "도보 시간 5분 이내 ")
+        @Schema(description = "도보 시간 5분 이내 카운트")
         val walkTimeCount: Int,
 
         val koreanFoodCount: Int,
@@ -85,6 +85,44 @@ class StoreDto {
 
         val snackCount: Int,
     )
+
+    @Schema(description = "")
+    data class StoreDetailResponse(
+        @Schema(description = "맛집 명")
+        val name: String,
+
+        @Schema(description = "맛집 대표 이미지")
+        val storeImage: String,
+
+        @Schema(description = "브레이크 시간")
+        val breakTime: String,
+
+        @Schema(description = "영업일 및 영업 시간")
+        val workingDay: String,
+
+        @Schema(description = "전화 번호")
+        val phoneNumber: String,
+
+        @Schema(description = "도보 시간 - 5분 이내 여부")
+        val walkTimeWithinFiveMinutes: Boolean,
+
+        @Schema(description = "5인 이상 가능 여부")
+        val overFivePerson: Boolean,
+
+        @Schema(description = "만원 이하 메뉴 여부")
+        val underPrice: Boolean,
+
+        @Schema(description = "메뉴 리스트")
+        val storeMenuList: MutableSet<StoreMenuDetail> = LinkedHashSet()
+    ) {
+
+        data class StoreMenuDetail(
+            val id: Long,
+            val name: String,
+            val price: Int,
+            val imageUrl: String
+        )
+    }
 
 
 }
