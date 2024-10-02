@@ -11,7 +11,7 @@ class SpecificationsDto {
 
     @Schema(description = "직군 조회 dto")
     data class JobInfoDto(
-        @Schema(description = "직군 Id", nullable = false)
+        @Schema(description = "직군 id", nullable = false)
         val id: Long,
 
         @Schema(description = "이름", nullable = false)
@@ -25,7 +25,7 @@ class SpecificationsDto {
 
     @Schema(description = "도메인 조회 dto")
     data class DomainInfoDto(
-        @Schema(description = "도메인 Id", nullable = false)
+        @Schema(description = "도메인 id", nullable = false)
         val id: Long,
 
         @Schema(description = "이름", nullable = false)
@@ -37,10 +37,9 @@ class SpecificationsDto {
         val techStackList: List<TechStackInfoDto>
     )
 
-    // 삭제 예정
     @Schema(description = "기술스택 조회 dto")
     data class TechStackInfoDto(
-        @Schema(description = "기술스택 Id", nullable = false)
+        @Schema(description = "기술스택 id", nullable = false)
         val id: Long,
 
         @Schema(description = "이름", nullable = false)
@@ -49,7 +48,7 @@ class SpecificationsDto {
         @Schema(description = "기술스택 아이콘 url", nullable = false)
         val iconImageUrl: String,
 
-        @Schema(description = "해당 직무 id", nullable = false)
-        val jobId: Long
+        @Schema(description = "그룹화된 직무명", nullable = false)
+        val jobName: String
     )
 }

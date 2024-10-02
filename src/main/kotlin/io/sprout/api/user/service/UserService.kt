@@ -26,7 +26,6 @@ import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
-import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -244,6 +243,9 @@ class UserService(
 
             return UserDto.GetUserResponse(
                 name = user.name,
+                email = user.email,
+                campusName = user.course.campus!!.name,
+                courseTitle = user.course.title,
                 nickname = user.nickname,
                 profileImageUrl = user.profileImageUrl,
                 jobList = user.userJobList.map {
@@ -258,13 +260,12 @@ class UserService(
                         domain = it.domain.name
                     )
                 }.toMutableSet(),
-                // FIXME: techStack 수정 필요
                 techStackList = user.userTechStackList.map {
                     SpecificationsDto.TechStackInfoDto(
                         id = it.id,
                         techStack = it.techStack.name,
                         iconImageUrl = it.techStack.path ?: "",
-                        jobId = it.techStack.jobId ?: 1
+                        jobName = it.techStack.jobName ?: ""
                     )
                 }.toMutableSet()
             )

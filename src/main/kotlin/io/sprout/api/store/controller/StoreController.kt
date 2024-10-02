@@ -61,9 +61,16 @@ class StoreController(
         return ResponseEntity.ok(responseBody)
     }
 
-//    @GetMapping("filterCount")
-//    fun getFilterCount(){
-//
+    @GetMapping("/filterCount")
+    @Operation(summary = "맛집 필터 카운트 조회", description = "맛집 필터 카운트 조회")
+    fun getFilterCount(): StoreDto.StoreFilterResponse {
+        return storeService.getFilterCount()
+    }
+
+//    @GetMapping("/{id}")
+//    @Operation(summary = "맛집 개별 조회", description = "맛집 개별 조회")
+//    fun getStoreDetail(@Param id: Long) {
+//        return storeService.getStoreDetail
 //    }
 
 }

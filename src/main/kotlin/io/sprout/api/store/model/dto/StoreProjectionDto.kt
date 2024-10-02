@@ -31,5 +31,15 @@ class StoreProjectionDto{
         val price: Int?
     )
 
+    data class StoreFilterDto(
+        val id: Long,
+        val name: String,
+        val foodType: FoodType,
+        val isZeropay: Boolean,
+        val isWalkTime: Boolean,
+        val isOverPerson: Boolean,
+        val storeMenuList: List<StoreMenuDto>
+    )
+
 
 }
