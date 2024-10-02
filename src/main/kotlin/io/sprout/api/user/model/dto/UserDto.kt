@@ -9,6 +9,9 @@ class UserDto {
 
     @Schema(description = "계정 정보 조회 response")
     data class GetUserResponse(
+        @Schema(description = "이메일", nullable = false)
+        val email: String,
+
         @Schema(description = "유저 명", nullable = true)
         val name: String?,
 
@@ -17,6 +20,12 @@ class UserDto {
 
         @Schema(description = "프로필 사진 url", nullable = false)
         val profileImageUrl: String?,
+
+        @Schema(description = "캠퍼스 명", nullable = false)
+        val campusName: String,
+
+        @Schema(description = "담당 교육과정", nullable = false)
+        val courseTitle: String,
 
         @Schema(description = "관심 직군 리스트")
         val jobList: MutableSet<SpecificationsDto.JobInfoDto>,

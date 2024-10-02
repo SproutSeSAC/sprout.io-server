@@ -22,8 +22,8 @@ class TechStackEntity(
     @Column(nullable = true, length = 500)
     var path: String? = null // 아이콘 이미지 경로
 
-    @Column(name = "job_id", nullable = false)
-    var jobId: Long? = null
+    @Column(name = "job_name", nullable = true)
+    var jobName: String? = null // 그룹화된 job 이름
 
     @OneToMany(mappedBy = "techStack", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userTechStackList: MutableSet<UserTechStackEntity> = LinkedHashSet()

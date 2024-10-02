@@ -47,6 +47,7 @@ class JwtFilter(
 
             // 테스트를 위한 임시 url
             "/api/store/list",
+            "/api/store/filterCount",
             "/api/course/list/**",
             "/api/campus/list",
             "/api/specifications/**",

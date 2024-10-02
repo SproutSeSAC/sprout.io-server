@@ -95,6 +95,37 @@ class StoreRepositoryCustomImpl(
         return Pair(result, totalCount.size.toLong())
     }
 
+    override fun findStoreFilterList(): List<StoreProjectionDto.StoreFilterDto> {
+        val store = QStoreEntity.storeEntity
+        val storeMenu = QStoreMenuEntity.storeMenuEntity
+
+        return jpaQueryFactory
+            .selectFrom(store)
+            .leftJoin(storeMenu).on(store.id.eq(storeMenu.store.id))
+            .distinct()
+            .transform(
+                groupBy(store.id).list(
+                    Projections.constructor(
+                        StoreProjectionDto.StoreFilterDto::class.java,
+                        store.id,
+                        store.name,
+                        store.foodType,
+                        store.isZeropay,
+                        store.isWalkTime,
+                        store.isOverPerson,
+                        list(
+                            Projections.constructor(
+                                StoreProjectionDto.StoreMenuDto::class.java,
+                                storeMenu.id,
+                                storeMenu.name,
+                                storeMenu.price
+                            )
+                        )
+                    )
+                )
+            )
+    }
+
     // Dynamic predicates
     private fun searchInZeropay(isZeropay: Boolean): BooleanExpression? {
         return if (isZeropay) {

@@ -48,7 +48,7 @@ class SpecificationsService(
                 id = techStack.id,
                 techStack = techStack.name,
                 iconImageUrl = techStack.path ?: "",
-                jobId = techStack.jobId ?: 1,
+                jobName = techStack.jobName ?: ""
             )
         }
 
