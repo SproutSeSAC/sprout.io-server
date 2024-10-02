@@ -21,4 +21,8 @@ class StoreMenuEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
+
+    @Column(name = "image_url", nullable = true, length = 500)
+    var imageUrl: String? = null // 메뉴 이미지 경로
+
 }

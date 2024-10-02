@@ -6,6 +6,7 @@ import io.sprout.api.store.service.StoreService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -16,13 +17,19 @@ class StoreController(
     private val storeService: StoreService
 ) {
 
+//    @GetMapping("/{storeId}")
+//    @Operation(summary = "맛집 개별 조회", description = "맛집 개별 조회")
+//    fun getStoreDetail(@PathVariable storeId: Long): StoreDto.StoreDetailResponse {
+//        return storeService.getStoreDetail(storeId)
+//    }
+
     @GetMapping("/list")
     @Operation(summary = "맛집 리스트 조회", description = "맛집 리스트 조회, 필터 체크되는 경우만 true, 아닐 경우 false")
     fun getStoreList(
-        @RequestParam isZeropay: Boolean,
-        @RequestParam underPrice: Boolean,
-        @RequestParam overFivePerson: Boolean,
-        @RequestParam walkTimeWithinFiveMinutes: Boolean,
+        @RequestParam(defaultValue = "false") isZeropay: Boolean,
+        @RequestParam(defaultValue = "false") underPrice: Boolean,
+        @RequestParam(defaultValue = "false") overFivePerson: Boolean,
+        @RequestParam(defaultValue = "false") walkTimeWithinFiveMinutes: Boolean,
         @RequestParam foodTypeList: MutableSet<FoodType> = LinkedHashSet(),
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int
@@ -66,11 +73,5 @@ class StoreController(
     fun getFilterCount(): StoreDto.StoreFilterResponse {
         return storeService.getFilterCount()
     }
-
-//    @GetMapping("/{id}")
-//    @Operation(summary = "맛집 개별 조회", description = "맛집 개별 조회")
-//    fun getStoreDetail(@Param id: Long) {
-//        return storeService.getStoreDetail
-//    }
 
 }

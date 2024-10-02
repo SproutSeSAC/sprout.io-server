@@ -27,7 +27,6 @@ class UserController(
     private val securityManager: SecurityManager
 ) {
 
-
     @GetMapping("/check")
     @Operation(summary = "계정 조회", description = "계정 조회")
     fun getUserInfo(request: HttpServletRequest): UserDto.GetUserResponse {

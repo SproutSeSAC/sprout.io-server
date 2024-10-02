@@ -246,6 +246,8 @@ class UserService(
                 email = user.email,
                 campusName = user.course.campus!!.name,
                 courseTitle = user.course.title,
+                courseStartDate = user.course.startDate,
+                courseEndDate = user.course.endDate,
                 nickname = user.nickname,
                 profileImageUrl = user.profileImageUrl,
                 jobList = user.userJobList.map {

@@ -3,6 +3,7 @@ package io.sprout.api.user.model.entities
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.course.model.entities.CourseEntity
 import jakarta.persistence.*
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
@@ -71,7 +72,7 @@ class UserEntity(
         profileImageUrl = null,
         role = RoleType.TRAINEE, // 기본 값 설정
         status = UserStatus.ACTIVE, // 기본 값 설정
-        course = CourseEntity("", LocalDateTime.now(),LocalDateTime.now(),null),
+        course = CourseEntity("", LocalDate.now(),LocalDate.now(),null),
         isEssential = false
     ) {
         this.id = id
