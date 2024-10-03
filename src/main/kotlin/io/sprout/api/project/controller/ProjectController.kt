@@ -2,10 +2,8 @@ package io.sprout.api.project.controller
 
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.PType
-import io.sprout.api.project.model.entities.ProjectCommentEntity
 import io.sprout.api.project.service.ProjectService
 import io.swagger.v3.oas.annotations.Operation
-import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -176,6 +174,16 @@ class ProjectController(
         } else {
             ResponseEntity.badRequest().body(false)
         }
+    }
+
+    @GetMapping("/ending-tomorrow")
+    @Operation(
+        summary = "하루 전 종료된 프로젝트 조회 API",
+        description = "하루 전 종료된 프로젝트들에 대해 projectId, content, userNickname을 조회하는 API입니다."
+    )
+    fun getProjectsEndingYesterday(): ResponseEntity<List<ProjectSimpleResponseDto>> {
+        val projects = projectService.getProjectsEndingTomorrow()
+        return ResponseEntity.ok(projects)
     }
 
 

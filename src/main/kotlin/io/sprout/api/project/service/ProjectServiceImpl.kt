@@ -13,10 +13,10 @@ import io.sprout.api.project.model.entities.ScrapedProjectEntity
 import io.sprout.api.project.repository.*
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
-import io.sprout.api.user.service.GoogleUserService
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
 class ProjectServiceImpl(
@@ -141,5 +141,10 @@ class ProjectServiceImpl(
 
             true
         }
+    }
+
+    override fun getProjectsEndingTomorrow(): List<ProjectSimpleResponseDto> {
+        val yesterday = LocalDate.now().plusDays(1)
+        return projectRepository.findProjectsEndingTommorowWithDetails(yesterday)
     }
 }
