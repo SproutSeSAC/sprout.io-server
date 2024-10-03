@@ -78,11 +78,12 @@ class LoginController(
      *  refresh 로 access 재생성
      */
     @GetMapping("/refresh")
-    fun refresh(@RequestHeader("Refresh-Token") refreshToken: String, response: HttpServletResponse): ResponseEntity<String> {
+    fun refresh(@RequestHeader("Refresh-Token") refreshToken: String, response: HttpServletResponse): ResponseEntity<Map<String,String>> {
         val newAccessToken=jwtToken.createAccessFromRefreshToken(refreshToken)
         val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
         response.addCookie(accessCookie)
-        return ResponseEntity.ok("success")
+        val map  = hashMapOf("access_token" to newAccessToken)
+        return ResponseEntity.ok(map)
     }
 
     @GetMapping("/test")
