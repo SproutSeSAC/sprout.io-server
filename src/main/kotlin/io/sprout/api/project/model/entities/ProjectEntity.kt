@@ -2,6 +2,7 @@ package io.sprout.api.project.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.project.model.dto.ProjectDetailResponseDto
+import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
@@ -15,42 +16,42 @@ class ProjectEntity(
     val id: Long = 0,
 
     @Column(nullable = false)
-    val title: String,
+    var title: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer")
     val writer: UserEntity,
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    val description: String,
+    var description: String,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var pType: PType,
 
     @Column(nullable = false)
-    val recruitmentCount: Int,
+    var recruitmentCount: Int,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "contact_method", nullable = false)
-    val contactMethod: ContactMethod,
+    var contactMethod: ContactMethod,
 
     @Column(nullable = false)
-    val recruitmentStart: LocalDate,
+    var recruitmentStart: LocalDate,
 
     @Column(nullable = false)
-    val recruitmentEnd: LocalDate,
+    var recruitmentEnd: LocalDate,
 
     @Column(nullable = false)
     var viewCount: Int = 0,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "project_status", nullable = false)
-    val projectStatus: ProjectStatus,
+    var projectStatus: ProjectStatus,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "meeting_type", nullable = false)
-    val meetingType: MeetingType,
+    var meetingType: MeetingType,
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
     val projectParticipations: List<ProjectParticipationEntity> = listOf(),
@@ -62,8 +63,21 @@ class ProjectEntity(
     val techStacks: List<ProjectTechStackEntity> = listOf(),
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    val comments: List<ProjectCommentEntity> = listOf() // 댓글 리스트
+    val comments: List<ProjectCommentEntity> = listOf()
 ) : BaseEntity() {
+
+    // 프로젝트 정보를 업데이트하는 메서드
+    fun updateFromDto(dto: ProjectRecruitmentRequestDto) {
+        this.title = dto.projectTitle
+        this.description = dto.projectDescription
+        this.pType = PType.valueOf(dto.recruitmentType.uppercase())
+        this.recruitmentCount = dto.recruitmentCount
+        this.contactMethod = ContactMethod.valueOf(dto.contactMethod.uppercase())
+        this.recruitmentStart = dto.startDate
+        this.recruitmentEnd = dto.endDate
+        this.meetingType = MeetingType.valueOf(dto.meetingType.uppercase())
+        // 필요한 경우 추가 필드도 업데이트
+    }
 
     fun toDto(): ProjectDetailResponseDto {
         return ProjectDetailResponseDto(
@@ -85,6 +99,7 @@ class ProjectEntity(
         )
     }
 }
+
 
 enum class PType {
     PROJECT,
