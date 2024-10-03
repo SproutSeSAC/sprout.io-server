@@ -58,7 +58,7 @@ class ProjectController(
         val responseBody = mapOf(
             "projects" to filteredProjects,
             "totalCount" to totalCount,
-            "currentPage" to filterRequest.page + 1,
+            "currentPage" to filterRequest.page,
             "pageSize" to filterRequest.size,
             "totalPages" to totalPages,
             "nextPage" to nextPage
@@ -132,4 +132,51 @@ class ProjectController(
             ResponseEntity.badRequest().body(false)
         }
     }
+
+    @DeleteMapping("/comment/{commentId}")
+    @Operation(
+        summary = "프로젝트 댓글 삭제 API",
+        description = "특정 댓글을 삭제하는 API입니다."
+    )
+    fun deleteComment(@PathVariable commentId: Long): ResponseEntity<Boolean> {
+        val result = projectService.deleteComment(commentId)
+        return if (result) {
+            ResponseEntity.ok(true)
+        } else {
+            ResponseEntity.badRequest().body(false)
+        }
+    }
+
+    @DeleteMapping("/{projectId}")
+    @Operation(
+        summary = "프로젝트 삭제 API",
+        description = "특정 프로젝트를 삭제하는 API입니다."
+    )
+    fun deleteProject(@PathVariable projectId: Long): ResponseEntity<Boolean> {
+        val result = projectService.deleteProject(projectId)
+        return if (result) {
+            ResponseEntity.ok(true)
+        } else {
+            ResponseEntity.badRequest().body(false)
+        }
+    }
+
+    @PutMapping("/{projectId}")
+    @Operation(
+        summary = "프로젝트 수정 API",
+        description = "특정 프로젝트의 정보를 수정하는 API입니다."
+    )
+    fun updateProject(
+        @PathVariable projectId: Long,
+        @RequestBody projectUpdateRequestDto: ProjectRecruitmentRequestDto
+    ): ResponseEntity<Boolean> {
+        val result = projectService.updateProject(projectId, projectUpdateRequestDto)
+        return if (result) {
+            ResponseEntity.ok(true)
+        } else {
+            ResponseEntity.badRequest().body(false)
+        }
+    }
+
+
 }
