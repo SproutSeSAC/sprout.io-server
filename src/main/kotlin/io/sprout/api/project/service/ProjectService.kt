@@ -11,4 +11,8 @@ interface ProjectService {
     fun findProjectDetailById(projectId: Long): ProjectDetailResponseDto?
     fun getCommentsByProjectId(projectId: Long): List<ProjectCommentResponseDto>
     fun postComment(projectId: Long, content: String): Boolean
+    fun deleteComment(commentId: Long): Boolean
+    fun deleteProject(projectId: Long): Boolean
+    fun updateProject(projectId: Long, projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean
+    fun getProjectsEndingTomorrow(): List<ProjectSimpleResponseDto>
 }

@@ -4,16 +4,13 @@ import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
-import io.sprout.api.common.exeption.custom.CustomUnexpectedException
 import io.sprout.api.position.model.entities.QPositionEntity
-import io.sprout.api.project.model.dto.ProjectCommentResponseDto
-import io.sprout.api.project.model.dto.ProjectDetailResponseDto
-import io.sprout.api.project.model.dto.ProjectFilterRequest
-import io.sprout.api.project.model.dto.ProjectResponseDto
+import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
 import io.sprout.api.specification.model.entities.QTechStackEntity
 import io.sprout.api.user.model.entities.QUserEntity
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 
 @Repository
 class ProjectCustomRepositoryImpl(
@@ -83,6 +80,29 @@ class ProjectCustomRepositoryImpl(
             .where(project.id.eq(projectId)) // 프로젝트 ID 필터링
             .orderBy(projectComment.createdAt.asc()) // 생성일자 오름차순 정렬
             .fetch()
+    }
+
+    override fun findProjectsEndingTommorowWithDetails(tomorrow: LocalDate): List<ProjectSimpleResponseDto> {
+        val project = QProjectEntity.projectEntity
+        val user = QUserEntity.userEntity
+
+        return queryFactory
+            .select(
+                project.id,
+                project.description,
+                user.nickname
+            )
+            .from(project)
+            .join(project.writer, user)
+            .where(project.recruitmentEnd.eq(tomorrow))
+            .fetch()
+            .map { tuple ->
+                ProjectSimpleResponseDto(
+                    projectId = tuple.get(project.id) ?: throw IllegalArgumentException("Project ID cannot be null"),
+                    content = tuple.get(project.description) ?: "",
+                    userNickname = tuple.get(user.nickname) ?: "Unknown"
+                )
+            }
     }
 
     private fun createFilterBuilder(
