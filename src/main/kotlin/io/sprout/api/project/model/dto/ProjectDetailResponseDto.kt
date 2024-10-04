@@ -1,5 +1,6 @@
 package io.sprout.api.project.model.dto
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.querydsl.core.annotations.QueryProjection
 import io.sprout.api.project.model.entities.ContactMethod
 import io.sprout.api.project.model.entities.MeetingType
@@ -22,6 +23,7 @@ data class ProjectDetailResponseDto @QueryProjection constructor(
     val viewCount: Int, // 조회수
     val projectStatus: ProjectStatus, // 프로젝트 상태 (ACTIVE, INACTIVE, END)
     val meetingType: MeetingType, // 미팅 방식 (ONLINE, OFFLINE, HYBRID)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     val createdAt: LocalDateTime,
     val imgUrl : String?,
     val contactDetail : String?,
