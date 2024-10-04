@@ -12,22 +12,23 @@ class MealPostEntity(
     @Column(nullable = false, length = 50)
     val title: String,
 
-    @Column(nullable = false)
-    val startDateTime: LocalDateTime,
+    @Column(name = "appointment_time", nullable = false)
+    val appointmentTime: LocalDateTime,
 
-    @Column(nullable = false)
-    val recruitmentCount: Int,
+    @Column(name = "member_count", nullable = false)
+    val memberCount: Int,
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "meeting_place", nullable = false, length = 100)
     val meetingPlace: String,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "meal_post_status", nullable = false, length = 10)
     val mealPostStatus: MealPostStatus,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", referencedColumnName = "id", nullable = false)
+    @ManyToOne
     var store: StoreEntity
+
+    // mealPost 첫번째 사람으로 글쓴이 판별하자
 
 ) : BaseEntity() {
 
@@ -38,8 +39,12 @@ class MealPostEntity(
     @OneToMany(mappedBy = "mealPost", cascade = [CascadeType.ALL])
     val mealPostParticipationList: List<MealPostParticipationEntity> = listOf()
 
+    fun countJoinMember(): Int {
+        return this.mealPostParticipationList.size
+    }
+
 }
 
 enum class MealPostStatus {
-    ACTIVE, INACTIVE, END
+    ACTIVE, INACTIVE, FINISHED
 }

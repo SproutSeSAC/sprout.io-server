@@ -17,11 +17,11 @@ class StoreController(
     private val storeService: StoreService
 ) {
 
-//    @GetMapping("/{storeId}")
-//    @Operation(summary = "맛집 개별 조회", description = "맛집 개별 조회")
-//    fun getStoreDetail(@PathVariable storeId: Long): StoreDto.StoreDetailResponse {
-//        return storeService.getStoreDetail(storeId)
-//    }
+    @GetMapping("/{storeId}")
+    @Operation(summary = "맛집 개별 조회", description = "맛집 개별 조회")
+    fun getStoreDetail(@PathVariable storeId: Long): StoreDto.StoreDetailResponse {
+        return storeService.getStoreDetail(storeId)
+    }
 
     @GetMapping("/list")
     @Operation(summary = "맛집 리스트 조회", description = "맛집 리스트 조회, 필터 체크되는 경우만 true, 아닐 경우 false")
