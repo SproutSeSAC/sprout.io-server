@@ -40,7 +40,7 @@ class StoreDto {
             val name: String,
 
             @Schema(description = "맛집 대표 이미지")
-            val storeImage: String,
+            val storeImage: String?,
 
             @Schema(description = "영업일 및 영업 시간")
             val workingDay: String,
@@ -92,7 +92,7 @@ class StoreDto {
         val name: String,
 
         @Schema(description = "맛집 대표 이미지")
-        val storeImage: String,
+        val storeImage: String?,
 
         @Schema(description = "브레이크 시간")
         val breakTime: String,
@@ -120,7 +120,7 @@ class StoreDto {
             val id: Long,
             val name: String,
             val price: Int,
-            val imageUrl: String
+            val imageUrl: String?
         )
     }
 

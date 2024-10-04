@@ -1,6 +1,7 @@
 package io.sprout.api.store.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.mealPost.model.entities.MealPostEntity
 import jakarta.persistence.*
 
 @Entity
@@ -64,6 +65,9 @@ class StoreEntity(
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var storeImageList: MutableSet<StoreImageEntity> = LinkedHashSet()
+
+    @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var mealPostList: MutableSet<MealPostEntity> = LinkedHashSet()
 
 }
 

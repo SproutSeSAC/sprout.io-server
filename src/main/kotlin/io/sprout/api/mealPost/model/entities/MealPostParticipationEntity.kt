@@ -14,7 +14,10 @@ class MealPostParticipationEntity(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "meal_post_id")
-    val mealPost: MealPostEntity
+    val mealPost: MealPostEntity,
+
+    @Column(name = "ordinal_number", nullable = false)
+    val ordinalNumber: Int
 
 ) : BaseEntity() {
 
