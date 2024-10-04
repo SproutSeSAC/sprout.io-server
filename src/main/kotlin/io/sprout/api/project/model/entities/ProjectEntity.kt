@@ -36,6 +36,9 @@ class ProjectEntity(
     @Column(name = "contact_method", nullable = false)
     var contactMethod: ContactMethod,
 
+    @Column(name = "contact_detail", nullable = false)
+    var contactDetail : String,
+
     @Column(nullable = false)
     var recruitmentStart: LocalDate,
 
@@ -64,6 +67,7 @@ class ProjectEntity(
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val comments: List<ProjectCommentEntity> = listOf()
+
 ) : BaseEntity() {
 
     // 프로젝트 정보를 업데이트하는 메서드
@@ -95,6 +99,8 @@ class ProjectEntity(
             projectStatus = this.projectStatus,
             meetingType = this.meetingType,
             createdAt =  this.createdAt,
+            contactDetail = this.contactDetail,
+            imgUrl = this.writer.profileImageUrl,
             positionNames = this.positions.map { it.position.name }, // Position의 name 필드로 가정
         )
     }

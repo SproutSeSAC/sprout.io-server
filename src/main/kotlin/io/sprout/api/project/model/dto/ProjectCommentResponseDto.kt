@@ -9,4 +9,5 @@ data class ProjectCommentResponseDto @QueryProjection constructor(
     val createdAt : LocalDateTime,
     val writer : String,
     val projectId : Long,
+    val imgUrl : String,
 )
