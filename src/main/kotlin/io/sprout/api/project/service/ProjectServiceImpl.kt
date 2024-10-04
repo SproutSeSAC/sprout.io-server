@@ -96,7 +96,7 @@ class ProjectServiceImpl(
 
     override fun findProjectDetailById(projectId: Long): ProjectDetailResponseDto? {
         return handleExceptions {
-            projectRepository.findProjectDetailById(projectId) ?: throw IllegalArgumentException("Project with ID $projectId not found")
+            projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!) ?: throw IllegalArgumentException("Project with ID $projectId not found")
         }
     }
 
