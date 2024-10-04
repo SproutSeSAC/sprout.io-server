@@ -21,6 +21,7 @@ data class ProjectRecruitmentRequestDto(
     val contactMethod: String,    // 연락 방법 (이메일, 전화 등)
     val projectTitle: String,     // 프로젝트 제목
     val projectDescription: String, // 프로젝트 상세 설명
+    val contactDetail : String
 ) {
     fun toEntity(userId: Long?): ProjectEntity {
         return ProjectEntity(
@@ -33,6 +34,7 @@ data class ProjectRecruitmentRequestDto(
             recruitmentCount = this.recruitmentCount,
             meetingType = MeetingType.valueOf(this.meetingType.uppercase()),
             contactMethod = ContactMethod.valueOf(this.contactMethod.uppercase()),
+            contactDetail =  this.contactDetail,
             projectStatus = ProjectStatus.ACTIVE
         )
     }
