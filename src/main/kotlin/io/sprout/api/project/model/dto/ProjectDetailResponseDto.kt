@@ -23,5 +23,9 @@ data class ProjectDetailResponseDto @QueryProjection constructor(
     val projectStatus: ProjectStatus, // 프로젝트 상태 (ACTIVE, INACTIVE, END)
     val meetingType: MeetingType, // 미팅 방식 (ONLINE, OFFLINE, HYBRID)
     val createdAt: LocalDateTime,
+    val imgUrl : String?,
+    val contactDetail : String?,
     val positionNames: List<String>, // 프로젝트의 포지션들
-)
+){
+    var isScraped: Boolean = false
+}

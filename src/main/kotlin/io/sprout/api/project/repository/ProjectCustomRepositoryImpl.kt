@@ -35,13 +35,13 @@ class ProjectCustomRepositoryImpl(
         return Pair(distinctProjects, totalCount)
     }
 
-    override fun findProjectDetailById(id: Long): ProjectDetailResponseDto? {
+    override fun findProjectDetailById(id: Long , userId: Long): ProjectDetailResponseDto? {
         val projectEntity = QProjectEntity.projectEntity
         val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
         val positionEntity = QPositionEntity.positionEntity
-        val projectTechStackEntity = QProjectTechStackEntity.projectTechStackEntity
-        val techStackEntity = QTechStackEntity.techStackEntity
         val userEntity = QUserEntity.userEntity
+
+        // 1. 프로젝트 정보 조회
         val project = queryFactory
             .selectFrom(projectEntity)
             .leftJoin(projectEntity.writer, userEntity).fetchJoin()
@@ -53,8 +53,21 @@ class ProjectCustomRepositoryImpl(
         // 프로젝트가 없으면 null 반환
         project ?: return null
 
-        // 엔티티를 DTO로 변환
-        return project.toDto()
+        // 2. 스크랩 여부 조회
+        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+        val isScraped = queryFactory
+            .selectOne()
+            .from(scrapedProjectEntity)
+            .where(scrapedProjectEntity.project.id.eq(id)
+                .and(scrapedProjectEntity.user.id.eq(userId)))
+            .fetchFirst() != null // 스크랩한 기록이 있는지 여부를 확인
+
+        // 3. 엔티티를 DTO로 변환하고, 스크랩 여부 설정
+        return project.toDto().apply {
+            this.isScraped = isScraped
+        }
+
+
     }
 
     override fun getCommentsByProjectId(projectId: Long): List<ProjectCommentResponseDto> {
@@ -71,7 +84,8 @@ class ProjectCustomRepositoryImpl(
                     projectComment.content,
                     projectComment.createdAt,
                     user.nickname, // 닉네임
-                    project.id
+                    project.id,
+                    user.profileImageUrl
                 )
             )
             .from(projectComment)
