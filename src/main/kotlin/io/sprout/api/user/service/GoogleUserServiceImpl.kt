@@ -1,6 +1,7 @@
 package io.sprout.api.user.service
 
 
+import io.sprout.api.config.properties.GoogleOAuthPropertiesConfig
 import io.sprout.api.user.model.entities.GoogleTokenEntity
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.GoogleTokenRepository
@@ -13,7 +14,8 @@ import java.time.Instant
 @Service
 class GoogleTokenService(
     private val tokenRepository: GoogleTokenRepository,
-    private val restTemplate: RestTemplate
+    private val restTemplate: RestTemplate,
+    private val googleOAuthProperties: GoogleOAuthPropertiesConfig
 ) : GoogleUserService {
     override fun saveOrUpdateToken(user: UserEntity, accessToken: String, refreshToken: String?, expiresIn: Int) {
         val existingToken = tokenRepository.findByUser(user)
@@ -41,6 +43,8 @@ class GoogleTokenService(
         val googleToken = tokenRepository.findByUser(user)
             ?: throw IllegalStateException("No token found for user")
 
+        println("google:"+ googleOAuthProperties.clientSecret )
+
         // Access Token이 만료되었는지 확인
         if (googleToken.isAccessTokenExpired()) {
             if (googleToken.refreshToken == null) {
@@ -51,8 +55,8 @@ class GoogleTokenService(
             // Refresh Token으로 Access Token 갱신 요청
             val url = "https://oauth2.googleapis.com/token"
             val body = mapOf(
-                "client_id" to "YOUR_CLIENT_ID",
-                "client_secret" to "YOUR_CLIENT_SECRET",
+                "client_id" to googleOAuthProperties.clientId,
+                "client_secret" to googleOAuthProperties.clientSecret,
                 "refresh_token" to googleToken.refreshToken,
                 "grant_type" to "refresh_token"
             )
