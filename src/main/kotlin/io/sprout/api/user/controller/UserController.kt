@@ -74,34 +74,35 @@ class UserController(
 
 
     @GetMapping("/calendar")
-    fun redirectToGoogleCalendar(response: HttpServletResponse): ResponseEntity<Any> {
-        println("여기2")
+    fun redirectToGoogleCalendar(response: HttpServletResponse): ResponseEntity<Map<String, String>> {
         val userId = securityManager.getAuthenticatedUserName()
         val user = UserEntity(userId!!)
 
         // Access Token을 가져오고 만료 확인 후 갱신
         val googleToken = googleUserService.refreshAccessToken(user)
-            ?: return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Refresh token is expired. Please reauthenticate.")
+            ?: return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null)
+        val accessToken: Map<String, String> = mapOf("access_token" to googleToken.accessToken)
+        return ResponseEntity(accessToken, HttpStatus.OK)
 
-        // Google Calendar API 호출
-        val url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
-        val headers = HttpHeaders()
-        headers.setBearerAuth(googleToken.accessToken)  // 갱신된 Access Token을 Authorization 헤더에 설정
-
-        val entity = HttpEntity<Void>(headers)
-        val calendarResponse = restTemplate.exchange(url, HttpMethod.GET, entity, String::class.java)
-
-        if (!calendarResponse.statusCode.is2xxSuccessful) {
-            return ResponseEntity.status(calendarResponse.statusCode).body("Failed to fetch calendar events")
-        }
-
-        // JSON 응답에서 첫 번째 이벤트의 htmlLink 추출
-        val htmlLink = extractHtmlLink(calendarResponse.body ?: throw IllegalStateException("No events found"))
-
-        // Google Calendar 이벤트로 리다이렉트
-        val redirectView = RedirectView()
-        redirectView.url = htmlLink
-        return ResponseEntity.status(HttpStatus.FOUND).location(URI(htmlLink)).build()
+//        // Google Calendar API 호출
+//        val url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+//        val headers = HttpHeaders()
+//        headers.setBearerAuth(googleToken.accessToken)  // 갱신된 Access Token을 Authorization 헤더에 설정
+//
+//        val entity = HttpEntity<Void>(headers)
+//        val calendarResponse = restTemplate.exchange(url, HttpMethod.GET, entity, String::class.java)
+//
+//        if (!calendarResponse.statusCode.is2xxSuccessful) {
+//            return ResponseEntity.status(calendarResponse.statusCode).body("Failed to fetch calendar events")
+//        }
+//
+//        // JSON 응답에서 첫 번째 이벤트의 htmlLink 추출
+//        val htmlLink = extractHtmlLink(calendarResponse.body ?: throw IllegalStateException("No events found"))
+//
+//        // Google Calendar 이벤트로 리다이렉트
+//        val redirectView = RedirectView()
+//        redirectView.url = htmlLink
+//        return ResponseEntity.status(HttpStatus.FOUND).location(URI(htmlLink)).build()
     }
 
     // JSON 파싱 메서드 (Jackson이나 Gson을 사용할 수도 있습니다)
