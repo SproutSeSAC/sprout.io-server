@@ -104,7 +104,8 @@ class ProjectCustomRepositoryImpl(
             .select(
                 project.id,
                 project.description,
-                user.nickname
+                user.nickname,
+                user.profileImageUrl
             )
             .from(project)
             .join(project.writer, user)
@@ -114,7 +115,8 @@ class ProjectCustomRepositoryImpl(
                 ProjectSimpleResponseDto(
                     projectId = tuple.get(project.id) ?: throw IllegalArgumentException("Project ID cannot be null"),
                     content = tuple.get(project.description) ?: "",
-                    userNickname = tuple.get(user.nickname) ?: "Unknown"
+                    userNickname = tuple.get(user.nickname) ?: "Unknown",
+                    imgUrl = tuple.get(user.profileImageUrl) ?: "null",
                 )
             }
     }
