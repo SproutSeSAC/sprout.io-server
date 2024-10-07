@@ -103,6 +103,7 @@ class ProjectCustomRepositoryImpl(
         return queryFactory
             .select(
                 project.id,
+                project.title,
                 project.description,
                 user.nickname,
                 user.profileImageUrl
@@ -114,6 +115,7 @@ class ProjectCustomRepositoryImpl(
             .map { tuple ->
                 ProjectSimpleResponseDto(
                     projectId = tuple.get(project.id) ?: throw IllegalArgumentException("Project ID cannot be null"),
+                    title = tuple.get(project.title) ?: "",
                     content = tuple.get(project.description) ?: "",
                     userNickname = tuple.get(user.nickname) ?: "Unknown",
                     imgUrl = tuple.get(user.profileImageUrl) ?: "null",
