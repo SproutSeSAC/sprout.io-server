@@ -11,11 +11,10 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import org.springframework.http.*
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.servlet.view.RedirectView
-import java.net.URI
 
 @RestController
 @RequestMapping("/user")
@@ -33,19 +32,28 @@ class UserController(
         return userService.getUserInfo(request)
     }
 
+    @GetMapping("/verification/{code}")
+    @Operation(summary = "코드 조회", description = "코드 조회")
+    fun verifyCode(@PathVariable("code") code: String) {
+        return userService.verifyCode(code)
+    }
+
     @PostMapping("/register")
     @Operation(summary = "계정 등록", description = "계정 등록 (회원 상태가 변경된 새로운 access-token 발급)")
     fun createUser(
         @RequestBody @Valid request: UserDto.CreateUserRequest,
         httpServletRequest: HttpServletRequest,
         response: HttpServletResponse
-    ): ResponseEntity<String> {
+    ): ResponseEntity<Map<String,String>> {
         val refreshToken = userService.createUser(request, httpServletRequest, response)
         val newAccessToken = jwtToken.createAccessFromRefreshToken(refreshToken)
-        val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
-        response.addCookie(accessCookie)
 
-        return ResponseEntity.ok("success")
+        // https 미도입에 따른 쿠키 이용 임시 주석 처리
+//        val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
+//        response.addCookie(accessCookie)
+        val result = hashMapOf("access_token" to newAccessToken)
+
+        return ResponseEntity.ok(result)
     }
 
     @PutMapping("/leave")

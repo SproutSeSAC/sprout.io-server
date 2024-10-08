@@ -21,6 +21,7 @@ import io.sprout.api.user.repository.UserRepository
 import io.sprout.api.user.repository.UserTechStackRepository
 import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
+import io.sprout.api.verificationCode.repository.VerificationCodeRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -40,7 +41,8 @@ class UserService(
     private val userDomainRepository: UserDomainRepository,
     private val userTechStackRepository: UserTechStackRepository,
     private val securityManager: SecurityManager,
-    private val jwtToken: JwtToken
+    private val jwtToken: JwtToken,
+    private val verificationCodeRepository: VerificationCodeRepository
 ) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
@@ -277,6 +279,23 @@ class UserService(
             // Bad Request
             throw CustomBadRequestException("Authorization error: ${e.message}")
         }
+    }
+
+    fun verifyCode(code: String) {
+        val codeList = verificationCodeRepository.findAll()
+        val existentCode = codeList.firstOrNull { it.code == code }
+
+        if (existentCode != null) {
+            existentCode.useCount += 1
+            try {
+                verificationCodeRepository.save(existentCode)
+            } catch (e: Exception) {
+                throw CustomSystemException("System error occurred while saving code-use count: ${e.message}")
+            }
+        } else {
+            throw CustomBadRequestException("Invalid verification code")
+        }
+
     }
 
     private fun setTokenCookiesAndReturnRefresh(user: UserEntity, response: HttpServletResponse): String {
