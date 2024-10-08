@@ -47,12 +47,15 @@ class JwtFilter(
 
             // 테스트를 위한 임시 url
             "/api/store/list",
+            "/api/store/**",
             "/api/store/filterCount",
             "/api/course/list/**",
             "/api/campus/list",
             "/api/specifications/**",
             "/api/user/check",
-            "/api/user/register"
+            "/api/user/register",
+            "/api/mealPost/**",
+            "/api/user/verification/**"
         )
         val path = request.requestURI
         logger.info ( "Request Path: $path" )
