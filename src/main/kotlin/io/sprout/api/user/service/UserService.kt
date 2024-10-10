@@ -56,7 +56,7 @@ class UserService(
                 nickname = newNick,
                 role = RoleType.PRE_TRAINEE,
                 status = UserStatus.INACTIVE,
-                profileImageUrl = null,
+                profileImageUrl = "https://aaa.com",
                 isEssential = false,
                 course = temporaryCourse
             )
