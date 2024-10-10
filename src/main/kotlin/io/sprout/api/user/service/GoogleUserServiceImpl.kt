@@ -22,6 +22,7 @@ class GoogleTokenService(
         if (existingToken != null) {
             // 기존 토큰이 있으면 Access Token과 만료 시간 갱신
             existingToken.updateAccessTokenAndRefreshToken(accessToken, refreshToken, expiresIn)
+            tokenRepository.save(existingToken)
         } else {
             // 없으면 새로 저장
             val accessTokenExpiration = Instant.now().plusSeconds(expiresIn.toLong()) // 만료 시간 설정
