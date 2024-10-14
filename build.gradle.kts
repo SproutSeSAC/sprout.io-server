@@ -67,20 +67,26 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 
-	//swagger
+	// swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
-	//QueryDsl
+	// queryDsl
 	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")  // QueryDSL JPA 지원
 	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")  // Annotation Processor
 	kapt("jakarta.persistence:jakarta.persistence-api")  // JPA API
 
-	//test code 관련
+	// test code 관련
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testRuntimeOnly("com.h2database:h2")
+
+	//aws
+	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+
+	// webflux
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 kotlin {
