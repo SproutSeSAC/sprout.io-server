@@ -19,8 +19,11 @@ class UserDto {
         @Schema(description = "닉네임", nullable = false)
         val nickname: String,
 
-        @Schema(description = "프로필 사진 url", nullable = false)
+        @Schema(description = "프로필 사진 url", nullable = true)
         val profileImageUrl: String?,
+
+        @Schema(description = "유저 권한", nullable = false)
+        var role: RoleType,
 
         @Schema(description = "캠퍼스 명", nullable = false)
         val campusName: String,

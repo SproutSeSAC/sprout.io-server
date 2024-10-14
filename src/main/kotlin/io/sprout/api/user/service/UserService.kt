@@ -251,6 +251,7 @@ class UserService(
                 courseStartDate = user.course.startDate,
                 courseEndDate = user.course.endDate,
                 nickname = user.nickname,
+                role = user.role,
                 profileImageUrl = user.profileImageUrl,
                 jobList = user.userJobList.map {
                     SpecificationsDto.JobInfoDto(
