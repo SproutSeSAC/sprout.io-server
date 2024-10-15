@@ -36,8 +36,9 @@ class MealPostEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0
 
-    @OneToMany(mappedBy = "mealPost", cascade = [CascadeType.ALL])
-    val mealPostParticipationList: List<MealPostParticipationEntity> = listOf()
+    // orphanRemoval = true, mealPost 컬렉션 내 mealPostParticipation 삭제 시, 자동 삭제 처리
+    @OneToMany(mappedBy = "mealPost", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val mealPostParticipationList: MutableSet<MealPostParticipationEntity> = mutableSetOf()
 
     fun countJoinMember(): Int {
         return this.mealPostParticipationList.size

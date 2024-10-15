@@ -54,7 +54,6 @@ class JwtFilter(
             "/api/specifications/**",
             "/api/user/check",
             "/api/user/register",
-            "/api/mealPost/**",
             "/api/user/verification/**"
         )
         val path = request.requestURI
