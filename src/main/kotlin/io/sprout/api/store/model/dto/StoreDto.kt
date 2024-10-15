@@ -86,7 +86,7 @@ class StoreDto {
         val snackCount: Int,
     )
 
-    @Schema(description = "")
+    @Schema(description = "맛집 상세 조회 response")
     data class StoreDetailResponse(
         @Schema(description = "맛집 명")
         val name: String,
@@ -123,6 +123,5 @@ class StoreDto {
             val imageUrl: String?
         )
     }
-
 
 }

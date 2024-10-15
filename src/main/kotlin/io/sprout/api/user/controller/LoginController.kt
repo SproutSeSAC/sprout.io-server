@@ -25,7 +25,7 @@ class LoginController(
      *  access 와  refresh 검증을 위한 토큰
      */
     @GetMapping("/check")
-    fun loginCheck() : ResponseEntity<String>{
+    fun loginCheck(): ResponseEntity<String> {
         return ResponseEntity.ok("OK")
     }
 
@@ -78,11 +78,14 @@ class LoginController(
      *  refresh 로 access 재생성
      */
     @GetMapping("/refresh")
-    fun refresh(@RequestHeader("Refresh-Token") refreshToken: String, response: HttpServletResponse): ResponseEntity<Map<String,String>> {
-        val newAccessToken=jwtToken.createAccessFromRefreshToken(refreshToken)
+    fun refresh(
+        @RequestHeader("Refresh-Token") refreshToken: String,
+        response: HttpServletResponse
+    ): ResponseEntity<Map<String, String>> {
+        val newAccessToken = jwtToken.createAccessFromRefreshToken(refreshToken)
         val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
         response.addCookie(accessCookie)
-        val map  = hashMapOf("access_token" to newAccessToken)
+        val map = hashMapOf("access_token" to newAccessToken)
         return ResponseEntity.ok(map)
     }
 
