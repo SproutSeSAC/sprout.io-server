@@ -1,8 +1,8 @@
 package io.sprout.api.notice.model.repository
 
-import io.sprout.api.notice.model.entities.NoticeEntity
-import io.sprout.api.notice.model.entities.NoticeType
+import io.sprout.api.notice.model.dto.NoticeFilterRequest
+import io.sprout.api.notice.model.dto.NoticeResponseDto
 
 interface NoticeRepositoryCustom {
-    fun findByNoticeType(noticeType: NoticeType?): List<NoticeEntity>
+    fun filterNotices(filterRequest: NoticeFilterRequest, userId: Long): Pair<List<NoticeResponseDto>, Long>
 }
