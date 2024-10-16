@@ -4,14 +4,14 @@ import io.sprout.api.notice.model.entities.NoticeEntity
 import io.sprout.api.notice.model.entities.NoticeStatus
 import io.sprout.api.notice.model.entities.NoticeType
 import io.sprout.api.user.model.entities.UserEntity
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 data class NoticeRequestDto(
     val title: String,
     val content: String,
     val writerId: Long,
-    val startDate: LocalDateTime,
-    val endDate: LocalDateTime? = null,
+    val startDate: LocalDate,
+    val endDate: LocalDate? = null,
     val noticeType: NoticeType
 ){
     fun toEntity(writer: UserEntity): NoticeEntity {
