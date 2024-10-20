@@ -60,8 +60,8 @@ class StoreDto {
 //            @Schema(description = "5인 이상 가능 여부")
 //            val overFivePerson: Boolean,
 
-            @Schema(description = "만원 이하 메뉴 여부")
-            val underPrice: Boolean
+//            @Schema(description = "만원 이하 메뉴 여부")
+//            val underPrice: Boolean
         )
     }
 
