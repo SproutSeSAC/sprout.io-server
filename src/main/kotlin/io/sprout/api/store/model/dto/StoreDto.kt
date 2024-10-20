@@ -39,20 +39,26 @@ class StoreDto {
             @Schema(description = "맛집 명")
             val name: String,
 
+            @Schema(description = "맛집 네이버 ID")
+            val mapSchemaUrl: String?,
+
             @Schema(description = "맛집 대표 이미지")
             val storeImage: String?,
 
             @Schema(description = "영업일 및 영업 시간")
             val workingDay: String,
 
-            @Schema(description = "브레이크 시간")
-            val breakTime: String,
+            @Schema(description = "tag 리스트")
+            val tagList: List<String>,
 
-            @Schema(description = "도보 시간 - 5분 이내 여부")
-            val walkTimeWithinFiveMinutes: Boolean,
-
-            @Schema(description = "5인 이상 가능 여부")
-            val overFivePerson: Boolean,
+//            @Schema(description = "브레이크 시간")
+//            val breakTime: String,
+//
+//            @Schema(description = "도보 시간 - 5분 이내 여부")
+//            val walkTimeWithinFiveMinutes: Boolean,
+//
+//            @Schema(description = "5인 이상 가능 여부")
+//            val overFivePerson: Boolean,
 
             @Schema(description = "만원 이하 메뉴 여부")
             val underPrice: Boolean
@@ -92,7 +98,10 @@ class StoreDto {
         val name: String,
 
         @Schema(description = "맛집 대표 이미지")
-        val storeImage: String?,
+        val storeImageList: List<String>,
+
+        @Schema(description = "맛집 주소")
+        val address: String,
 
         @Schema(description = "브레이크 시간")
         val breakTime: String,
@@ -101,19 +110,20 @@ class StoreDto {
         val workingDay: String,
 
         @Schema(description = "전화 번호")
-        val phoneNumber: String,
+        val contact: String,
 
-        @Schema(description = "도보 시간 - 5분 이내 여부")
-        val walkTimeWithinFiveMinutes: Boolean,
+        @Schema(description = "요리 타입", example = "KOREAN, CHINESE, JAPANESE, WESTERN, ASIAN, SNACK, CAFE")
+        val foodType: FoodType,
 
-        @Schema(description = "5인 이상 가능 여부")
-        val overFivePerson: Boolean,
+        @Schema(description = "도보 시간")
+        val walkTime: Int,
 
-        @Schema(description = "만원 이하 메뉴 여부")
-        val underPrice: Boolean,
+        @Schema(description = "tag 리스트")
+        val tagList: List<String>,
 
         @Schema(description = "메뉴 리스트")
         val storeMenuList: MutableSet<StoreMenuDetail> = LinkedHashSet()
+
     ) {
 
         data class StoreMenuDetail(

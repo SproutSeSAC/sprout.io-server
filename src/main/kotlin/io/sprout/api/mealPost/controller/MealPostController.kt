@@ -18,14 +18,14 @@ class MealPostController(
     // 생성
     @PostMapping
     @Operation(summary = "한끼팟 생성", description = "한끼팟 생성 API")
-    fun createMealPost(@RequestBody @Valid request: MealPostDto.CreateMealPostRequest) {
+    fun createMealPost(@RequestBody @Valid request: MealPostDto.MealPostCreateRequest) {
         return mealPostService.createMealPost(request)
     }
 
     // 지우기
     @DeleteMapping
     @Operation(summary = "한끼팟 삭제", description = "한끼팟 삭제 API")
-    fun deleteMealPost(@RequestBody @Valid request: MealPostDto.DeleteMealPostRequest) {
+    fun deleteMealPost(@RequestBody @Valid request: MealPostDto.MealPostDeleteRequest) {
         return mealPostService.deleteMealPost(request)
     }
 
@@ -34,6 +34,12 @@ class MealPostController(
     @Operation(summary = "한끼팟 리스트 조회", description = "한끼팟 리스트 조회 API")
     fun getMealPostList(pageable: Pageable): Page<MealPostProjection> {
         return mealPostService.getMealPostList(pageable)
+    }
+
+    @GetMapping("/{mealPostId}")
+    @Operation(summary = "한끼팟 상세 조회", description = "한끼팟 상세 조회 API")
+    fun getMealPostDetail(@PathVariable mealPostId: Long): MealPostDto.MealPostDetailResponse {
+        return mealPostService.getMealPostDetail(mealPostId)
     }
 
     @PutMapping("/participation")

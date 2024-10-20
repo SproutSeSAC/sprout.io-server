@@ -39,18 +39,16 @@ class MealPostService(
         return mealPostRepository.findMealPostList(pageable)
     }
 
-    fun createMealPost(request: MealPostDto.CreateMealPostRequest) {
+    fun createMealPost(request: MealPostDto.MealPostCreateRequest) {
 
-        val store = storeRepository.findById(request.storeId).orElseThrow { CustomBadRequestException("Not found store") }
         val user = getUserInfo()
-
         val mealPostEntity = MealPostEntity(
             title = request.title?: "",
             appointmentTime = request.appointmentTime,
             memberCount = request.memberCount,
             meetingPlace = request.meetingPlace,
             mealPostStatus = MealPostStatus.ACTIVE,
-            store = store
+            storeName = request.storeName
         )
 
         mealPostEntity.mealPostParticipationList.plusAssign(
@@ -74,7 +72,7 @@ class MealPostService(
         }
     }
 
-    fun deleteMealPost(request: MealPostDto.DeleteMealPostRequest) {
+    fun deleteMealPost(request: MealPostDto.MealPostDeleteRequest) {
 
         val mealPost = mealPostRepository.findById(request.mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
         mealPost.mealPostParticipationList.clear()
@@ -154,5 +152,9 @@ class MealPostService(
     private fun getUserInfo(): UserEntity {
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Check access token")
         return userRepository.findById(userId).orElseThrow { CustomBadRequestException("Not found user") }
+    }
+
+    fun getMealPostDetail(mealPostId: Long): MealPostDto.MealPostDetailResponse {
+        TODO("Not yet implemented")
     }
 }

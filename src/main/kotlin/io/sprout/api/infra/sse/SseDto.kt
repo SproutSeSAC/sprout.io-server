@@ -1,4 +1,4 @@
-package io.sprout.api.message.model.dto
+package io.sprout.api.infra.sse
 
 class SseDto {
 

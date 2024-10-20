@@ -15,15 +15,22 @@ class StoreService(
     fun getStoreList(filterRequest: StoreDto.StoreListRequest): Pair<List<StoreDto.StoreListResponse.StoreDetail>, Long> {
 
         val storeList = storeRepository.findStoreList(filterRequest)
+
         val result = storeList.first.map { store ->
+
+            val tagList = mutableListOf<String>().apply {
+                if (store.walkTime <= 5) add("도보 5분 이내")
+                if (store.isOverPerson) add("5인 이상")
+                if (store.storeMenuList.any { it.price!! <= 10000 }) add("만원이하")
+            }
+
             StoreDto.StoreListResponse.StoreDetail(
                 id = store.id,
                 name = store.name,
+                mapSchemaUrl = store.mapSchemaUrl,
                 storeImage = store.storeImageList.firstOrNull()?.path,
                 workingDay = store.workingDay,
-                breakTime = store.breakTime,
-                walkTimeWithinFiveMinutes = store.walkTime <= 5,
-                overFivePerson = store.isOverPerson,
+                tagList = tagList,
                 // TODO: 쿼리 결과에는 어짜피 제외되서 오기 때문에, 일단 request로 처리
                 underPrice = filterRequest.underPrice
             )
@@ -52,17 +59,22 @@ class StoreService(
     }
 
     fun getStoreDetail(storeId: Long): StoreDto.StoreDetailResponse {
+
         val store = storeRepository.findById(storeId).orElseThrow { throw CustomBadRequestException("Not found store") }
+        val tagList = mutableListOf<String>().apply {
+            if (store.walkTime <= 5) add("도보 5분 이내")
+            if (store.isOverPerson) add("5인 이상")
+            if (store.storeMenuList.any { it.price <= 10000 }) add("만원이하")
+        }
 
         return StoreDto.StoreDetailResponse(
             name = store.name,
-            storeImage = store.storeImageList.firstOrNull()?.path,
+            storeImageList = store.storeImageList.map { it.path },
+            address = store.address,
             breakTime = store.breakTime,
             workingDay = store.workingDay,
-            phoneNumber = store.name,
-            walkTimeWithinFiveMinutes = store.walkTime <= 5,
-            overFivePerson = store.isOverPerson,
-            underPrice = store.storeMenuList.any { it.price <= 10000 },
+            contact = store.contact,
+            tagList = tagList,
             storeMenuList = store.storeMenuList.map {
                 StoreMenuDetail(
                     id = it.id,
@@ -70,7 +82,9 @@ class StoreService(
                     price = it.price,
                     imageUrl = it.imageUrl
                 )
-            }.sortedBy { it.id }.toMutableSet()
+            }.sortedBy { it.id }.toMutableSet(),
+            foodType = store.foodType,
+            walkTime = store.walkTime
         )
 
     }
