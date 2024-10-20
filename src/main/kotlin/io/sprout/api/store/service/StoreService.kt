@@ -22,6 +22,7 @@ class StoreService(
                 if (store.walkTime <= 5) add("도보 5분 이내")
                 if (store.isOverPerson) add("5인 이상")
                 if (store.storeMenuList.any { it.price!! <= 10000 }) add("만원이하")
+                if (store.isZeropay) add("제로페이")
             }
 
             StoreDto.StoreListResponse.StoreDetail(
@@ -30,9 +31,7 @@ class StoreService(
                 mapSchemaUrl = store.mapSchemaUrl,
                 storeImage = store.storeImageList.firstOrNull()?.path,
                 workingDay = store.workingDay,
-                tagList = tagList,
-                // TODO: 쿼리 결과에는 어짜피 제외되서 오기 때문에, 일단 request로 처리
-                underPrice = filterRequest.underPrice
+                tagList = tagList
             )
         }
         val totalCount = storeList.second
@@ -65,6 +64,7 @@ class StoreService(
             if (store.walkTime <= 5) add("도보 5분 이내")
             if (store.isOverPerson) add("5인 이상")
             if (store.storeMenuList.any { it.price <= 10000 }) add("만원이하")
+            if (store.isZeropay) add("제로페이")
         }
 
         return StoreDto.StoreDetailResponse(
