@@ -7,6 +7,7 @@ class StoreProjectionDto{
     data class StoreInfoDto(
         val id: Long,
         val name: String,
+        val mapSchemaUrl: String?,
         val address: String,
         val contact: String,
         val foodType: FoodType,

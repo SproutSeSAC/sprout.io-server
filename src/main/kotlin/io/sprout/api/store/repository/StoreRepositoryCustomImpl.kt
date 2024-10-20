@@ -64,6 +64,7 @@ class StoreRepositoryCustomImpl(
                         StoreProjectionDto.StoreInfoDto::class.java,
                         store.id,
                         store.name,
+                        store.mapSchemaUrl,
                         store.address,
                         store.contact,
                         store.foodType,

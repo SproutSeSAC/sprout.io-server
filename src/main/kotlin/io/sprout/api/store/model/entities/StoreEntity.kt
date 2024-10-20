@@ -66,9 +66,6 @@ class StoreEntity(
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var storeImageList: MutableSet<StoreImageEntity> = LinkedHashSet()
 
-    @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var mealPostList: MutableSet<MealPostEntity> = LinkedHashSet()
-
 }
 
 enum class FoodType {

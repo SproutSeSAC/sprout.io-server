@@ -1,6 +1,7 @@
-package io.sprout.api.message.sse
+package io.sprout.api.infra.sse
 
-import io.sprout.api.message.model.dto.SseDto
+import io.sprout.api.config.exception.BaseException
+import io.sprout.api.config.exception.ExceptionCode
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
@@ -27,5 +28,23 @@ class SseChannel {
         )
         allEvent.tryEmitNext(message)
         userEventMap[userId]?.tryEmitNext(message)
+    }
+
+    fun sendToUser(userId: Long, message: SseDto.Response) {
+        try {
+            userEventMap[userId]?.tryEmitNext(message)
+        } catch (e: Exception) {
+            throw BaseException(ExceptionCode.NOT_FOUND_CONTENTS)
+        }
+    }
+
+    fun sendToUsers(userIds: MutableSet<Long>, message: SseDto.Response) {
+        try {
+            userIds.forEach {
+                userEventMap[it]?.tryEmitNext(message)
+            }
+        } catch (e: Exception) {
+            throw BaseException(ExceptionCode.NOT_FOUND_CONTENTS)
+        }
     }
 }

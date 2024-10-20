@@ -60,7 +60,8 @@ class UserEntity(
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userTechStackList: MutableSet<UserTechStackEntity> = LinkedHashSet()
 
-
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var userCourseList: MutableSet<UserCourseEntity> = LinkedHashSet()
 
     fun addRefreshToken(refreshToken: String){
         this.refreshToken = refreshToken
@@ -72,8 +73,11 @@ class UserEntity(
         profileImageUrl = null,
         role = RoleType.TRAINEE, // 기본 값 설정
         status = UserStatus.ACTIVE, // 기본 값 설정
-        course = CourseEntity("", LocalDate.now(),LocalDate.now(),null),
-        isEssential = false
+        course = CourseEntity(
+            "", LocalDate.now(), LocalDate.now(), null,
+            calendarId = ""
+        ),
+        isEssential = false,
     ) {
         this.id = id
     }

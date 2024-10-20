@@ -25,8 +25,8 @@ class MealPostEntity(
     @Column(name = "meal_post_status", nullable = false, length = 10)
     val mealPostStatus: MealPostStatus,
 
-    @ManyToOne
-    var store: StoreEntity
+    @Column(name = "store_name", length = 100)
+    var storeName: String
 
     // mealPost 첫번째 사람으로 글쓴이 판별하자
 

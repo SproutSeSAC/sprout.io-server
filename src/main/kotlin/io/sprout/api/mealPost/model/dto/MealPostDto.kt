@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 class MealPostDto {
 
     @Schema(description = "한끼팟 생성")
-    data class CreateMealPostRequest(
+    data class MealPostCreateRequest(
 
         @Schema(description = "제목")
         val title: String? = "",
@@ -21,13 +21,13 @@ class MealPostDto {
         @Schema(description = "참가 인원")
         @NotNull val memberCount: Int,
 
-        @Schema(description = "storeId")
-        @NotNull val storeId: Long,
+        @Schema(description = "맛집 명")
+        @NotNull val storeName: String,
 
     )
 
     @Schema(description = "한끼팟 생성")
-    data class DeleteMealPostRequest(
+    data class MealPostDeleteRequest(
 
         @Schema(description = "한끼팟 ID")
         @NotNull val mealPostId: Long
@@ -46,5 +46,29 @@ class MealPostDto {
 
         @Schema(description = "한끼팟 ID")
         @NotNull val mealPostId: Long
+    )
+
+    @Schema(description = "한끼팟 상세 조회")
+    data class MealPostDetailResponse(
+
+        @Schema(description = "한끼팟 ID")
+        val mealPostId: Long,
+
+        @Schema(description = "제목")
+        val title: String,
+
+        @Schema(description = "모집 일자")
+        val appointmentTime: LocalDateTime,
+
+        @Schema(description = "모집 위치")
+        val meetingPlace: String,
+
+        @Schema(description = "참가 인원")
+        val memberCount: Int,
+
+        @Schema(description = "가게 명")
+        val storeName: Long,
+
+
     )
 }
