@@ -255,19 +255,19 @@ class UserService(
                 profileImageUrl = user.profileImageUrl,
                 jobList = user.userJobList.map {
                     SpecificationsDto.JobInfoDto(
-                        id = it.id,
+                        id = it.job.id,
                         job = it.job.name
                     )
                 }.toMutableSet(),
                 domainList = user.userDomainList.map {
                     SpecificationsDto.DomainInfoDto(
-                        id = it.id,
+                        id = it.domain.id,
                         domain = it.domain.name
                     )
                 }.toMutableSet(),
                 techStackList = user.userTechStackList.map {
                     SpecificationsDto.TechStackInfoDto(
-                        id = it.id,
+                        id = it.techStack.id,
                         techStack = it.techStack.name,
                         iconImageUrl = it.techStack.path ?: "",
                         jobName = it.techStack.jobName ?: ""
