@@ -185,8 +185,13 @@ class UserService(
         val allTechStackList = techStackRepository.findAll()
 
 
-        user.profileImageUrl = request.profileImageUrl
-        user.nickname = request.nickname.toString()
+        if (request.profileImageUrl != null) {
+            user.profileImageUrl = request.profileImageUrl
+        }
+
+        if (request.nickname != null) {
+            user.nickname = request.nickname
+        }
 
         if (request.updatedJobIdList.isNotEmpty()) {
             userJobRepository.deleteAll(user.userJobList)

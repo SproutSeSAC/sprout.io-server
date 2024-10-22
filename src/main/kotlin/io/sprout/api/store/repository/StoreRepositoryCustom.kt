@@ -7,5 +7,5 @@ interface StoreRepositoryCustom {
 
     fun findStoreList(request: StoreDto.StoreListRequest): Pair<List<StoreProjectionDto.StoreInfoDto>, Long>
 
-    fun findStoreFilterList(): List<StoreProjectionDto.StoreFilterDto>
+    fun findStoreFilterList(campusId: Long): List<StoreProjectionDto.StoreFilterDto>
 }

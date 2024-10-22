@@ -1,7 +1,7 @@
 package io.sprout.api.store.model.entities
 
+import io.sprout.api.campus.model.entities.CampusEntity
 import io.sprout.api.common.model.entities.BaseEntity
-import io.sprout.api.mealPost.model.entities.MealPostEntity
 import jakarta.persistence.*
 
 @Entity
@@ -42,7 +42,10 @@ class StoreEntity(
     @Column(name = "is_over_person", nullable = false)
     var isOverPerson: Boolean, // 5인 이상 가능
 
-) : BaseEntity() {
+    @ManyToOne(fetch = FetchType.LAZY)
+    var campus: CampusEntity,
+
+    ) : BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,7 +61,7 @@ class StoreEntity(
     var instagramUrl: String? = null // 인스타 URL
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var storeStoryList: MutableSet<StoreStoryEntity> = LinkedHashSet()
+    var storeReviewList: MutableSet<StoreReviewEntity> = LinkedHashSet()
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var storeMenuList: MutableSet<StoreMenuEntity> = LinkedHashSet()
