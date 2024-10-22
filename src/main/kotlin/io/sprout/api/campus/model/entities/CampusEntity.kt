@@ -1,6 +1,7 @@
 package io.sprout.api.campus.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.store.model.entities.StoreEntity
 import jakarta.persistence.*
 
 @Entity
@@ -18,4 +19,8 @@ class CampusEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
+
+    @OneToMany(mappedBy = "campus", fetch = FetchType.LAZY)
+    var storeList: MutableSet<StoreEntity> = LinkedHashSet()
+
 }

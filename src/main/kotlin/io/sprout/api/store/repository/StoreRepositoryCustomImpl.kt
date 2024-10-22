@@ -27,6 +27,7 @@ class StoreRepositoryCustomImpl(
             .leftJoin(storeMenu).on(store.id.eq(storeMenu.store.id))
             .leftJoin(storeImage).on(store.id.eq(storeImage.store.id))
             .where(
+                searchInCampus(request.campusId),
                 searchInZeropay(request.isZeropay),
                 searchInWalkTime(request.walkTimeWithinFiveMinutes),
                 searchInFoodType(request.foodTypeList),
@@ -50,6 +51,7 @@ class StoreRepositoryCustomImpl(
             .leftJoin(storeImage).on(store.id.eq(storeImage.store.id))
             .where(
                 store.id.`in`(storeIdsForPagination),
+                searchInCampus(request.campusId),
                 searchInZeropay(request.isZeropay),
                 searchInWalkTime(request.walkTimeWithinFiveMinutes),
                 searchInFoodType(request.foodTypeList),
@@ -64,10 +66,11 @@ class StoreRepositoryCustomImpl(
                         StoreProjectionDto.StoreInfoDto::class.java,
                         store.id,
                         store.name,
+                        store.foodType,
+                        store.campus.name,
                         store.mapSchemaUrl,
                         store.address,
                         store.contact,
-                        store.foodType,
                         store.workingDay,
                         store.breakTime,
                         store.holiday,
@@ -96,13 +99,16 @@ class StoreRepositoryCustomImpl(
         return Pair(result, totalCount.size.toLong())
     }
 
-    override fun findStoreFilterList(): List<StoreProjectionDto.StoreFilterDto> {
+    override fun findStoreFilterList(campusId: Long): List<StoreProjectionDto.StoreFilterDto> {
         val store = QStoreEntity.storeEntity
         val storeMenu = QStoreMenuEntity.storeMenuEntity
 
         return jpaQueryFactory
             .selectFrom(store)
             .leftJoin(storeMenu).on(store.id.eq(storeMenu.store.id))
+            .where(
+                searchInCampus(campusId)
+            )
             .distinct()
             .transform(
                 groupBy(store.id).list(
@@ -128,6 +134,10 @@ class StoreRepositoryCustomImpl(
     }
 
     // Dynamic predicates
+    private fun searchInCampus(campusId: Long): BooleanExpression? {
+        return QStoreEntity.storeEntity.campus.id.eq(campusId)
+    }
+
     private fun searchInZeropay(isZeropay: Boolean): BooleanExpression? {
         return if (isZeropay) {
             QStoreEntity.storeEntity.isZeropay.eq(true)

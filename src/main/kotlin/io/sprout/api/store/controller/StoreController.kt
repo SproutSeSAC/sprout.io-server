@@ -22,6 +22,7 @@ class StoreController(
     @GetMapping("/list")
     @Operation(summary = "맛집 리스트 조회", description = "맛집 리스트 조회, 필터 체크되는 경우만 true, 아닐 경우 false")
     fun getStoreList(
+        @RequestParam campusId: Long,
         @RequestParam(defaultValue = "false") isZeropay: Boolean,
         @RequestParam(defaultValue = "false") underPrice: Boolean,
         @RequestParam(defaultValue = "false") overFivePerson: Boolean,
@@ -33,6 +34,7 @@ class StoreController(
 
         val pageIndex = page - 1
         val filterRequest = StoreDto.StoreListRequest(
+            campusId,
             isZeropay,
             underPrice,
             overFivePerson,
@@ -66,8 +68,8 @@ class StoreController(
 
     @GetMapping("/filterCount")
     @Operation(summary = "맛집 필터 카운트 조회", description = "맛집 필터 카운트 조회")
-    fun getFilterCount(): StoreDto.StoreFilterResponse {
-        return storeService.getFilterCount()
+    fun getFilterCount(@RequestParam campusId: Long): StoreDto.StoreFilterResponse {
+        return storeService.getFilterCount(campusId)
     }
 
 }
