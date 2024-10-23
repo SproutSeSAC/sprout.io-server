@@ -51,7 +51,7 @@ class ProjectController(
         val (filteredProjects, totalCount) = projectService.getFilteredProjects(filterRequest)
 
         val totalPages = (totalCount + filterRequest.size - 1) / filterRequest.size
-        val nextPage = if (filterRequest.page + 1 < totalPages) filterRequest.page + 2 else null
+        val nextPage = if (filterRequest.page.toLong() != totalPages) filterRequest.page + 1 else null
 
         val responseBody = mapOf(
             "projects" to filteredProjects,

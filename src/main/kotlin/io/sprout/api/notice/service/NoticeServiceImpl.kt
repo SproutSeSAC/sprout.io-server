@@ -1,6 +1,7 @@
 package io.sprout.api.notice.service
 
 import io.sprout.api.auth.security.manager.SecurityManager
+import io.sprout.api.notice.model.dto.NoticeFilterRequest
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.model.dto.NoticeResponseDto
 import io.sprout.api.notice.model.entities.NoticeType
@@ -41,12 +42,6 @@ class NoticeServiceImpl (
         return updatedNotice.toDto()
     }
 
-    @Transactional(readOnly = true)
-    override fun getNotices(noticeType: NoticeType?): List<NoticeResponseDto> {
-        val notice = noticeRepository.findByNoticeType(noticeType)
-        return notice.let { it ->
-            it.map { it.toDto() } }
-    }
 
     @Transactional(readOnly = true)
     override fun getNoticeById(id: Long): NoticeResponseDto {
@@ -63,4 +58,12 @@ class NoticeServiceImpl (
         }
         noticeRepository.deleteById(id)
     }
+
+    @Transactional(readOnly = true)
+    override fun getFilterNotice(filter: NoticeFilterRequest): Pair<List<NoticeResponseDto>, Long> {
+
+        return noticeRepository.filterNotices(filter, securityManager.getAuthenticatedUserName()!!)
+    }
+
+
 }
