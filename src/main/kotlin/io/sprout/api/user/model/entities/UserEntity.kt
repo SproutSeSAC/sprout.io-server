@@ -1,5 +1,6 @@
 package io.sprout.api.user.model.entities
 
+import com.querydsl.core.types.Projections.constructor
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.course.model.entities.CourseEntity
 import jakarta.persistence.*
@@ -33,6 +34,7 @@ class UserEntity(
     @Column(name = "is_essential")
     var isEssential: Boolean
 
+
 ) : BaseEntity() {
 
     @Id
@@ -62,6 +64,9 @@ class UserEntity(
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userCourseList: MutableSet<UserCourseEntity> = LinkedHashSet()
+
+//    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+//    var googleCalendar: GoogleCalendarEntity? = null
 
     fun addRefreshToken(refreshToken: String){
         this.refreshToken = refreshToken

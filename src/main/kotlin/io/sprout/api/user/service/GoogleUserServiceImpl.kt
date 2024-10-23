@@ -1,10 +1,15 @@
 package io.sprout.api.user.service
 
-
+import io.sprout.api.user.model.entities.GoogleCalendarEntity
+import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.config.properties.GoogleOAuthPropertiesConfig
+import io.sprout.api.user.model.dto.CalendarIdResponseDto
 import io.sprout.api.user.model.entities.GoogleTokenEntity
+import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
+import io.sprout.api.user.repository.GoogleCalendarRepository
 import io.sprout.api.user.repository.GoogleTokenRepository
+import io.sprout.api.user.repository.UserRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
@@ -15,7 +20,10 @@ import java.time.Instant
 class GoogleTokenService(
     private val tokenRepository: GoogleTokenRepository,
     private val restTemplate: RestTemplate,
-    private val googleOAuthProperties: GoogleOAuthPropertiesConfig
+    private val googleOAuthProperties: GoogleOAuthPropertiesConfig,
+    private val googleCalendarRepository: GoogleCalendarRepository,
+    private val securityManager: SecurityManager,
+    private val userRepository: UserRepository
 ) : GoogleUserService {
     override fun saveOrUpdateToken(user: UserEntity, accessToken: String, refreshToken: String?, expiresIn: Int) {
         val existingToken = tokenRepository.findByUser(user)
@@ -76,6 +84,27 @@ class GoogleTokenService(
         }
 
         return googleToken
+    }
+
+    override fun registerGoogleCalendarId(calendarId: String): Boolean {
+
+        val userId = securityManager.getAuthenticatedUserName() ?: return false
+        val user = UserEntity(userId) //
+
+        // 사용자에 대한 기존 Google Calendar 엔티티가 있는지 확인
+        if (googleCalendarRepository.findByUser(user) != null) {
+            return false
+        }
+
+        // 새로운 GoogleCalendarEntity 생성 및 저장
+        val entity = GoogleCalendarEntity(0, calendarId, user)
+        googleCalendarRepository.save(entity)
+        return true
+    }
+
+    override fun getCalendarIdWithManagerGroup(roleType: RoleType): List<CalendarIdResponseDto> {
+        val result = userRepository.findUsersWithCalendarByRole(roleType)
+        return result.map { CalendarIdResponseDto.toDto(it)}.toList()
     }
 
     private fun GoogleTokenEntity.isAccessTokenExpired(): Boolean {
