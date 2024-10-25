@@ -3,6 +3,7 @@ package io.sprout.api.user.controller
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
 import io.sprout.api.user.model.dto.CalendarIdResponseDto
+import io.sprout.api.user.model.dto.ManagerEmailResponseDto
 import io.sprout.api.user.model.dto.UserDto
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
@@ -97,6 +98,12 @@ class UserController(
         return ResponseEntity.ok(result)
 
     }
+
+    @GetMapping("/calendar/course/{courseId}")
+    fun getManagersByCourseId(@PathVariable courseId: Long): List<ManagerEmailResponseDto> {
+        return googleUserService.findManagerEmailSameCourse(courseId)
+    }
+
     @GetMapping("/calendar")
     fun redirectToGoogleCalendar(response: HttpServletResponse): ResponseEntity<Map<String, String>> {
         val userId = securityManager.getAuthenticatedUserName()

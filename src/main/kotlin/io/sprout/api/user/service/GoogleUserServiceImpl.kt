@@ -4,6 +4,7 @@ import io.sprout.api.user.model.entities.GoogleCalendarEntity
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.config.properties.GoogleOAuthPropertiesConfig
 import io.sprout.api.user.model.dto.CalendarIdResponseDto
+import io.sprout.api.user.model.dto.ManagerEmailResponseDto
 import io.sprout.api.user.model.entities.GoogleTokenEntity
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
@@ -52,7 +53,7 @@ class GoogleTokenService(
         val googleToken = tokenRepository.findByUser(user)
             ?: throw IllegalStateException("No token found for user")
 
-        println("google:"+ googleOAuthProperties.clientSecret )
+        println("google:" + googleOAuthProperties.clientSecret)
 
         // Access Token이 만료되었는지 확인
         if (googleToken.isAccessTokenExpired()) {
@@ -104,7 +105,11 @@ class GoogleTokenService(
 
     override fun getCalendarIdWithManagerGroup(roleType: RoleType): List<CalendarIdResponseDto> {
         val result = userRepository.findUsersWithCalendarByRole(roleType)
-        return result.map { CalendarIdResponseDto.toDto(it)}.toList()
+        return result.map { CalendarIdResponseDto.toDto(it) }.toList()
+    }
+
+    override fun findManagerEmailSameCourse(courseId: Long): List<ManagerEmailResponseDto> {
+        return userRepository.findManagerEmailSameCourse(courseId).map { ManagerEmailResponseDto.toDto(it) } .toList()
     }
 
     private fun GoogleTokenEntity.isAccessTokenExpired(): Boolean {

@@ -34,4 +34,7 @@ class CourseEntity(
     @OneToMany(mappedBy = "course", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userCourseList: MutableSet<UserCourseEntity> = LinkedHashSet()
 
+    constructor(id: Long) : this("", LocalDate.now(), LocalDate.now(), null, "") {
+        this.id = id
+    }
 }
