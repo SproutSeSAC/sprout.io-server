@@ -20,10 +20,28 @@ class NoticeServiceImpl (
     override fun createNotice(dto: NoticeRequestDto): NoticeResponseDto {
         val writer = UserEntity(securityManager.getAuthenticatedUserName()!!)
 
+        // URL이 하나 이상 존재해야 함을 검증
+        if (dto.urls.isEmpty()) {
+            throw IllegalArgumentException("URL 리스트는 적어도 하나 이상이어야 합니다.")
+        }
 
-        val notice = dto.toEntity(writer)
-        val savedNotice = noticeRepository.save(notice)
+        // 1. 첫 번째 NoticeEntity 생성 및 저장
+        val firstNotice = dto.toEntity(writer, dto.urls.first())
+        val savedNotice = noticeRepository.save(firstNotice)
 
+        // 2. 첫 번째 Notice의 ID를 parentId로 설정하여 나머지 Notice 생성
+        val parentId = savedNotice.id
+
+        // 3. 나머지 URL이 존재하는 경우에만 Notice 생성
+        if (dto.urls.size > 1) {
+            val otherNotices = dto.urls.drop(1).map { urlInfo ->
+                dto.toEntity(writer, urlInfo, parentId)
+            }
+            // 나머지 Notice들 저장
+            noticeRepository.saveAll(otherNotices)
+        }
+
+        // 4. 첫 번째 Notice에 대한 응답 DTO 반환
         return savedNotice.toDto()
     }
 
@@ -34,8 +52,8 @@ class NoticeServiceImpl (
 
         notice.title = dto.title
         notice.content = dto.content
-        notice.startDate = dto.startDate
-        notice.endDate = dto.endDate
+        notice.startDate = dto.urls.first().startDate
+        notice.endDate = dto.urls.first().endDate
         notice.noticeType = dto.noticeType
 
         val updatedNotice = noticeRepository.save(notice)
