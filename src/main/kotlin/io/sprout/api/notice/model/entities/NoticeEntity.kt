@@ -32,9 +32,20 @@ class NoticeEntity (
     @Enumerated(EnumType.STRING)
     var noticeType: NoticeType,  // 공지 유형 (특강, 취업, 매칭데이, 일반)
 
+    @Column(name = "participant_capacity")
+    var participantCapacity: Int = 0 ,
+
     @Column(nullable = false)
     var viewCount: Int = 0,
 
+    @Column(nullable = false)
+    var url : String,
+
+    @Column(name= "parent_id", nullable = true)
+    var parentId : Long? = null,
+
+    @Column(nullable = true)
+    var subtitle : String?
     ) : BaseEntity(){
     fun toDto(): NoticeResponseDto {
         return NoticeResponseDto(
@@ -49,8 +60,10 @@ class NoticeEntity (
             noticeType = this.noticeType,
             createdDateTime = this.createdAt,
             modifiedDateTime = this.updatedAt,
+            participantCapacity = this.participantCapacity,
             viewCount = this.viewCount,
             isScraped = false,
+            parentId = this.parentId
         )
     }
 }
