@@ -15,7 +15,7 @@ class TechStackEntity(
     var name: String, // 기술명
 
     @Column(name = "is_active")
-    var isActive: Boolean // 활성화 여부
+    var isActive: Boolean? // 활성화 여부
 
 ) {
 

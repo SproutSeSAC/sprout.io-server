@@ -60,10 +60,10 @@ class ProjectEntity(
     val projectParticipations: List<ProjectParticipationEntity> = listOf(),
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
-    val positions: List<ProjectPositionEntity> = listOf(),
+    val positions: Set<ProjectPositionEntity> = setOf(),
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
-    val techStacks: List<ProjectTechStackEntity> = listOf(),
+    val techStacks: Set<ProjectTechStackEntity> = setOf(),
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val comments: List<ProjectCommentEntity> = listOf()
@@ -101,7 +101,6 @@ class ProjectEntity(
             createdAt =  this.createdAt,
             contactDetail = this.contactDetail,
             imgUrl = this.writer.profileImageUrl,
-            positionNames = this.positions.map { it.position.name }, // Position의 name 필드로 가정
         )
     }
 }

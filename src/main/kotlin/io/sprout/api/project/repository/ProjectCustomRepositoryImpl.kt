@@ -35,11 +35,13 @@ class ProjectCustomRepositoryImpl(
         return Pair(distinctProjects, totalCount)
     }
 
-    override fun findProjectDetailById(id: Long , userId: Long): ProjectDetailResponseDto? {
+    override fun findProjectDetailById(id: Long, userId: Long): ProjectDetailResponseDto? {
         val projectEntity = QProjectEntity.projectEntity
         val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
         val positionEntity = QPositionEntity.positionEntity
         val userEntity = QUserEntity.userEntity
+        val techStackEntity = QTechStackEntity.techStackEntity
+        val projectTechStackEntity = QProjectTechStackEntity.projectTechStackEntity
 
         // 1. 프로젝트 정보 조회
         val project = queryFactory
@@ -47,6 +49,8 @@ class ProjectCustomRepositoryImpl(
             .leftJoin(projectEntity.writer, userEntity).fetchJoin()
             .leftJoin(projectEntity.positions, projectPositionEntity).fetchJoin()
             .leftJoin(projectPositionEntity.position, positionEntity).fetchJoin()
+            .leftJoin(projectEntity.techStacks , projectTechStackEntity).fetchJoin()
+            .leftJoin(projectTechStackEntity.techStack, techStackEntity).fetchJoin()
             .where(projectEntity.id.eq(id))
             .fetchOne()
 
@@ -58,13 +62,17 @@ class ProjectCustomRepositoryImpl(
         val isScraped = queryFactory
             .selectOne()
             .from(scrapedProjectEntity)
-            .where(scrapedProjectEntity.project.id.eq(id)
-                .and(scrapedProjectEntity.user.id.eq(userId)))
+            .where(
+                scrapedProjectEntity.project.id.eq(id)
+                    .and(scrapedProjectEntity.user.id.eq(userId))
+            )
             .fetchFirst() != null // 스크랩한 기록이 있는지 여부를 확인
 
         // 3. 엔티티를 DTO로 변환하고, 스크랩 여부 설정
         return project.toDto().apply {
             this.isScraped = isScraped
+            this.position = project.positions.map { it.position }
+            this.techStack = project.techStacks.map { it.techStack }
         }
 
 

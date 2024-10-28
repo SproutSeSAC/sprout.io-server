@@ -2,10 +2,12 @@ package io.sprout.api.project.model.dto
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.querydsl.core.annotations.QueryProjection
+import io.sprout.api.position.model.entities.PositionEntity
 import io.sprout.api.project.model.entities.ContactMethod
 import io.sprout.api.project.model.entities.MeetingType
 import io.sprout.api.project.model.entities.PType
 import io.sprout.api.project.model.entities.ProjectStatus
+import io.sprout.api.specification.model.entities.TechStackEntity
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -27,7 +29,8 @@ data class ProjectDetailResponseDto @QueryProjection constructor(
     val createdAt: LocalDateTime,
     val imgUrl : String?,
     val contactDetail : String?,
-    val positionNames: List<String>, // 프로젝트의 포지션들
 ){
     var isScraped: Boolean = false
+    var position : List<PositionEntity> =  emptyList()
+    var techStack: List<TechStackEntity> =  emptyList()
 }
