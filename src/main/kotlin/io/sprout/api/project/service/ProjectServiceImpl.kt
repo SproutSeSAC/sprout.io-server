@@ -6,16 +6,14 @@ import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
 import io.sprout.api.position.model.entities.PositionEntity
 import io.sprout.api.project.model.dto.*
-import io.sprout.api.project.model.entities.ProjectCommentEntity
-import io.sprout.api.project.model.entities.ProjectPositionEntity
-import io.sprout.api.project.model.entities.ProjectTechStackEntity
-import io.sprout.api.project.model.entities.ScrapedProjectEntity
+import io.sprout.api.project.model.entities.*
 import io.sprout.api.project.repository.*
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
 @Service
@@ -42,24 +40,18 @@ class ProjectServiceImpl(
         }
     }
 
+    @Transactional
     override fun postProject(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean {
         return handleExceptions {
             val projectEntity = projectRecruitmentRequestDTO.toEntity(securityManager.getAuthenticatedUserName())
             val savedProjectEntity = projectRepository.save(projectEntity)
-            projectRecruitmentRequestDTO.positions.forEach {
-                val selectedPosition = PositionEntity(it)
-                val projectPositionEntity = ProjectPositionEntity(savedProjectEntity, selectedPosition)
-                projectPositionRepository.save(projectPositionEntity)
-            }
-            projectRecruitmentRequestDTO.requiredStacks.forEach {
-                val requiredTechStack = TechStackEntity(it, "", true)
-                val techStack = ProjectTechStackEntity(savedProjectEntity, requiredTechStack)
-                projectTechStackRepository.save(techStack)
-            }
+            saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
+            saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
             true
         }
     }
 
+    @Transactional
     override fun getFilteredProjects(filterRequest: ProjectFilterRequest): Pair<List<ProjectResponseDto>, Long> {
         return handleExceptions {
             val validPage = if (filterRequest.page < 1) 1 else filterRequest.page
@@ -69,10 +61,12 @@ class ProjectServiceImpl(
         }
     }
 
+    @Transactional
     override fun toggleScrapProject(projectId: Long): Boolean {
         return handleExceptions {
             val user = UserEntity(securityManager.getAuthenticatedUserName()!!)
-            val project = projectRepository.findById(projectId).orElseThrow { IllegalArgumentException("Project not found") }
+            val project =
+                projectRepository.findById(projectId).orElseThrow { IllegalArgumentException("Project not found") }
             val existingScrap = scrapedProjectRepository.findByUserAndProject(user, project)
             if (existingScrap != null) {
                 scrapedProjectRepository.delete(existingScrap)
@@ -85,31 +79,38 @@ class ProjectServiceImpl(
         }
     }
 
+    @Transactional
     override fun increaseViewCount(projectId: Long): Boolean {
         return handleExceptions {
-            val project = projectRepository.findById(projectId).orElseThrow { IllegalArgumentException("Project not found") }
+            val project =
+                projectRepository.findById(projectId).orElseThrow { IllegalArgumentException("Project not found") }
             project.viewCount += 1
             projectRepository.save(project)
             true
         }
     }
 
+    @Transactional
     override fun findProjectDetailById(projectId: Long): ProjectDetailResponseDto? {
         return handleExceptions {
-            projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!) ?: throw IllegalArgumentException("Project with ID $projectId not found")
+            projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!)
+                ?: throw IllegalArgumentException("Project with ID $projectId not found")
         }
     }
 
+    @Transactional(readOnly = true)
     override fun getCommentsByProjectId(projectId: Long): List<ProjectCommentResponseDto> {
         return handleExceptions {
             projectRepository.getCommentsByProjectId(projectId)
         }
     }
 
+    @Transactional
     override fun postComment(projectId: Long, content: String): Boolean {
         return handleExceptions {
             val writer = UserEntity(securityManager.getAuthenticatedUserName()!!)
-            val project = projectRepository.findById(projectId).orElseThrow { IllegalArgumentException("Invalid project ID: $projectId") }
+            val project = projectRepository.findById(projectId)
+                .orElseThrow { IllegalArgumentException("Invalid project ID: $projectId") }
             val comment = ProjectCommentEntity(content = content, writer = writer, project = project)
             projectCommentRepository.save(comment)
             true
@@ -117,11 +118,11 @@ class ProjectServiceImpl(
     }
 
     override fun deleteComment(commentId: Long): Boolean {
-            return handleExceptions {
-                projectCommentRepository.deleteById(commentId)
-                true
-            }
+        return handleExceptions {
+            projectCommentRepository.deleteById(commentId)
+            true
         }
+    }
 
     override fun deleteProject(projectId: Long): Boolean {
         return handleExceptions {
@@ -130,15 +131,23 @@ class ProjectServiceImpl(
         }
     }
 
+    @Transactional
     override fun updateProject(projectId: Long, projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean {
         return handleExceptions {
             val projectEntity = projectRepository.findById(projectId)
                 .orElseThrow { IllegalArgumentException("Project not found") }
-
             projectEntity.updateFromDto(projectRecruitmentRequestDTO)
+            val savedProjectEntity = projectRepository.save(projectEntity)
 
-            projectRepository.save(projectEntity)
+            projectRecruitmentRequestDTO.positions.forEach {
+                projectPositionRepository.deleteById(it)
+            }
 
+            projectRecruitmentRequestDTO.requiredStacks.forEach {
+                projectTechStackRepository.deleteById(it)
+            }
+            saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
+            saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
             true
         }
     }
@@ -147,4 +156,22 @@ class ProjectServiceImpl(
         val yesterday = LocalDate.now().plusDays(1)
         return projectRepository.findProjectsEndingTommorowWithDetails(yesterday)
     }
+
+    private fun saveProjectPositions(savedProjectEntity: ProjectEntity, positions: List<Long>) {
+        positions.forEach {
+            val selectedPosition = PositionEntity(it)
+            val projectPositionEntity = ProjectPositionEntity(savedProjectEntity, selectedPosition)
+            projectPositionRepository.save(projectPositionEntity)
+        }
+    }
+
+    private fun saveProjectTechStacks(savedProjectEntity: ProjectEntity, stacks: List<Long>) {
+        stacks.forEach {
+            val requiredTechStack = TechStackEntity(it, "", true)
+            val techStack = ProjectTechStackEntity(savedProjectEntity, requiredTechStack)
+            projectTechStackRepository.save(techStack)
+        }
+    }
+
+
 }

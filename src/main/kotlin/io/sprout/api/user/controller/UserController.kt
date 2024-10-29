@@ -5,7 +5,6 @@ import io.sprout.api.auth.token.domain.JwtToken
 import io.sprout.api.user.model.dto.CalendarIdResponseDto
 import io.sprout.api.user.model.dto.ManagerEmailResponseDto
 import io.sprout.api.user.model.dto.UserDto
-import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.service.GoogleUserService
 import io.sprout.api.user.service.UserService
@@ -83,23 +82,23 @@ class UserController(
     }
 
 
-    @PostMapping("/calender")
-    fun registerGoogleCalendarId(@RequestBody calendarId: String): ResponseEntity<String> {
-        return if (googleUserService.registerGoogleCalendarId(calendarId)) {
+    @PostMapping("/calender/{courseId}")
+    fun registerGoogleCalendarId(@RequestBody calendarId: String, @PathVariable courseId: Long): ResponseEntity<String> {
+        return if (googleUserService.registerGoogleCalendarId(calendarId, courseId)) {
             ResponseEntity.ok("Calendar ID successfully registered")
         } else {
             ResponseEntity.status(HttpStatus.CONFLICT).body("Failed to register Calendar ID")
         }
     }
 
-    @GetMapping("/calendar/{roleType}")
-    fun getCalendarIdWithManagerGroup(@PathVariable roleType: RoleType): ResponseEntity<List<CalendarIdResponseDto>> {
-        val result = googleUserService.getCalendarIdWithManagerGroup(roleType)
+    @GetMapping("/calendar/{courseId}")
+    fun getCalendarIdWithManagerGroup(@PathVariable courseId: Long): ResponseEntity<List<CalendarIdResponseDto>> {
+        val result = googleUserService.getCalendarInfoByCourseId(courseId)
         return ResponseEntity.ok(result)
 
     }
 
-    @GetMapping("/calendar/course/{courseId}")
+    @GetMapping("/calendar/{courseId}/email")
     fun getManagersByCourseId(@PathVariable courseId: Long): List<ManagerEmailResponseDto> {
         return googleUserService.findManagerEmailSameCourse(courseId)
     }
