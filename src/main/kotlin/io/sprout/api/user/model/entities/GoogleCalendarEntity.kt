@@ -10,10 +10,13 @@ class GoogleCalendarEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id : Long = 0,
 
-    @Column(name = "calendar_id",nullable = false)
+    @Column(name = "calendar_id",nullable = false, unique = true)
     var calendarId: String,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    var user: UserEntity
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = false)
+    var user: UserEntity,
+
+    @Column(nullable = false, unique = false)
+    var courseId: Long
 )

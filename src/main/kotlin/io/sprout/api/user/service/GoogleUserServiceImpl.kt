@@ -87,24 +87,24 @@ class GoogleTokenService(
         return googleToken
     }
 
-    override fun registerGoogleCalendarId(calendarId: String): Boolean {
+    override fun registerGoogleCalendarId(calendarId: String, courseId: Long): Boolean {
 
         val userId = securityManager.getAuthenticatedUserName() ?: return false
         val user = UserEntity(userId) //
 
         // 사용자에 대한 기존 Google Calendar 엔티티가 있는지 확인
-        if (googleCalendarRepository.findByUser(user) != null) {
+        if (googleCalendarRepository.findByCalendarId(calendarId) != null) {
             return false
         }
 
         // 새로운 GoogleCalendarEntity 생성 및 저장
-        val entity = GoogleCalendarEntity(0, calendarId, user)
+        val entity = GoogleCalendarEntity(0, calendarId, user ,courseId)
         googleCalendarRepository.save(entity)
         return true
     }
 
-    override fun getCalendarIdWithManagerGroup(roleType: RoleType): List<CalendarIdResponseDto> {
-        val result = userRepository.findUsersWithCalendarByRole(roleType)
+    override fun getCalendarInfoByCourseId(courseId: Long): List<CalendarIdResponseDto> {
+        val result = googleCalendarRepository.findByCourseId(courseId)
         return result.map { CalendarIdResponseDto.toDto(it) }.toList()
     }
 
