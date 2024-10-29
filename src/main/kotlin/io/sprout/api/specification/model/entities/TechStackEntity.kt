@@ -25,7 +25,5 @@ class TechStackEntity(
     @Column(name = "job_name", nullable = true)
     var jobName: String? = null // 그룹화된 job 이름
 
-    @OneToMany(mappedBy = "techStack", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var userTechStackList: MutableSet<UserTechStackEntity> = LinkedHashSet()
 
 }
