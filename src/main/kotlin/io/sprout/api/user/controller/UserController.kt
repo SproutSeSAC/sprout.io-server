@@ -2,6 +2,7 @@ package io.sprout.api.user.controller
 
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
+import io.sprout.api.user.model.dto.CalendarIdRequestDto
 import io.sprout.api.user.model.dto.CalendarIdResponseDto
 import io.sprout.api.user.model.dto.ManagerEmailResponseDto
 import io.sprout.api.user.model.dto.UserDto
@@ -83,8 +84,8 @@ class UserController(
 
 
     @PostMapping("/calendar/{courseId}")
-    fun registerGoogleCalendarId(@RequestBody calendarId: String, @PathVariable courseId: Long): ResponseEntity<String> {
-        return if (googleUserService.registerGoogleCalendarId(calendarId, courseId)) {
+    fun registerGoogleCalendarId(@RequestBody calendarIdRequestDto: CalendarIdRequestDto, @PathVariable courseId: Long): ResponseEntity<String> {
+        return if (googleUserService.registerGoogleCalendarId(calendarIdRequestDto.calendarId, courseId)) {
             ResponseEntity.ok("Calendar ID successfully registered")
         } else {
             ResponseEntity.status(HttpStatus.CONFLICT).body("Failed to register Calendar ID")
