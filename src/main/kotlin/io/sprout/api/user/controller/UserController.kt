@@ -82,7 +82,7 @@ class UserController(
     }
 
 
-    @PostMapping("/calender/{courseId}")
+    @PostMapping("/calendar/{courseId}")
     fun registerGoogleCalendarId(@RequestBody calendarId: String, @PathVariable courseId: Long): ResponseEntity<String> {
         return if (googleUserService.registerGoogleCalendarId(calendarId, courseId)) {
             ResponseEntity.ok("Calendar ID successfully registered")
