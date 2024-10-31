@@ -38,6 +38,7 @@ data class NoticeRequestDto(
             url = urlInfo.url, // 해당 URL 설정
             parentId = parentId,
             subtitle = urlInfo.subtitle,
+            participantCount = 0,
         )
     }
 }
