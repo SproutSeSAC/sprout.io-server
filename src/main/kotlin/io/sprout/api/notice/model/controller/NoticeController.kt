@@ -4,6 +4,7 @@ import io.sprout.api.notice.model.dto.NoticeFilterRequest
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.model.dto.NoticeResponseDto
 import io.sprout.api.notice.model.entities.NoticeType
+import io.sprout.api.notice.model.enum.RequestResult
 import io.sprout.api.notice.service.NoticeService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -69,5 +70,37 @@ class NoticeController(
     @GetMapping("/{id}")
     fun getNoticeById(@PathVariable id: Long): NoticeResponseDto {
         return noticeService.getNoticeById(id)
+    }
+
+    @PostMapping("/{noticeId}/join")
+    fun requestJoinNotice(@PathVariable noticeId: Long): ResponseEntity<String> {
+        return if (noticeService.requestJoinNotice(noticeId)) {
+            ResponseEntity.ok("Participation request successful.")
+        } else {
+            ResponseEntity.badRequest().body("User has already requested to join this notice.")
+        }
+    }
+
+    @PostMapping("/{noticeId}/accept")
+    fun acceptParticipationRequest(
+        @PathVariable noticeId: Long,
+    ): ResponseEntity<String> {
+        return when (noticeService.acceptRequest(noticeId)) {
+            RequestResult.SUCCESS -> ResponseEntity.ok("Participation confirmed.")
+            RequestResult.REQUEST_NOT_FOUND -> ResponseEntity.status(410).body("The participation request has already been canceled.")
+            RequestResult.VERSION_CONFLICT -> ResponseEntity.status(409).body("Another user has already confirmed this request.")
+            RequestResult.CAPACITY_EXCEEDED -> ResponseEntity.status(403).body("Participation limit exceeded.")
+        }
+    }
+
+    @PostMapping("/{noticeId}/reject")
+    fun rejectParticipationRequest(
+        @PathVariable noticeId: Long,
+    ): ResponseEntity<String> {
+        return if (noticeService.rejectRequest(noticeId)) {
+            ResponseEntity.ok("Participation request rejected.")
+        } else {
+            ResponseEntity.status(404).body("Participation request not found or already canceled.")
+        }
     }
 }

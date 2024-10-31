@@ -1,14 +1,16 @@
 package io.sprout.api.notice.model.entities
 
+import com.querydsl.core.types.Projections.constructor
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.notice.model.dto.NoticeResponseDto
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
+import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import java.time.LocalDate
 
 @Entity
 @Table(name = "notice")
-class NoticeEntity (
+class NoticeEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
@@ -21,7 +23,7 @@ class NoticeEntity (
     @JoinColumn(name = "writer_id")
     val writer: UserEntity,  // 공지사항 작성자
 
-    @Column(name = "start_date" , nullable = false)
+    @Column(name = "start_date", nullable = false)
     var startDate: LocalDate,  // 공지 시작일
     @Column(name = "end_date")
     var endDate: LocalDate? = null,  // 공지 종료일 (선택 사항)
@@ -33,20 +35,45 @@ class NoticeEntity (
     var noticeType: NoticeType,  // 공지 유형 (특강, 취업, 매칭데이, 일반)
 
     @Column(name = "participant_capacity")
-    var participantCapacity: Int = 0 ,
+    var participantCapacity: Int = 0,
 
     @Column(nullable = false)
     var viewCount: Int = 0,
 
     @Column(nullable = false)
-    var url : String,
+    var url: String,
 
-    @Column(name= "parent_id", nullable = true)
-    var parentId : Long? = null,
+    @Column(name = "parent_id", nullable = true)
+    var parentId: Long? = null,
 
     @Column(nullable = true)
-    var subtitle : String?
-    ) : BaseEntity(){
+    var subtitle: String?,
+
+    @Column(nullable = false, name= "participant_count")
+    var participantCount : Int,
+
+    @Version
+    var version: Long = 0
+) : BaseEntity() {
+
+    constructor (noticeId :Long) : this(
+        id = noticeId,
+        title = "",
+        content = "",
+        writer = UserEntity(0),
+        startDate = LocalDate.now(),
+        endDate = null,
+        status = NoticeStatus.ACTIVE,
+        noticeType = NoticeType.GENERAL,
+        participantCapacity = 0,
+        viewCount = 0,
+        url = "",
+        parentId = null,
+        subtitle = null,
+        participantCount = 0
+    )
+
+
     fun toDto(): NoticeResponseDto {
         return NoticeResponseDto(
             id = this.id,
