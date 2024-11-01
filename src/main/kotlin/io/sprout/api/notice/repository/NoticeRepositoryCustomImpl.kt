@@ -1,4 +1,4 @@
-package io.sprout.api.notice.model.repository
+package io.sprout.api.notice.repository
 
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy.groupBy

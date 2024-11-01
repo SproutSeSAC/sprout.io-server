@@ -55,7 +55,8 @@ class JwtFilter(
             "/api/user/check",
             "/api/user/register",
             "/api/user/verification/**",
-            "/api/sse/**"
+            "/api/sse/**",
+            "/api/notifications/admin"
         )
         val path = request.requestURI
         logger.info ( "Request Path: $path" )

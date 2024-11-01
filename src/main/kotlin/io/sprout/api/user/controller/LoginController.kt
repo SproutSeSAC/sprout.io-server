@@ -2,9 +2,7 @@ package io.sprout.api.user.controller
 
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
-import io.sprout.api.user.service.UserService
 import io.sprout.api.utils.CookieUtils
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory

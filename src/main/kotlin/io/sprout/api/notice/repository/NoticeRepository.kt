@@ -1,4 +1,4 @@
-package io.sprout.api.notice.model.repository
+package io.sprout.api.notice.repository
 
 import io.sprout.api.notice.model.entities.NoticeEntity
 import org.springframework.data.jpa.repository.JpaRepository

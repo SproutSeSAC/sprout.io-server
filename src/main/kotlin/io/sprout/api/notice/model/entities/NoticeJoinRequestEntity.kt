@@ -1,6 +1,7 @@
 package io.sprout.api.notice.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.notice.model.dto.NoticeJoinRequestListDto
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
 
@@ -18,4 +19,5 @@ class NoticeJoinRequestEntity(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notice_id", nullable = false)
     val notice : NoticeEntity
-):BaseEntity()
+):BaseEntity(){
+}
