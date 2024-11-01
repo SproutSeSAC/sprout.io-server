@@ -1,4 +1,4 @@
-package io.sprout.api.notice.model.repository
+package io.sprout.api.notice.repository
 
 import io.sprout.api.notice.model.entities.NoticeEntity
 import io.sprout.api.notice.model.entities.NoticeJoinRequestEntity
@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface NoticeJoinRequestRepository :JpaRepository<NoticeJoinRequestEntity, Long>{
+interface NoticeJoinRequestRepository :JpaRepository<NoticeJoinRequestEntity, Long> ,
+    NoticeJoinRequestRepositoryCustom {
     fun findByUserAndNotice(user: UserEntity, notice: NoticeEntity): NoticeJoinRequestEntity?
 }

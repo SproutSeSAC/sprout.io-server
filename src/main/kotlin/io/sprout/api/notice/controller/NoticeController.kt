@@ -1,9 +1,11 @@
-package io.sprout.api.notice.model.controller
+package io.sprout.api.notice.controller
 
 import io.sprout.api.notice.model.dto.NoticeFilterRequest
+import io.sprout.api.notice.model.dto.NoticeJoinRequestListDto
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.model.dto.NoticeResponseDto
 import io.sprout.api.notice.model.entities.NoticeType
+import io.sprout.api.notice.model.enum.AcceptRequestResult
 import io.sprout.api.notice.model.enum.RequestResult
 import io.sprout.api.notice.service.NoticeService
 import org.springframework.http.ResponseEntity
@@ -74,33 +76,41 @@ class NoticeController(
 
     @PostMapping("/{noticeId}/join")
     fun requestJoinNotice(@PathVariable noticeId: Long): ResponseEntity<String> {
-        return if (noticeService.requestJoinNotice(noticeId)) {
-            ResponseEntity.ok("Participation request successful.")
-        } else {
-            ResponseEntity.badRequest().body("User has already requested to join this notice.")
+        return when (val result = noticeService.requestJoinNotice(noticeId)) {
+            RequestResult.SUCCESS -> ResponseEntity.ok("Participation request successful.")
+            RequestResult.ALREADY_PARTICIPATED -> ResponseEntity.badRequest().body("User has already joined this notice.")
+            RequestResult.ALREADY_REQUESTED -> ResponseEntity.badRequest().body("User has already requested to join this notice.")
+            RequestResult.ERROR -> ResponseEntity.status(500).body("An error occurred while processing the participation request.")
         }
     }
 
-    @PostMapping("/{noticeId}/accept")
+    @PostMapping("/{noticeId}/accept/{requestId}")
     fun acceptParticipationRequest(
         @PathVariable noticeId: Long,
+        @PathVariable requestId: Long
     ): ResponseEntity<String> {
-        return when (noticeService.acceptRequest(noticeId)) {
-            RequestResult.SUCCESS -> ResponseEntity.ok("Participation confirmed.")
-            RequestResult.REQUEST_NOT_FOUND -> ResponseEntity.status(410).body("The participation request has already been canceled.")
-            RequestResult.VERSION_CONFLICT -> ResponseEntity.status(409).body("Another user has already confirmed this request.")
-            RequestResult.CAPACITY_EXCEEDED -> ResponseEntity.status(403).body("Participation limit exceeded.")
+        return when (noticeService.acceptRequest(noticeId,requestId)) {
+            AcceptRequestResult.SUCCESS -> ResponseEntity.ok("Participation confirmed.")
+            AcceptRequestResult.REQUEST_NOT_FOUND -> ResponseEntity.status(410).body("The participation request has already been canceled.")
+            AcceptRequestResult.VERSION_CONFLICT -> ResponseEntity.status(409).body("Another user has already confirmed this request.")
+            AcceptRequestResult.CAPACITY_EXCEEDED -> ResponseEntity.status(403).body("Participation limit exceeded.")
         }
     }
 
-    @PostMapping("/{noticeId}/reject")
+    @PostMapping("/{noticeId}/reject/{requestId}")
     fun rejectParticipationRequest(
         @PathVariable noticeId: Long,
+        @PathVariable requestId: Long
     ): ResponseEntity<String> {
-        return if (noticeService.rejectRequest(noticeId)) {
+        return if (noticeService.rejectRequest(noticeId, requestId)) {
             ResponseEntity.ok("Participation request rejected.")
         } else {
             ResponseEntity.status(404).body("Participation request not found or already canceled.")
         }
+    }
+
+    @GetMapping("/{noticeId}/requests")
+    fun getRequestList(@PathVariable noticeId: Long): List<NoticeJoinRequestListDto> {
+        return noticeService.getRequestList(noticeId)
     }
 }
