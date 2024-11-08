@@ -1,20 +1,45 @@
 package io.sprout.api.store.service
 
+import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
+import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
+import io.sprout.api.common.exeption.custom.CustomSystemException
+import io.sprout.api.common.exeption.custom.CustomUnexpectedException
 import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.dto.StoreDto.StoreDetailResponse.*
 import io.sprout.api.store.model.entities.FoodType
+import io.sprout.api.store.model.entities.ScrapedStoreEntity
+import io.sprout.api.store.repository.ScrapedStoreRepository
 import io.sprout.api.store.repository.StoreRepository
+import io.sprout.api.user.model.entities.UserEntity
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
 
 @Service
 class StoreService(
-    private val storeRepository: StoreRepository
+    private val storeRepository: StoreRepository,
+    private val scrapedStoreRepository: ScrapedStoreRepository,
+    private val securityManager: SecurityManager
 ) {
+
+    private fun <T> handleExceptions(action: () -> T): T {
+        return try {
+            action()
+        } catch (e: DataIntegrityViolationException) {
+            throw CustomDataIntegrityViolationException("Data integrity violation: ${e.message}")
+        } catch (e: JpaSystemException) {
+            throw CustomSystemException("System error occurred: ${e.message}")
+        } catch (e: IllegalArgumentException) {
+            throw CustomUnexpectedException("Invalid input: ${e.message}")
+        } catch (e: Exception) {
+            throw CustomUnexpectedException("Unexpected error occurred: ${e.message}")
+        }
+    }
+
     fun getStoreList(filterRequest: StoreDto.StoreListRequest): Pair<List<StoreDto.StoreListResponse.StoreDetail>, Long> {
 
         val storeList = storeRepository.findStoreList(filterRequest)
-
         val result = storeList.first.map { store ->
 
             val tagList = mutableListOf<String>().apply {
@@ -39,8 +64,8 @@ class StoreService(
                 breakTime = store.breakTime
             )
         }
-        val totalCount = storeList.second
 
+        val totalCount = storeList.second
         return Pair(result, totalCount)
     }
 
@@ -103,5 +128,26 @@ class StoreService(
             }.sortedByDescending { it.createdAt }.toMutableSet(),
         )
 
+    }
+
+    fun toggleScrapStore(storeId: Long): Boolean {
+        return handleExceptions {
+            val user = UserEntity(securityManager.getAuthenticatedUserName()!!)
+            val store = storeRepository.findById(storeId).orElseThrow { IllegalArgumentException("Store not found") }
+            val existingScrap = scrapedStoreRepository.findByUserAndStore(user, store)
+
+            if (existingScrap != null) {
+                scrapedStoreRepository.delete(existingScrap)
+                false
+            } else {
+                scrapedStoreRepository.save(
+                    ScrapedStoreEntity(
+                        user = user,
+                        store = store
+                    )
+                )
+                true
+            }
+        }
     }
 }

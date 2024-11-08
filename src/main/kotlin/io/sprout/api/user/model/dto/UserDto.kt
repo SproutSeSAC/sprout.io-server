@@ -1,5 +1,6 @@
 package io.sprout.api.user.model.dto
 
+import io.sprout.api.course.model.dto.CourseDto
 import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.user.model.entities.RoleType
 import io.swagger.v3.oas.annotations.media.Schema
@@ -25,17 +26,11 @@ class UserDto {
         @Schema(description = "유저 권한", nullable = false)
         var role: RoleType,
 
-        @Schema(description = "캠퍼스 명", nullable = false)
-        val campusName: String,
+        @Schema(description = "캠퍼스 리스트", nullable = false)
+        val campusList: MutableSet<String>,
 
-        @Schema(description = "코스 명", nullable = false)
-        val courseTitle: String,
-
-        @Schema(description = "코스 시작일", nullable = false)
-        val courseStartDate: LocalDate,
-
-        @Schema(description = "코스 수료일", nullable = false)
-        val courseEndDate: LocalDate,
+        @Schema(description = "코스 리스트", nullable = false)
+        val courseList: MutableSet<CourseDetail>,
 
         @Schema(description = "관심 직군 리스트")
         val jobList: MutableSet<SpecificationsDto.JobInfoDto>,
@@ -45,12 +40,23 @@ class UserDto {
 
         @Schema(description = "기술 스택 리스트")
         val techStackList: MutableSet<SpecificationsDto.TechStackInfoDto>
-    )
+    ) {
+
+        data class CourseDetail(
+            @Schema(description = "코스 명")
+            val courseTitle: String,
+            @Schema(description = "코스 시작일")
+            val courseStartDate: LocalDate,
+            @Schema(description = "코스 수료일")
+            val courseEndDate: LocalDate
+        )
+
+    }
 
     @Schema(description = "추가 정보 입력에 따른 계정 생성 request")
     data class CreateUserRequest(
-        @Schema(description = "코스 ID", nullable = false)
-        @field:NotNull val courseId: Long,
+        @Schema(description = "코스 ID 리스트")
+        val courseIdList: MutableSet<Long> = mutableSetOf(),
 
         @Schema(description = "유저 명", nullable = false)
         @field:NotNull val name: String,
