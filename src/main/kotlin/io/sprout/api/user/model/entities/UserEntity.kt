@@ -28,9 +28,6 @@ class UserEntity(
     @Column(nullable = false, length = 10)
     var status: UserStatus, // 유저 상태
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    var course: CourseEntity,
-
     @Column(name = "is_essential")
     var isEssential: Boolean
 
@@ -65,6 +62,8 @@ class UserEntity(
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userCourseList: MutableSet<UserCourseEntity> = LinkedHashSet()
 
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var userCampusList: MutableSet<UserCampusEntity> = LinkedHashSet()
 //    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
 //    var googleCalendar: GoogleCalendarEntity? = null
 
@@ -78,10 +77,6 @@ class UserEntity(
         profileImageUrl = null,
         role = RoleType.TRAINEE, // 기본 값 설정
         status = UserStatus.ACTIVE, // 기본 값 설정
-        course = CourseEntity(
-            "", LocalDate.now(), LocalDate.now(), null,
-            calendarId = ""
-        ),
         isEssential = false,
     ) {
         this.id = id

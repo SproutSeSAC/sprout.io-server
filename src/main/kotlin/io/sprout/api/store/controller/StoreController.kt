@@ -72,4 +72,14 @@ class StoreController(
         return storeService.getFilterCount(campusId)
     }
 
+    @PostMapping("/{storeId}/scrap")
+    @Operation(
+        summary = "맛집 스크랩/스크랩 취소 API", // 간단한 설명
+        description = "맛집 스크랩 / 스크랩 취소 API. false -> 스크랩 취소 , true -> 스크랩 됨", // 상세 설명
+    )
+    fun toggleScrapStore(@PathVariable storeId: Long): ResponseEntity<Boolean> {
+        val result = storeService.toggleScrapStore(storeId)
+        return ResponseEntity.ok(result)
+    }
+
 }

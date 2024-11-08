@@ -43,7 +43,13 @@ class StoreEntity(
     var isOverPerson: Boolean, // 5인 이상 가능
 
     @ManyToOne(fetch = FetchType.LAZY)
-    var campus: CampusEntity,
+    var campus: CampusEntity, // 캠퍼스
+
+    @Column(nullable = false, length = 20)
+    var longitude: String, // 경도, 네이버맵 길찾기용
+
+    @Column(nullable = false, length = 20)
+    var latitude: String // 위도, 네이버맵 길찾기용
 
     ) : BaseEntity() {
 

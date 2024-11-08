@@ -9,6 +9,7 @@ import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
+import io.sprout.api.course.model.dto.CourseDto
 import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
@@ -22,6 +23,7 @@ import io.sprout.api.user.repository.UserTechStackRepository
 import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
 import io.sprout.api.verificationCode.repository.VerificationCodeRepository
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -29,6 +31,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class UserService(
@@ -59,8 +62,7 @@ class UserService(
                 role = RoleType.PRE_TRAINEE,
                 status = UserStatus.INACTIVE,
                 profileImageUrl = "https://aaa.com",
-                isEssential = false,
-                course = temporaryCourse
+                isEssential = false
             )
             savedUser = userRepository.save(newUser)
             println("New user created with ID: ${savedUser.id}")
@@ -91,45 +93,53 @@ class UserService(
     ): String {
         try {
             val userId = getUserIdFromAccessToken(httpServletRequest)
-            val user = userRepository.findById(userId).orElseThrow { CustomBadRequestException("Not found user") }
-            val course =
-                courseRepository.findCourseById(request.courseId) ?: throw CustomBadRequestException("Not found course")
+            val userEntity = userRepository.findById(userId).orElseThrow { CustomBadRequestException("Not found user") }
+            val userCourseList: MutableSet<UserCourseEntity> = mutableSetOf()
+            courseRepository.findAllById(request.courseIdList).map { courseEntity ->
+                userCourseList.plusAssign(
+                    UserCourseEntity(
+                        course = courseEntity,
+                        user = userEntity
+                    )
+                )
+            }
+
             val allDomainList = domainRepository.findAll()
             val allJobList = jobRepository.findAll()
             val allTechStackList = techStackRepository.findAll()
 
-            if (!user.isEssential) {
-                user.course = course
-                user.name = request.name
-                user.nickname = request.nickname
-                user.role = request.role
-                user.status = UserStatus.ACTIVE
-                user.marketingConsent = request.marketingConsent
-                user.isEssential = true
+            if (!userEntity.isEssential) {
+                userEntity.userCourseList = userCourseList
+                userEntity.name = request.name
+                userEntity.nickname = request.nickname
+                userEntity.role = request.role
+                userEntity.status = UserStatus.ACTIVE
+                userEntity.marketingConsent = request.marketingConsent
+                userEntity.isEssential = true
 
-                user.userJobList.plusAssign(
+                userEntity.userJobList.plusAssign(
                     request.jobIdList.map { jobId ->
                         UserJobEntity(
                             job = allJobList.first { it.id == jobId },
-                            user = user
+                            user = userEntity
                         )
                     }
                 )
 
-                user.userDomainList.plusAssign(
+                userEntity.userDomainList.plusAssign(
                     request.domainIdList.map { domainId ->
                         UserDomainEntity(
                             domain = allDomainList.first { it.id == domainId },
-                            user = user
+                            user = userEntity
                         )
                     }
                 )
 
-                user.userTechStackList.plusAssign(
+                userEntity.userTechStackList.plusAssign(
                     request.techStackIdList.map { techStackId ->
                         UserTechStackEntity(
                             techStack = allTechStackList.first { it.id == techStackId },
-                            user = user
+                            user = userEntity
                         )
                     }
                 )
@@ -139,10 +149,10 @@ class UserService(
                 throw CustomDataIntegrityViolationException("Already registered user")
             }
 
-            userRepository.save(user)
-            log.debug("createUser, userId is: {}", user.id)
+            userRepository.save(userEntity)
+            log.debug("createUser, userId is: {}", userEntity.id)
 
-            return user.refreshToken!!
+            return userEntity.refreshToken!!
 
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
@@ -251,10 +261,16 @@ class UserService(
             return UserDto.GetUserResponse(
                 name = user.name,
                 email = user.email,
-                campusName = user.course.campus!!.name,
-                courseTitle = user.course.title,
-                courseStartDate = user.course.startDate,
-                courseEndDate = user.course.endDate,
+                campusList = user.userCampusList.map {
+                    it.campus.name
+                }.toMutableSet(),
+                courseList = user.userCourseList.map {
+                    UserDto.GetUserResponse.CourseDetail(
+                        courseTitle = it.course.title,
+                        courseStartDate = it.course.startDate,
+                        courseEndDate = it.course.endDate
+                    )
+                }.toMutableSet(),
                 nickname = user.nickname,
                 role = user.role,
                 profileImageUrl = user.profileImageUrl,
