@@ -1,10 +1,7 @@
 package io.sprout.api.user.model.entities
 
-import com.querydsl.core.types.Projections.constructor
 import io.sprout.api.common.model.entities.BaseEntity
-import io.sprout.api.course.model.entities.CourseEntity
 import jakarta.persistence.*
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
