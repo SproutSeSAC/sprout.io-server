@@ -82,8 +82,8 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testRuntimeOnly("com.h2database:h2")
 
-	//aws
-	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+	//aws s3
+//	implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 
 	// webflux
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
