@@ -1,6 +1,5 @@
 package io.sprout.api.user.model.dto
 
-import io.sprout.api.course.model.dto.CourseDto
 import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.user.model.entities.RoleType
 import io.swagger.v3.oas.annotations.media.Schema

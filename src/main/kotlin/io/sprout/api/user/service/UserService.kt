@@ -9,7 +9,6 @@ import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
-import io.sprout.api.course.model.dto.CourseDto
 import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
@@ -23,7 +22,6 @@ import io.sprout.api.user.repository.UserTechStackRepository
 import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
 import io.sprout.api.verificationCode.repository.VerificationCodeRepository
-import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -31,7 +29,6 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
 
 @Service
 class UserService(
@@ -51,7 +48,6 @@ class UserService(
 
     fun checkAndJoinUser(email: String, response: HttpServletResponse): UserEntity {
         val user = userRepository.findByEmail(email)
-        val temporaryCourse = courseRepository.findCourseById(1) ?: throw BaseException(ExceptionCode.NOT_FOUND_COURSE)
         val newNick = NicknameGenerator.generate()
         val savedUser: UserEntity
         if (user == null) {
