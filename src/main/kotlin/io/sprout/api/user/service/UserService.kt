@@ -243,7 +243,10 @@ class UserService(
                 name = user.name,
                 email = user.email,
                 campusList = courseRepository.findUserCampusByUserId(userId).map {
-                    it.name
+                    SpecificationsDto.CampusInfoDto(
+                        it.id,
+                        it.name
+                    )
                 }.toMutableSet(),
                 courseList = user.userCourseList.map {
                     UserDto.GetUserResponse.CourseDetail(
