@@ -1,6 +1,7 @@
 package io.sprout.api.course.model.entities
 
 import io.sprout.api.campus.model.entities.CampusEntity
+import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.user.model.entities.UserCourseEntity
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -25,7 +26,7 @@ class CourseEntity(
     @Column(name = "calendar_id", nullable = false, length = 100)
     var calendarId: String, // 코스 별 구글 캘린더 ID
 
-) {
+): BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

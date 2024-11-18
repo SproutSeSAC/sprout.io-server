@@ -6,14 +6,17 @@ import io.sprout.api.user.model.dto.CalendarIdRequestDto
 import io.sprout.api.user.model.dto.CalendarIdResponseDto
 import io.sprout.api.user.model.dto.ManagerEmailResponseDto
 import io.sprout.api.user.model.dto.UserDto
+import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.service.GoogleUserService
 import io.sprout.api.user.service.UserService
 import io.sprout.api.utils.CookieUtils
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -41,19 +44,27 @@ class UserController(
         return userService.verifyCode(code)
     }
 
+
+    /**
+     * 가입 초기 계정의 필수 추가 정보 입력 과정
+     *
+     *  @param UserDto.CreateUserRequest 계정 초기화 요청 파라미터
+     * @return 200 with Access Token(body)
+     */
     @PostMapping("/register")
     @Operation(summary = "계정 등록", description = "계정 등록 (회원 상태가 변경된 새로운 access-token 발급)")
-    fun createUser(
+    fun initUser(
         @RequestBody @Valid request: UserDto.CreateUserRequest,
         httpServletRequest: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<Map<String,String>> {
-        val refreshToken = userService.createUser(request, httpServletRequest, response)
+        val refreshToken = userService.createUser(request, httpServletRequest)
         val newAccessToken = jwtToken.createAccessFromRefreshToken(refreshToken)
 
         // https 미도입에 따른 쿠키 이용 임시 주석 처리
 //        val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
 //        response.addCookie(accessCookie)
+
         val result = hashMapOf("access_token" to newAccessToken)
 
         return ResponseEntity.ok(result)
