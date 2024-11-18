@@ -26,7 +26,7 @@ class UserDto {
         var role: RoleType,
 
         @Schema(description = "캠퍼스 리스트", nullable = false)
-        val campusList: MutableSet<String>,
+        val campusList: MutableSet<SpecificationsDto.CampusInfoDto>,
 
         @Schema(description = "코스 리스트", nullable = false)
         val courseList: MutableSet<CourseDetail>,

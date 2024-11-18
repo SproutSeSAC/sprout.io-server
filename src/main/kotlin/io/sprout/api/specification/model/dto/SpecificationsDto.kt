@@ -51,4 +51,13 @@ class SpecificationsDto {
         @Schema(description = "그룹화된 직무명", nullable = false)
         val jobName: String
     )
+
+    @Schema(description = "캠퍼스 조회 dto")
+    data class CampusInfoDto(
+        @Schema(description = "캠퍼스 id", nullable = false)
+        val id: Long,
+
+        @Schema(description = "이름", nullable = false)
+        val campusName: String,
+    )
 }
