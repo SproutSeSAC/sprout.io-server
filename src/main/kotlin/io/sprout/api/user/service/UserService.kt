@@ -3,6 +3,7 @@ package io.sprout.api.user.service
 import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
+import io.sprout.api.campus.model.entities.CampusEntity
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.common.exeption.custom.CustomSystemException
@@ -85,27 +86,12 @@ class UserService(
     fun createUser(
         request: UserDto.CreateUserRequest,
         httpServletRequest: HttpServletRequest,
-        response: HttpServletResponse
     ): String {
         try {
             val userId = getUserIdFromAccessToken(httpServletRequest)
             val userEntity = userRepository.findById(userId).orElseThrow { CustomBadRequestException("Not found user") }
-            val userCourseList: MutableSet<UserCourseEntity> = mutableSetOf()
-            courseRepository.findAllById(request.courseIdList).map { courseEntity ->
-                userCourseList.plusAssign(
-                    UserCourseEntity(
-                        course = courseEntity,
-                        user = userEntity
-                    )
-                )
-            }
-
-            val allDomainList = domainRepository.findAll()
-            val allJobList = jobRepository.findAll()
-            val allTechStackList = techStackRepository.findAll()
 
             if (!userEntity.isEssential) {
-                userEntity.userCourseList = userCourseList
                 userEntity.name = request.name
                 userEntity.nickname = request.nickname
                 userEntity.role = request.role
@@ -113,32 +99,31 @@ class UserService(
                 userEntity.marketingConsent = request.marketingConsent
                 userEntity.isEssential = true
 
-                userEntity.userJobList.plusAssign(
-                    request.jobIdList.map { jobId ->
-                        UserJobEntity(
-                            job = allJobList.first { it.id == jobId },
-                            user = userEntity
-                        )
-                    }
-                )
+                userEntity.userCourseList = courseRepository.findAllById(request.courseIdList).map {
+                    UserCourseEntity(
+                        course = it,
+                        user = userEntity
+                    )
+                }.toMutableSet()
+                userEntity.userJobList = jobRepository.findAllById(request.jobIdList).map {
+                    UserJobEntity(
+                        job = it,
+                        user = userEntity
+                    )
+                }.toMutableSet()
+                userEntity.userDomainList = domainRepository.findAllById(request.domainIdList).map {
+                    UserDomainEntity(
+                        domain = it,
+                        user = userEntity
+                    )
+                }.toMutableSet()
 
-                userEntity.userDomainList.plusAssign(
-                    request.domainIdList.map { domainId ->
-                        UserDomainEntity(
-                            domain = allDomainList.first { it.id == domainId },
-                            user = userEntity
-                        )
-                    }
-                )
-
-                userEntity.userTechStackList.plusAssign(
-                    request.techStackIdList.map { techStackId ->
-                        UserTechStackEntity(
-                            techStack = allTechStackList.first { it.id == techStackId },
-                            user = userEntity
-                        )
-                    }
-                )
+                userEntity.userTechStackList = techStackRepository.findAllById(request.techStackIdList).map {
+                    UserTechStackEntity(
+                        techStack = it,
+                        user = userEntity
+                    )
+                } .toMutableSet()
 
             } else {
                 // 이미 회원 가입이 완료된 경우
@@ -257,11 +242,12 @@ class UserService(
             return UserDto.GetUserResponse(
                 name = user.name,
                 email = user.email,
-                campusList = user.userCampusList.map {
-                    it.campus.name
+                campusList = courseRepository.findUserCampusByUserId(userId).map {
+                    it.name
                 }.toMutableSet(),
                 courseList = user.userCourseList.map {
                     UserDto.GetUserResponse.CourseDetail(
+                        courseId = it.id,
                         courseTitle = it.course.title,
                         courseStartDate = it.course.startDate,
                         courseEndDate = it.course.endDate

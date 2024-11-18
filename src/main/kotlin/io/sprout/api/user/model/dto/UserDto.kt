@@ -42,6 +42,8 @@ class UserDto {
     ) {
 
         data class CourseDetail(
+            @Schema(description = "코스 ID")
+            val courseId: Long,
             @Schema(description = "코스 명")
             val courseTitle: String,
             @Schema(description = "코스 시작일")
@@ -77,6 +79,7 @@ class UserDto {
 
         @Schema(description = "개인정보 취급 방침 동의 여부", nullable = false)
         @field:NotNull val marketingConsent: Boolean
+
     )
 
     @Schema(description = "계정 수정 request")
