@@ -14,8 +14,8 @@ class StoreReviewEntity(
     @Column(nullable = true)
     var rating: Int?, // 별점
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     var user: UserEntity, // 유저 정보
 
     @ManyToOne

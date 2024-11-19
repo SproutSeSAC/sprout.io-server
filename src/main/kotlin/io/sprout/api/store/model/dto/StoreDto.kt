@@ -136,8 +136,11 @@ class StoreDto {
         @Schema(description = "도보 시간")
         val walkTime: Int,
 
-        @Schema(description = "tag 리스트")
-        val tagList: List<String>,
+        @Schema(description = "제로 페이 가능 여부")
+        val isZeropay: Boolean,
+
+        @Schema(description = "5인 이상 가능 여부")
+        val isOverPerson: Boolean,
 
         @Schema(description = "메뉴 리스트")
         val storeMenuList: MutableSet<StoreMenuDetail> = LinkedHashSet(),
@@ -146,6 +149,11 @@ class StoreDto {
         val storeReviewList: MutableSet<StoreReviewDetail> = LinkedHashSet()
 
     ) {
+        @get:Schema(description = "10000원 이하 메뉴 존재 여부")
+        val isLessThan10000Menu: Boolean
+            get() {
+                return storeMenuList.any { it.price <= 10000 }
+            }
 
         data class StoreMenuDetail(
             val id: Long,
@@ -162,5 +170,13 @@ class StoreDto {
             val createdAt: LocalDateTime
         )
     }
+
+    @Schema(description = "맛집 리뷰 작성 Request")
+    data class StoreReviewRequest(
+        @Schema(description = "별점")
+        val rating: Int,
+        @Schema(description = "리뷰 내용")
+        val review: String
+    )
 
 }

@@ -46,4 +46,15 @@ class StoreController(
         return ResponseEntity.ok(result)
     }
 
+    @PostMapping("/{storeId}/review")
+    @Operation(summary = "맛집 리뷰 작성", description = "특정 맛집의 리뷰 작성")
+    fun createStoreReview(
+        @PathVariable storeId: Long,
+        @RequestBody reviewCreateRequest: StoreDto.StoreReviewRequest
+    ): ResponseEntity<Void> {
+        storeService.createReview(storeId, reviewCreateRequest)
+
+        return ResponseEntity.ok().build()
+    }
+
 }
