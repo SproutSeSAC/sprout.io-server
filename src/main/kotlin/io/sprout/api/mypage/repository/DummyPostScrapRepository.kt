@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface DummyPostScrapRepository : JpaRepository<DummyPostScrap, Int> {
     fun findAllByUserId(userId: Int): List<DummyPostScrap>
+
+    fun deleteBypostscrapidAndUserId(postscrapid: Int, userId: Int): Int
 }

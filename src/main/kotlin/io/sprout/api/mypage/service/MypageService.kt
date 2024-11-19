@@ -119,6 +119,11 @@ class MypageService(
         }
     }
 
+    // 찜한글 삭제
+    fun deletePostScrap(scrapid: Int, userId: Int) {
+        dummyPostScrapRepository.deleteBypostscrapidAndUserId(scrapid, userId)
+    }
+
     // 참여 글 목록 조회
     fun getPostParticipantListByUserId(userId: Int): List<PostParticipantDto> {
         val particis: List<DummyPostParticipant> = dummyPostParticipantRepository.findAllByUserId(userId)
@@ -126,10 +131,15 @@ class MypageService(
         // DTO 변환
         return particis.map {
             PostParticipantDto(
-                    postParticipantId = it.postparticipantid,
+                    postParticipantId = it.postparticipantId,
                     userId = it.userId
             )
         }
+    }
+
+    // 참여글 삭제
+    fun deletePostParticipant(postparticipantId: Int, userId: Int) {
+        dummyPostParticipantRepository.deleteByPostParticipantIdAndUserId(postparticipantId, userId)
     }
     // endregion
 }

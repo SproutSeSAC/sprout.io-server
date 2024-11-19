@@ -51,9 +51,27 @@ class MypageController(private val mypageService: MypageService) {
         return mypageService.getPostScrapListByUserId(userId)
     }
 
+    @Operation(summary = "찜 취소", description = "특정 글의 찜을 철회홥니다.")
+    @DeleteMapping("/deleteScrap/{scrapid}")
+    fun deletePostScrapid(
+            @PathVariable scrapid: Int,
+            @RequestParam userId: Int
+    ) {
+        mypageService.deletePostScrap(scrapid, userId)
+    }
+
     @Operation(summary = "신청한 글 조회", description = "신청한 글들의 ID를 반환합니다.")
     @GetMapping("/getParticipant")
     fun getPostParticipantList(@PathVariable userId: Int): List<PostParticipantDto> {
         return mypageService.getPostParticipantListByUserId(userId)
+    }
+
+    @Operation(summary = "신청한 글 취소", description = "특정 글의 신청을 철회홥니다.")
+    @DeleteMapping("/deleteParticipant/{participantid}")
+    fun deletePostParticipant(
+            @PathVariable postparticipantId: Int,
+            @RequestParam userId: Int
+    ) {
+        mypageService.deletePostParticipant(postparticipantId, userId)
     }
 }
