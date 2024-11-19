@@ -1,9 +1,6 @@
 package io.sprout.api.mypage.controller
 
-import io.sprout.api.mypage.dto.CardDto
-import io.sprout.api.mypage.dto.PostDto
-import io.sprout.api.mypage.dto.PostParticipantDto
-import io.sprout.api.mypage.dto.PostScrapDto
+import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.service.MypageService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.*
@@ -22,6 +19,12 @@ class MypageController(private val mypageService: MypageService) {
     @GetMapping("/getPost")
     fun getPostList(@PathVariable userId: Int): List<PostDto> {
         return mypageService.getPostListByUserId(userId)
+    }
+
+    @Operation(summary = "작성 댓글 조회", description = "작성한 댓글들의 ID와 게시글 ID를 반환합니다.")
+    @GetMapping("/getComments")
+    fun getCommentList(@PathVariable userId: Int): List<PostCommentDto> {
+        return mypageService.getPostCommentListByUserId(userId)
     }
 
     @Operation(summary = "찜한 글 조회", description = "찜한 글들의 ID를 반환합니다.")

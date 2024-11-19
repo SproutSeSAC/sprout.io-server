@@ -1,10 +1,8 @@
 package io.sprout.api.mypage.service
 
-import io.sprout.api.mypage.dto.CardDto
-import io.sprout.api.mypage.dto.PostDto
-import io.sprout.api.mypage.dto.PostParticipantDto
-import io.sprout.api.mypage.dto.PostScrapDto
+import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.entity.DummyPost
+import io.sprout.api.mypage.entity.DummyPostComment
 import io.sprout.api.mypage.entity.DummyPostParticipant
 import io.sprout.api.mypage.entity.DummyPostScrap
 import io.sprout.api.mypage.repository.*
@@ -18,7 +16,8 @@ class MypageService(
         private val userCourseRepository: UserCourseRepository,
         private val dummyPostScrapRepository: DummyPostScrapRepository,
         private val dummyPostRepository: DummyPostRepository,
-        private val dummyPostParticipantRepository: DummyPostParticipantRepository
+        private val dummyPostParticipantRepository: DummyPostParticipantRepository,
+        private val dummyPostCommentRepository: DummyPostCommentRepository
 ) {
 
     // region [프로필 관련 API]
@@ -70,6 +69,20 @@ class MypageService(
             PostDto(
                     postId = it.postid,
                     userId = it.userId
+            )
+        }
+    }
+
+    // 댓글 조회
+    fun getPostCommentListByUserId(userId: Int): List<PostCommentDto> {
+        val comments: List<DummyPostComment> = dummyPostCommentRepository.findAllByUserId(userId)
+
+        // DTO 변환
+        return comments.map {
+            PostCommentDto(
+                    commentId = it.commentId,
+                    userId = it.userId,
+                    postId = it.postId
             )
         }
     }
