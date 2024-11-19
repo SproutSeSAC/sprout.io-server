@@ -1,6 +1,9 @@
 package io.sprout.api.mypage.controller
 
 import io.sprout.api.mypage.dto.CardDto
+import io.sprout.api.mypage.dto.PostDto
+import io.sprout.api.mypage.dto.PostParticipantDto
+import io.sprout.api.mypage.dto.PostScrapDto
 import io.sprout.api.mypage.service.MypageService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.*
@@ -10,8 +13,26 @@ import org.springframework.web.bind.annotation.*
 class MypageController(private val mypageService: MypageService) {
 
     @Operation(summary = "프로필 조회", description = "프로필 카드 조회 API, 프로필과 교육과정 카드에 필요한 정보를 반환")
-    @GetMapping("/getcard")
+    @GetMapping("/getCard")
     fun getUserCard(@PathVariable userId: Long): CardDto.UserCard {
         return mypageService.getUserCard(userId)
+    }
+
+    @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")
+    @GetMapping("/getPost")
+    fun getPostList(@PathVariable userId: Int): List<PostDto> {
+        return mypageService.getPostListByUserId(userId)
+    }
+
+    @Operation(summary = "찜한 글 조회", description = "찜한 글들의 ID를 반환합니다.")
+    @GetMapping("/getScrap")
+    fun getPostScrapList(@PathVariable userId: Int): List<PostScrapDto> {
+        return mypageService.getPostScrapListByUserId(userId)
+    }
+
+    @Operation(summary = "신청한 글 조회", description = "신청한 글들의 ID를 반환합니다.")
+    @GetMapping("/getParticipant")
+    fun getPostParticipantList(@PathVariable userId: Int): List<PostParticipantDto> {
+        return mypageService.getPostParticipantListByUserId(userId)
     }
 }
