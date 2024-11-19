@@ -5,7 +5,7 @@ import io.sprout.api.store.model.dto.StoreProjectionDto
 
 interface StoreRepositoryCustom {
 
-    fun findStoreList(request: StoreDto.StoreListRequest): Pair<List<StoreProjectionDto.StoreInfoDto>, Long>
+    fun findStoreList(request: StoreDto.StoreListRequest, userId: Long): List<StoreProjectionDto.StoreInfoDto>
 
     fun findStoreFilterList(campusId: Long): List<StoreProjectionDto.StoreFilterDto>
 }

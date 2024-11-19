@@ -4,12 +4,12 @@ import io.sprout.api.store.model.entities.FoodType
 
 class StoreProjectionDto{
 
+    //위도, 경도, 스크랩 여부, 스크랩 개수
     data class StoreInfoDto(
         val id: Long,
         val name: String,
         val foodType: FoodType,
         val campusName: String,
-        val mapSchemaUrl: String?,
         val address: String,
         val contact: String,
         val workingDay: String,
@@ -18,9 +18,18 @@ class StoreProjectionDto{
         val isZeropay: Boolean,
         val walkTime: Int,
         val isOverPerson: Boolean,
-        val storeImageList: List<StoreImageDto>,
-        val storeMenuList: List<StoreMenuDto>
-    )
+        val longitude: String,
+        val latitude: String,
+        val scrapCount: Long,
+        val isScrap: Boolean,
+    ) {
+        var storeImageList: MutableList<StoreImageDto> = mutableListOf()
+        var storeMenuList: MutableList<StoreMenuDto> = mutableListOf()
+        val isLessThan10000Menu: Boolean
+            get() {
+                return storeMenuList.any { it.price!! <= 10000 } ?: false
+            }
+    }
 
     data class StoreImageDto(
         val id: Long?,
@@ -30,7 +39,8 @@ class StoreProjectionDto{
     data class StoreMenuDto(
         val id: Long?,
         val name: String?,
-        val price: Int?
+        val price: Int?,
+        val imageUrl: String?
     )
 
     data class StoreFilterDto(
