@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/mypage")
-class MypageController(private val mypageService: MypageService) {
+class MypageController(
+        private val mypageService: MypageService
+) {
 
     @Operation(summary = "프로필 조회", description = "프로필 카드 조회 API, 프로필과 교육과정 카드에 필요한 정보를 반환합니다.")
-    @GetMapping("/getCard")
+    @GetMapping("/getCard/{userId}")
     fun getUserCard(@PathVariable userId: Long): CardDto.UserCard {
         return mypageService.getUserCard(userId)
     }
@@ -34,19 +36,19 @@ class MypageController(private val mypageService: MypageService) {
     }
 
     @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")
-    @GetMapping("/getPost")
+    @GetMapping("/getPost/{userId}")
     fun getPostList(@PathVariable userId: Int): List<PostDto> {
         return mypageService.getPostListByUserId(userId)
     }
 
     @Operation(summary = "작성 댓글 조회", description = "작성한 댓글들의 ID와 게시글 ID를 반환합니다.")
-    @GetMapping("/getComments")
+    @GetMapping("/getComments/{userId}")
     fun getCommentList(@PathVariable userId: Int): List<PostCommentDto> {
         return mypageService.getPostCommentListByUserId(userId)
     }
 
     @Operation(summary = "찜한 글 조회", description = "찜한 글들의 ID를 반환합니다.")
-    @GetMapping("/getScrap")
+    @GetMapping("/getScrap/{userId}")
     fun getPostScrapList(@PathVariable userId: Int): List<PostScrapDto> {
         return mypageService.getPostScrapListByUserId(userId)
     }
@@ -61,7 +63,7 @@ class MypageController(private val mypageService: MypageService) {
     }
 
     @Operation(summary = "신청한 글 조회", description = "신청한 글들의 ID를 반환합니다.")
-    @GetMapping("/getParticipant")
+    @GetMapping("/getParticipant/{userId}")
     fun getPostParticipantList(@PathVariable userId: Int): List<PostParticipantDto> {
         return mypageService.getPostParticipantListByUserId(userId)
     }

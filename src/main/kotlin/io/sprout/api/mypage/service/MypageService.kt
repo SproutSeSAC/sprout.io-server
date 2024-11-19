@@ -29,11 +29,11 @@ class MypageService(
                 .orElseThrow { IllegalArgumentException("User not found") }
 
         // UserCampusEntity 조회
-        val userCampus = userCampusRepository.findById(userId)
+        val userCampus = userCampusRepository.findByUser_Id(userId)
                 .orElseThrow { IllegalArgumentException("Campus not found") }
 
         // UserCourseEntity 조회
-        val userCourse = userCourseRepository.findById(userId)
+        val userCourse = userCourseRepository.findByUser_Id(userId)
                 .orElseThrow { IllegalArgumentException("Course not found") }
 
         // ProfileCard 생성
@@ -43,17 +43,27 @@ class MypageService(
                 profileUrl = user.profileImageUrl
         )
 
+        val CampusMini = CardDto.CampusMini(
+                id = userCampus.campus.id,
+                name = userCampus.campus.name
+        )
+
+        val CourseMini = CardDto.CourseMini(
+                id = userCourse.course.id,
+                name = userCourse.course.title
+        )
+
         // StudyCard 생성
         val studyCard = CardDto.StudyCard(
                 email = user.email,
-                campus = userCampus.campus,
-                course = userCourse.course
+                campus = CampusMini,
+                course = CourseMini
         )
 
         // UserCard 생성
         return CardDto.UserCard(
-                name = profileCard,
-                nickname = studyCard
+                profile = profileCard,
+                study = studyCard
         )
     }
 

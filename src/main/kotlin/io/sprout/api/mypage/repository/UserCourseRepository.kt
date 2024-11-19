@@ -1,6 +1,10 @@
 package io.sprout.api.mypage.repository
 
+import io.sprout.api.user.model.entities.UserCampusEntity
 import io.sprout.api.user.model.entities.UserCourseEntity
 import org.springframework.data.jpa.repository.JpaRepository
+import java.util.*
 
-interface UserCourseRepository : JpaRepository<UserCourseEntity, Long>
+interface UserCourseRepository : JpaRepository<UserCourseEntity, Long> {
+    fun findByUser_Id(userId: Long): Optional<UserCourseEntity>
+}
