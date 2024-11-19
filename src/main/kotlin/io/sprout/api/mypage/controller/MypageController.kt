@@ -9,10 +9,28 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/mypage")
 class MypageController(private val mypageService: MypageService) {
 
-    @Operation(summary = "프로필 조회", description = "프로필 카드 조회 API, 프로필과 교육과정 카드에 필요한 정보를 반환")
+    @Operation(summary = "프로필 조회", description = "프로필 카드 조회 API, 프로필과 교육과정 카드에 필요한 정보를 반환합니다.")
     @GetMapping("/getCard")
     fun getUserCard(@PathVariable userId: Long): CardDto.UserCard {
         return mypageService.getUserCard(userId)
+    }
+
+    @Operation(summary = "닉네임 업데이트", description = "새로운 닉네임을 입력하여 수정할 수 있습니다.")
+    @PatchMapping("/updateNickname/{userId}")
+    fun updateNickname(
+            @PathVariable userId: Long,
+            @RequestBody request: UpdateNickNameDto
+    ) {
+        mypageService.updateNickname(userId, request)
+    }
+
+    @Operation(summary = "프사 업데이트", description = "새로운 프사 Url로 수정할 수 있습니다.")
+    @PatchMapping("/updateProfileUrl/{userId}")
+    fun updateProfileUrl(
+            @PathVariable userId: Long,
+            @RequestBody request: UpdateProfileUrlDto
+    ) {
+        mypageService.updateProfileUrl(userId, request)
     }
 
     @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")

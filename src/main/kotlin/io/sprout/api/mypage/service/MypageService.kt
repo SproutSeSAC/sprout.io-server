@@ -7,6 +7,7 @@ import io.sprout.api.mypage.entity.DummyPostParticipant
 import io.sprout.api.mypage.entity.DummyPostScrap
 import io.sprout.api.mypage.repository.*
 import io.sprout.api.user.repository.UserRepository
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
@@ -54,6 +55,24 @@ class MypageService(
                 name = profileCard,
                 nickname = studyCard
         )
+    }
+
+    // 닉네임 변경
+    fun updateNickname(userId: Long, request: UpdateNickNameDto) {
+        val user = userRepository.findById(userId)
+                .orElseThrow { EntityNotFoundException("유저 Id를 찾을 수 없음 : $userId") }
+
+        user.nickname = request.nickname
+        userRepository.save(user)
+    }
+
+    // 프사 변경
+    fun updateProfileUrl(userId: Long, request: UpdateProfileUrlDto) {
+        val user = userRepository.findById(userId)
+                .orElseThrow { EntityNotFoundException("유저 Id를 찾을 수 없음 : $userId") }
+
+        user.profileImageUrl = request.profileUrl
+        userRepository.save(user)
     }
 
     // endregion
