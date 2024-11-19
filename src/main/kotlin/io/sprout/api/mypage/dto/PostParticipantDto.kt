@@ -1,6 +1,6 @@
 package io.sprout.api.mypage.dto
 
 data class PostParticipantDto(
-        val postParticipantId: Int,
+        val postParticipantid: Int,
         val userId: Int
 )

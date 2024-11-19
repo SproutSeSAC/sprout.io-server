@@ -11,7 +11,7 @@ import jakarta.persistence.Table
 class DummyPostParticipant (
         @Id
         @Column(nullable = false, length = 50)
-        var postparticipantId: Int,
+        var postparticipantid: Int,
 
         @Column(nullable = false)
         var userId: Int

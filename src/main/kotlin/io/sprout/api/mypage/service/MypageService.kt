@@ -131,7 +131,7 @@ class MypageService(
         // DTO 변환
         return particis.map {
             PostParticipantDto(
-                    postParticipantId = it.postparticipantId,
+                    postParticipantid = it.postparticipantid,
                     userId = it.userId
             )
         }
@@ -139,7 +139,7 @@ class MypageService(
 
     // 참여글 삭제
     fun deletePostParticipant(postparticipantId: Int, userId: Int) {
-        dummyPostParticipantRepository.deleteByPostParticipantIdAndUserId(postparticipantId, userId)
+        dummyPostParticipantRepository.deleteByPostparticipantidAndUserId(postparticipantId, userId)
     }
     // endregion
 }
