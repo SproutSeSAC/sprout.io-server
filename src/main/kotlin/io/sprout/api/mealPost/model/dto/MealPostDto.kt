@@ -26,14 +26,6 @@ class MealPostDto {
 
     )
 
-    @Schema(description = "한끼팟 생성")
-    data class MealPostDeleteRequest(
-
-        @Schema(description = "한끼팟 ID")
-        @NotNull val mealPostId: Long
-
-    )
-
     @Schema(description = "한끼팟 참여")
     data class ParticipationRequest(
 

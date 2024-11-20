@@ -23,10 +23,10 @@ class MealPostController(
     }
 
     // 지우기
-    @DeleteMapping
+    @DeleteMapping("/{mealPostId}")
     @Operation(summary = "한끼팟 삭제", description = "한끼팟 삭제 API")
-    fun deleteMealPost(@RequestBody @Valid request: MealPostDto.MealPostDeleteRequest) {
-        return mealPostService.deleteMealPost(request)
+    fun deleteMealPost(@PathVariable mealPostId: Long) {
+        return mealPostService.deleteMealPost(mealPostId)
     }
 
     // TODO: 주최자 닉네임과 사진 뿌리기

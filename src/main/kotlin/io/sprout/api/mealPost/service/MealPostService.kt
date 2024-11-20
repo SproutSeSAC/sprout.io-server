@@ -10,6 +10,7 @@ import io.sprout.api.mealPost.model.dto.MealPostProjection
 import io.sprout.api.mealPost.model.entities.MealPostEntity
 import io.sprout.api.mealPost.model.entities.MealPostParticipationEntity
 import io.sprout.api.mealPost.model.entities.MealPostStatus
+import io.sprout.api.mealPost.repository.MealPostParticipationRepository
 import io.sprout.api.mealPost.repository.MealPostRepository
 import io.sprout.api.store.repository.StoreRepository
 import io.sprout.api.user.model.entities.UserEntity
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service
 @Service
 class MealPostService(
     private val mealPostRepository: MealPostRepository,
+    private val mealPostParticipationRepository: MealPostParticipationRepository,
     private val userRepository: UserRepository,
     private val storeRepository: StoreRepository,
     private val securityManager: SecurityManager
@@ -72,14 +74,17 @@ class MealPostService(
         }
     }
 
-    fun deleteMealPost(request: MealPostDto.MealPostDeleteRequest) {
+    fun deleteMealPost(mealPostId: Long) {
+        val mealPost = mealPostRepository.findById(mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
+        if (! mealPostParticipationRepository.isOwner(mealPostId, getUserInfo().id)) {
+            throw CustomBadRequestException("not party owner")
+        }
 
-        val mealPost = mealPostRepository.findById(request.mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
         mealPost.mealPostParticipationList.clear()
 
         try {
             mealPostRepository.delete(mealPost)
-            log.debug("deleteMealPost, mealPostId was: {}", request.mealPostId)
+            log.debug("deleteMealPost, mealPostId was: {}", mealPostId)
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
             throw CustomDataIntegrityViolationException("User data integrity violation: ${e.message}")
