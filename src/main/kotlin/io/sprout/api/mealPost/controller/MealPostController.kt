@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -29,11 +31,12 @@ class MealPostController(
         return mealPostService.deleteMealPost(mealPostId)
     }
 
-    // TODO: 주최자 닉네임과 사진 뿌리기
-    @GetMapping("/list")
+    @GetMapping
     @Operation(summary = "한끼팟 리스트 조회", description = "한끼팟 리스트 조회 API")
-    fun getMealPostList(pageable: Pageable): Page<MealPostProjection> {
-        return mealPostService.getMealPostList(pageable)
+    fun getMealPostList(pageable: Pageable): ResponseEntity<MealPostDto.MealPostListResponse> {
+        val mealPostList = mealPostService.getMealPostList(pageable)
+
+        return ResponseEntity.ok(MealPostDto.MealPostListResponse(mealPostList))
     }
 
     @GetMapping("/{mealPostId}")

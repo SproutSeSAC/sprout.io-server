@@ -17,10 +17,7 @@ import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
+import org.springframework.data.domain.*
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
 
@@ -35,10 +32,8 @@ class MealPostService(
 
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
-    fun getMealPostList(pageable: Pageable): Page<MealPostProjection> {
-        val page: Int = if (pageable.pageNumber == 0) 0 else pageable.pageNumber - 1
-        val pageable = PageRequest.of(page, pageable.pageSize, Sort.by(Sort.Order.desc("created_date_time")))
-        return mealPostRepository.findMealPostList(pageable)
+    fun getMealPostList(pageable: Pageable): List<MealPostProjection> {
+        return mealPostRepository.findMealPostList(pageable, getUserInfo().id)
     }
 
     fun createMealPost(request: MealPostDto.MealPostCreateRequest) {
