@@ -78,3 +78,9 @@ springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   paths-to-match: /**
+
+naver:
+  map:
+    direction-url: https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving
+    api-key-id: pdlxkthke3
+    API-KEY: NllJbh6EUf6DRqHBWwFC6UTpkiwWs0s067tjnypF

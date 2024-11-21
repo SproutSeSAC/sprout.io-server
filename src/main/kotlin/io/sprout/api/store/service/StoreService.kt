@@ -5,12 +5,17 @@ import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
+import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.dto.StoreDto.StoreDetailResponse.*
+import io.sprout.api.store.model.dto.StoreProjectionDto
 import io.sprout.api.store.model.entities.FoodType
 import io.sprout.api.store.model.entities.ScrapedStoreEntity
+import io.sprout.api.store.model.entities.StoreEntity
+import io.sprout.api.store.model.entities.StoreReviewEntity
 import io.sprout.api.store.repository.ScrapedStoreRepository
 import io.sprout.api.store.repository.StoreRepository
+import io.sprout.api.store.repository.StoreReviewRepository
 import io.sprout.api.user.model.entities.UserEntity
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
@@ -20,7 +25,8 @@ import org.springframework.stereotype.Service
 class StoreService(
     private val storeRepository: StoreRepository,
     private val scrapedStoreRepository: ScrapedStoreRepository,
-    private val securityManager: SecurityManager
+    private val securityManager: SecurityManager,
+    private val storeReviewRepository: StoreReviewRepository
 ) {
 
     private fun <T> handleExceptions(action: () -> T): T {
@@ -37,36 +43,10 @@ class StoreService(
         }
     }
 
-    fun getStoreList(filterRequest: StoreDto.StoreListRequest): Pair<List<StoreDto.StoreListResponse.StoreDetail>, Long> {
-
-        val storeList = storeRepository.findStoreList(filterRequest)
-        val result = storeList.first.map { store ->
-
-            val tagList = mutableListOf<String>().apply {
-                if (store.walkTime <= 5) add("도보 5분 이내")
-                if (store.isOverPerson) add("5인 이상")
-                if (store.storeMenuList.any { it.price!! <= 10000 }) add("만원이하")
-                if (store.isZeropay) add("제로페이")
-            }
-
-            StoreDto.StoreListResponse.StoreDetail(
-                id = store.id,
-                name = store.name,
-                foodType = store.foodType,
-                campusName = store.campusName,
-                mapSchemaUrl = store.mapSchemaUrl,
-                storeImage = store.storeImageList.firstOrNull()?.path,
-                workingDay = store.workingDay,
-                walkTime = store.walkTime,
-                tagList = tagList,
-                address = store.address,
-                contact = store.contact,
-                breakTime = store.breakTime
-            )
-        }
-
-        val totalCount = storeList.second
-        return Pair(result, totalCount)
+    fun getStoreList(filterRequest: StoreDto.StoreListRequest): List<StoreProjectionDto.StoreInfoDto> {
+        return storeRepository.findStoreList(
+            filterRequest,
+            securityManager.getAuthenticatedUserName()!!)
     }
 
     fun getFilterCount(campusId: Long): StoreDto.StoreFilterResponse {
@@ -91,12 +71,6 @@ class StoreService(
     fun getStoreDetail(storeId: Long): StoreDto.StoreDetailResponse {
 
         val store = storeRepository.findStoreById(storeId) ?: throw CustomBadRequestException("Not found store")
-        val tagList = mutableListOf<String>().apply {
-            if (store.walkTime <= 5) add("도보 5분 이내")
-            if (store.isOverPerson) add("5인 이상")
-            if (store.storeMenuList.any { it.price <= 10000 }) add("만원이하")
-            if (store.isZeropay) add("제로페이")
-        }
 
         return StoreDto.StoreDetailResponse(
             name = store.name,
@@ -106,9 +80,10 @@ class StoreService(
             breakTime = store.breakTime,
             workingDay = store.workingDay,
             contact = store.contact,
-            tagList = tagList,
             foodType = store.foodType,
             walkTime = store.walkTime,
+            isZeropay = store.isZeropay,
+            isOverPerson = store.isOverPerson,
             storeMenuList = store.storeMenuList.map {
                 StoreMenuDetail(
                     id = it.id,
@@ -149,5 +124,16 @@ class StoreService(
                 true
             }
         }
+    }
+
+    fun createReview(storeId: Long, reviewCreateRequest: StoreDto.StoreReviewRequest) {
+        val store = storeRepository.findStoreById(storeId) ?: throw CustomBadRequestException("Not found store")
+
+        storeReviewRepository.save(StoreReviewEntity(
+            reviewCreateRequest.review,
+            reviewCreateRequest.rating,
+            UserEntity(securityManager.getAuthenticatedUserName()!!),
+            store))
+
     }
 }

@@ -46,8 +46,8 @@ class JwtFilter(
             "/api/oauth2/authorization/google",// Corrected path,
 
             // 테스트를 위한 임시 url
-            "/api/store/list",
-            "/api/store/**",
+//            "/api/store/list",
+//            "/api/store/**",
             "/api/store/filterCount",
             "/api/course/list/**",
             "/api/campus/list",
