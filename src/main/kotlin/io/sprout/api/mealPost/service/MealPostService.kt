@@ -111,7 +111,7 @@ class MealPostService(
             MealPostParticipationEntity(
                 mealPost = mealPost,
                 user = user,
-                ordinalNumber = mealPost.countJoinMember() + 1
+                ordinalNumber = 2
             )
         )
 
@@ -134,6 +134,10 @@ class MealPostService(
         val mealPost = mealPostRepository.findById(request.mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
         val mealPostParticipation = mealPost.mealPostParticipationList.firstOrNull { it.user.id == user.id }
 
+        if (mealPostParticipation?.ordinalNumber == 1) {
+            throw CustomBadRequestException("post owner's leave is not allowed")
+        }
+
         mealPost.mealPostParticipationList.remove(mealPostParticipation)
 
         try {
@@ -155,6 +159,9 @@ class MealPostService(
     }
 
     fun getMealPostDetail(mealPostId: Long): MealPostDto.MealPostDetailResponse {
-        TODO("Not yet implemented")
+        val mealPost: MealPostEntity = mealPostRepository.findWithParticipationUserById(mealPostId)
+            ?: throw CustomBadRequestException("Not found party")
+
+        return MealPostDto.MealPostDetailResponse(mealPost)
     }
 }
