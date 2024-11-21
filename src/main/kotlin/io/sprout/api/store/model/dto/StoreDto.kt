@@ -179,4 +179,12 @@ class StoreDto {
         val review: String
     )
 
+    @Schema(description = "맛집 리뷰 작성 Request")
+    data class MapDirectionRequest(
+        @Schema(description = "시작점 위경도")
+        val start: String,
+        @Schema(description = "도착점 위경도")
+        val goal: String
+    )
+
 }

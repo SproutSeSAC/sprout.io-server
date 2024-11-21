@@ -1,8 +1,11 @@
 package io.sprout.api.store.controller
 
+import io.sprout.api.store.model.dto.DirectionResponse
 import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.dto.StoreProjectionDto
+import io.sprout.api.store.model.dto.Trafast
 import io.sprout.api.store.model.entities.FoodType
+import io.sprout.api.store.service.MapDirectionService
 import io.sprout.api.store.service.StoreService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
@@ -11,7 +14,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/store")
 class StoreController(
-    private val storeService: StoreService
+    private val storeService: StoreService,
+    private val mapDirectionService: MapDirectionService
 ) {
 
     @GetMapping("/{storeId}")
@@ -57,4 +61,13 @@ class StoreController(
         return ResponseEntity.ok().build()
     }
 
+    @GetMapping("/direction")
+    @Operation(summary = "식당 길찾기 API", description = "해당 식당으로의 길찾기 값 조회")
+    fun getStoreDirection(
+        @ModelAttribute directionRequest: StoreDto.MapDirectionRequest
+    ): ResponseEntity<DirectionResponse> {
+        val directionResponse = mapDirectionService.findDirection(directionRequest)
+
+        return ResponseEntity.ok(directionResponse)
+    }
 }
