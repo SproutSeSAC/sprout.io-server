@@ -13,4 +13,6 @@ interface MealPostParticipationRepository: JpaRepository<MealPostParticipationEn
             "WHERE mpp.mealPost.id = :mealPostId AND mpp.user.id = :userId AND mpp.ordinalNumber = 1")
     fun isOwner(mealPostId: Long, userId: Long): Boolean
 
+
+
 }

@@ -1,5 +1,6 @@
 package io.sprout.api.mealPost.repository
 
+import io.sprout.api.mealPost.model.dto.MealPostDto
 import io.sprout.api.mealPost.model.dto.MealPostProjection
 import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.dto.StoreProjectionDto
