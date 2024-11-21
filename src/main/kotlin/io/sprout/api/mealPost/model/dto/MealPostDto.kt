@@ -63,4 +63,10 @@ class MealPostDto {
 
 
     )
+
+    @Schema(description = "한끼팟 리스트 조회")
+    data class MealPostListResponse(
+        @Schema(description = "한끼팟 리스트")
+        val mealPosts: List<MealPostProjection>
+    )
 }
