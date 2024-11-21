@@ -10,22 +10,21 @@ import io.sprout.api.mealPost.model.dto.MealPostProjection
 import io.sprout.api.mealPost.model.entities.MealPostEntity
 import io.sprout.api.mealPost.model.entities.MealPostParticipationEntity
 import io.sprout.api.mealPost.model.entities.MealPostStatus
+import io.sprout.api.mealPost.repository.MealPostParticipationRepository
 import io.sprout.api.mealPost.repository.MealPostRepository
 import io.sprout.api.store.repository.StoreRepository
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
+import org.springframework.data.domain.*
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
 
 @Service
 class MealPostService(
     private val mealPostRepository: MealPostRepository,
+    private val mealPostParticipationRepository: MealPostParticipationRepository,
     private val userRepository: UserRepository,
     private val storeRepository: StoreRepository,
     private val securityManager: SecurityManager
@@ -33,10 +32,8 @@ class MealPostService(
 
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
-    fun getMealPostList(pageable: Pageable): Page<MealPostProjection> {
-        val page: Int = if (pageable.pageNumber == 0) 0 else pageable.pageNumber - 1
-        val pageable = PageRequest.of(page, pageable.pageSize, Sort.by(Sort.Order.desc("created_date_time")))
-        return mealPostRepository.findMealPostList(pageable)
+    fun getMealPostList(pageable: Pageable): List<MealPostProjection> {
+        return mealPostRepository.findMealPostList(pageable, getUserInfo().id)
     }
 
     fun createMealPost(request: MealPostDto.MealPostCreateRequest) {
@@ -72,14 +69,17 @@ class MealPostService(
         }
     }
 
-    fun deleteMealPost(request: MealPostDto.MealPostDeleteRequest) {
+    fun deleteMealPost(mealPostId: Long) {
+        val mealPost = mealPostRepository.findById(mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
+        if (! mealPostParticipationRepository.isOwner(mealPostId, getUserInfo().id)) {
+            throw CustomBadRequestException("not party owner")
+        }
 
-        val mealPost = mealPostRepository.findById(request.mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
         mealPost.mealPostParticipationList.clear()
 
         try {
             mealPostRepository.delete(mealPost)
-            log.debug("deleteMealPost, mealPostId was: {}", request.mealPostId)
+            log.debug("deleteMealPost, mealPostId was: {}", mealPostId)
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
             throw CustomDataIntegrityViolationException("User data integrity violation: ${e.message}")
@@ -111,7 +111,7 @@ class MealPostService(
             MealPostParticipationEntity(
                 mealPost = mealPost,
                 user = user,
-                ordinalNumber = mealPost.countJoinMember() + 1
+                ordinalNumber = 2
             )
         )
 
@@ -134,6 +134,10 @@ class MealPostService(
         val mealPost = mealPostRepository.findById(request.mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
         val mealPostParticipation = mealPost.mealPostParticipationList.firstOrNull { it.user.id == user.id }
 
+        if (mealPostParticipation?.ordinalNumber == 1) {
+            throw CustomBadRequestException("post owner's leave is not allowed")
+        }
+
         mealPost.mealPostParticipationList.remove(mealPostParticipation)
 
         try {
@@ -155,6 +159,9 @@ class MealPostService(
     }
 
     fun getMealPostDetail(mealPostId: Long): MealPostDto.MealPostDetailResponse {
-        TODO("Not yet implemented")
+        val mealPost: MealPostEntity = mealPostRepository.findWithParticipationUserById(mealPostId)
+            ?: throw CustomBadRequestException("Not found party")
+
+        return MealPostDto.MealPostDetailResponse(mealPost)
     }
 }
