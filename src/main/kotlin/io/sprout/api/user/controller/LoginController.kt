@@ -52,7 +52,7 @@ class LoginController(
 
         // 리디렉션할 URL에 쿼리 파라미터로 access_token과 refresh_token 추가
         val redirectUrl = buildString {
-            append("http://localhost:3000/login-check")
+            append("https://d2bvfhtbbf8e24.cloudfront.net/login-check")
             if (accessToken != null && refreshToken != null) {
                 append("?access_token=$accessToken&refresh_token=$refreshToken")
             }
