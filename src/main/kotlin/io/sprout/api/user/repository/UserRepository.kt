@@ -13,5 +13,6 @@ interface UserRepository: JpaRepository<UserEntity, Long> , UserRepositoryCustom
 
     @EntityGraph(attributePaths = ["userJobList", "userDomainList", "userTechStackList"])
     fun findUserById(userId: Long): UserEntity?
+    fun findByNickname(nickname: String): UserEntity?
 
 }
