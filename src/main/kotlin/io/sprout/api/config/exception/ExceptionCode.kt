@@ -14,7 +14,13 @@ enum class ExceptionCode(httpStatusCode: HttpStatus, message: String) {
     NOT_FOUND_COURSE(HttpStatus.NO_CONTENT, "존재하지 않는 코스입니다."),
     NOT_FOUND_MEMBER(HttpStatus.NO_CONTENT, "존재하지 않는 회원입니다."),
 
-    ALREADY_REGISTERED_USER(HttpStatus.CONFLICT, "이미 등록된 회원입니다.");
+    ALREADY_REGISTERED_USER(HttpStatus.CONFLICT, "이미 등록된 회원입니다."),
+
+
+    NOT_EXIST_TOKEN(HttpStatus.NOT_FOUND, "토큰이 존재하지 않습니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    NOT_ESSENTIAL_USER(HttpStatus.NOT_MODIFIED, "필수정보 입력이 되지 않은 회원입니다.");
+
 
     val httpStatus: HttpStatus = httpStatusCode
     val message: String = message
