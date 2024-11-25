@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
+import javax.naming.AuthenticationException
 
 @Component
 class SecurityManager(private val jwtToken: JwtToken) {
@@ -27,5 +28,11 @@ class SecurityManager(private val jwtToken: JwtToken) {
         } else {
             null // 인증된 사용자가 없는 경우
         }
+    }
+
+    fun getAuthenticatedUserId(): Long {
+        val authentication = SecurityContextHolder.getContext().authentication
+
+        return (authentication.principal as UserDetails).username.toLong()
     }
 }
