@@ -250,15 +250,17 @@ class UserService(
                 }.toMutableSet(),
                 courseList = user.userCourseList.map {
                     UserDto.GetUserResponse.CourseDetail(
-                        courseId = it.id,
+                        courseId = it.course.id,
                         courseTitle = it.course.title,
                         courseStartDate = it.course.startDate,
                         courseEndDate = it.course.endDate
                     )
                 }.toMutableSet(),
+
                 nickname = user.nickname,
                 role = user.role,
                 profileImageUrl = user.profileImageUrl,
+
                 jobList = user.userJobList.map {
                     SpecificationsDto.JobInfoDto(
                         id = it.job.id,
