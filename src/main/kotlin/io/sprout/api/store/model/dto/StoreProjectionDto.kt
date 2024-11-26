@@ -1,5 +1,6 @@
 package io.sprout.api.store.model.dto
 
+import com.nimbusds.openid.connect.sdk.assurance.evidences.Voucher
 import io.sprout.api.store.model.entities.FoodType
 
 class StoreProjectionDto{
@@ -52,6 +53,26 @@ class StoreProjectionDto{
         val isOverPerson: Boolean,
         val storeMenuList: List<StoreMenuDto>
     )
+
+    data class FoodTypeCount(
+        val foodType: FoodType,
+        val count: Long
+    )
+
+    data class StoreOptionCount(
+        val isZeropayCount: Long,
+        val isVoucherCount: Long,
+        val isOverPerson: Long
+    ){
+        var isLessThan10000Price: Long = 0L
+    }
+
+    data class StoreFilterCount(
+        val foodTypeCount: List<FoodTypeCount>,
+        val storeOptionCount: StoreOptionCount
+    )
+
+
 
 
 }

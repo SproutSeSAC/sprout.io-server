@@ -49,23 +49,9 @@ class StoreService(
             securityManager.getAuthenticatedUserName()!!)
     }
 
-    fun getFilterCount(campusId: Long): StoreDto.StoreFilterResponse {
+    fun getFilterCount(campusId: Long): StoreProjectionDto.StoreFilterCount {
 
-        val storeList = storeRepository.findStoreFilterList(campusId)
-
-        return StoreDto.StoreFilterResponse(
-            zeropayCount = storeList.count { it.isZeropay },
-            underPriceCount = storeList.map { it.storeMenuList.filter { menu -> menu.price!! <= 10000L } }.count(),
-            overPersonCount = storeList.count { it.isOverPerson },
-            walkTimeCount = storeList.count { it.walkTime <= 5 },
-            koreanFoodCount = storeList.count { it.foodType == FoodType.KOREAN },
-            chineseFoodCount = storeList.count { it.foodType == FoodType.CHINESE },
-            japanesesFoodCount = storeList.count { it.foodType == FoodType.JAPANESE },
-            westernFoodCount = storeList.count { it.foodType == FoodType.WESTERN },
-            asianFoodCount = storeList.count { it.foodType == FoodType.ASIAN },
-            snackCount = storeList.count { it.foodType == FoodType.SNACK },
-            cafeCount = storeList.count { it.foodType == FoodType.CAFE }
-        )
+        return storeRepository.findStoreFilterList(campusId)
     }
 
     fun getStoreDetail(storeId: Long): StoreDto.StoreDetailResponse {
