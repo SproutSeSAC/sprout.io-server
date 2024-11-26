@@ -20,6 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.*
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class MealPostService(
@@ -90,10 +91,12 @@ class MealPostService(
 
     }
 
+    @Transactional
     fun joinParty(request: MealPostDto.ParticipationRequest) {
 
-        val mealPost = mealPostRepository.findById(request.mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
         val user = getUserInfo()
+        val mealPost: MealPostEntity = mealPostRepository.findByIdWithLock(request.mealPostId)
+            ?: throw CustomBadRequestException("Not found party")
 
         if (mealPost.mealPostStatus != MealPostStatus.ACTIVE) {
             throw CustomBadRequestException("Party is not active")
