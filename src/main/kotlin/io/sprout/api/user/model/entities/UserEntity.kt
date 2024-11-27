@@ -1,6 +1,11 @@
 package io.sprout.api.user.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.course.model.entities.CourseEntity
+import io.sprout.api.specification.model.entities.DomainEntity
+import io.sprout.api.specification.model.entities.JobEntity
+import io.sprout.api.specification.model.entities.TechStackEntity
+import io.sprout.api.user.model.dto.CreateUserRequest
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -8,7 +13,7 @@ import java.time.LocalDateTime
 @Table(name = "user")
 class UserEntity(
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     var nickname: String, // 닉네임
 
     @Column(unique = true, nullable = false, length = 50)
@@ -77,6 +82,39 @@ class UserEntity(
         isEssential = false,
     ) {
         this.id = id
+    }
+
+    fun register(
+        request: CreateUserRequest,
+        courseList: MutableList<CourseEntity>,
+        jobList: MutableList<JobEntity>,
+        domainList: MutableList<DomainEntity>,
+        techStackList: MutableList<TechStackEntity>){
+
+        userCourseList.clear()
+        userJobList.clear()
+        userDomainList.clear()
+        userTechStackList.clear()
+
+        name = request.name
+        nickname = request.nickname
+        role = request.role
+        status = UserStatus.ACTIVE
+        marketingConsent = request.marketingConsent
+        isEssential = true
+
+        userCourseList = courseList.map {
+            UserCourseEntity(it, this)
+        }.toMutableSet()
+        userJobList = jobList.map {
+            UserJobEntity(it, this)
+        }.toMutableSet()
+        userDomainList = domainList.map {
+            UserDomainEntity(it, this)
+        }.toMutableSet()
+        userTechStackList = techStackList.map {
+            UserTechStackEntity(it, this)
+        } .toMutableSet()
     }
 
 }

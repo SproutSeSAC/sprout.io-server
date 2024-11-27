@@ -10,27 +10,32 @@ class StoreDto {
         @Schema(description = "캠퍼스 아이디", nullable = false)
         val campusId: Long,
 
-        @Schema(description = "제로페이 사용가능 유무", nullable = false)
-        val isZeropay: Boolean,
+        @Schema(description = "식당 이름 검색 키워드", nullable = true)
+        val keyword: String = "",
 
-        @Schema(description = "만원 이하 메뉴 여부", nullable = false)
-        val underPrice: Boolean,
+        @Schema(description = "제로페이 사용가능 유무", nullable = true, defaultValue = "false")
+        val isZeropay: Boolean = false,
 
-        @Schema(description = "5인 이상 가능 여부", nullable = false)
-        val overFivePerson: Boolean,
+        @Schema(description = "만원 이하 메뉴 여부", nullable = true, defaultValue = "false")
+        val underPrice: Boolean = false,
 
-        @Schema(description = "도보 시간 - 5분 이내 여부", nullable = false)
-        val walkTimeWithinFiveMinutes: Boolean,
+        @Schema(description = "5인 이상 가능 여부", nullable = true, defaultValue = "false")
+        val overFivePerson: Boolean = false,
 
-        @Schema(description = "요리 타입 - 복수 선택 가능", nullable = false, example = "KOREAN, CHINESE, JAPANESE, WESTERN, ASIAN, SNACK, CAFE")
+        @Schema(description = "도보 시간 - 5분 이내 여부", nullable = true, defaultValue = "false")
+        val walkTimeWithinFiveMinutes: Boolean = false,
+
+        @Schema(description = "요리 타입 - 복수 선택 가능", nullable = true, defaultValue = "[]", example = "KOREAN, CHINESE, JAPANESE, WESTERN, ASIAN, SNACK, CAFE")
         val foodTypeList: MutableSet<FoodType> = LinkedHashSet(),
 
-        @Schema(description = "페이지 번호", nullable = false, defaultValue = "1")
-        val page: Int,
+        @Schema(description = "페이지 번호",  nullable = true, defaultValue = "1")
+        private val page: Int = 1,
 
-        @Schema(description = "페이지 사이즈", nullable = false, defaultValue = "20")
-        val size: Int
-    )
+        @Schema(description = "페이지 사이즈", nullable = true, defaultValue = "5")
+        val size: Int = 5
+    ){
+        val pageIndex: Int = page-1
+    }
 
     @Schema(description = "맛집 리스트 조회 response")
     data class StoreListResponse(
@@ -70,8 +75,6 @@ class StoreDto {
             @Schema(description = "도보 시간 - 5분 이내 여부")
             val walkTime: Int,
 
-            @Schema(description = "맛집 네이버 ID")
-            val mapSchemaUrl: String?
         )
     }
 
@@ -133,8 +136,11 @@ class StoreDto {
         @Schema(description = "도보 시간")
         val walkTime: Int,
 
-        @Schema(description = "tag 리스트")
-        val tagList: List<String>,
+        @Schema(description = "제로 페이 가능 여부")
+        val isZeropay: Boolean,
+
+        @Schema(description = "5인 이상 가능 여부")
+        val isOverPerson: Boolean,
 
         @Schema(description = "메뉴 리스트")
         val storeMenuList: MutableSet<StoreMenuDetail> = LinkedHashSet(),
@@ -143,6 +149,11 @@ class StoreDto {
         val storeReviewList: MutableSet<StoreReviewDetail> = LinkedHashSet()
 
     ) {
+        @get:Schema(description = "10000원 이하 메뉴 존재 여부")
+        val isLessThan10000Menu: Boolean
+            get() {
+                return storeMenuList.any { it.price <= 10000 }
+            }
 
         data class StoreMenuDetail(
             val id: Long,
@@ -159,5 +170,21 @@ class StoreDto {
             val createdAt: LocalDateTime
         )
     }
+
+    @Schema(description = "맛집 리뷰 작성 Request")
+    data class StoreReviewRequest(
+        @Schema(description = "별점")
+        val rating: Int,
+        @Schema(description = "리뷰 내용")
+        val review: String
+    )
+
+    @Schema(description = "맛집 리뷰 작성 Request")
+    data class MapDirectionRequest(
+        @Schema(description = "시작점 위경도")
+        val start: String,
+        @Schema(description = "도착점 위경도")
+        val goal: String
+    )
 
 }

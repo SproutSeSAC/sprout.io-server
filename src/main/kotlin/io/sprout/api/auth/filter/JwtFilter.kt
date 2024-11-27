@@ -46,18 +46,19 @@ class JwtFilter(
             "/api/oauth2/authorization/google",// Corrected path,
 
             // 테스트를 위한 임시 url
-            "/api/store/list",
-            "/api/store/**",
+//            "/api/store/list",
+//            "/api/store/**",
+//            "/api/user/check",
             "/api/store/filterCount",
             "/api/course/list/**",
             "/api/campus/list",
             "/api/specifications/**",
-            "/api/user/check",
             "/api/user/register",
             "/api/user/verification/**",
             "/api/sse/**",
             "/api/notifications/admin",
             "/api/mypage/**",
+            "/api/aws/**",
         )
         val path = request.requestURI
         logger.info ( "Request Path: $path" )

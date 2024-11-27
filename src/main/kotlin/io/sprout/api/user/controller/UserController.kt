@@ -2,25 +2,17 @@ package io.sprout.api.user.controller
 
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
-import io.sprout.api.user.model.dto.CalendarIdRequestDto
-import io.sprout.api.user.model.dto.CalendarIdResponseDto
-import io.sprout.api.user.model.dto.ManagerEmailResponseDto
-import io.sprout.api.user.model.dto.UserDto
-import io.sprout.api.user.model.entities.RoleType
+import io.sprout.api.user.model.dto.*
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.service.GoogleUserService
 import io.sprout.api.user.service.UserService
 import io.sprout.api.utils.CookieUtils
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotNull
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.client.RestTemplate
 
 @RestController
 @RequestMapping("/user")
@@ -28,16 +20,21 @@ class UserController(
     private val userService: UserService,
     private val jwtToken: JwtToken,
     private val googleUserService: GoogleUserService,
-    private val restTemplate: RestTemplate,
     private val securityManager: SecurityManager
 ) {
 
+    /**
+     * 계정 조회
+     */
     @GetMapping("/check")
     @Operation(summary = "계정 조회", description = "계정 조회")
-    fun getUserInfo(request: HttpServletRequest): UserDto.GetUserResponse {
-        return userService.getUserInfo(request)
+    fun getUserInfo(): UserDetailResponse {
+        return userService.getUserInfo()
     }
 
+    /**
+     * 코드 조회
+     */
     @GetMapping("/verification/{code}")
     @Operation(summary = "코드 조회", description = "코드 조회")
     fun verifyCode(@PathVariable("code") code: String) {
@@ -54,43 +51,48 @@ class UserController(
     @PostMapping("/register")
     @Operation(summary = "계정 등록", description = "계정 등록 (회원 상태가 변경된 새로운 access-token 발급)")
     fun initUser(
-        @RequestBody @Valid request: UserDto.CreateUserRequest,
-        httpServletRequest: HttpServletRequest,
-        response: HttpServletResponse
+        @RequestBody @Valid request: CreateUserRequest,
+        @RequestHeader("Access-Token") accessToken: String?
     ): ResponseEntity<Map<String,String>> {
-        val refreshToken = userService.createUser(request, httpServletRequest)
+        val refreshToken = userService.setEssentialUserProfile(request, accessToken)
         val newAccessToken = jwtToken.createAccessFromRefreshToken(refreshToken)
-
-        // https 미도입에 따른 쿠키 이용 임시 주석 처리
-//        val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
-//        response.addCookie(accessCookie)
 
         val result = hashMapOf("access_token" to newAccessToken)
 
         return ResponseEntity.ok(result)
     }
 
+    /**
+     * 계정 탈퇴
+     */
     @PutMapping("/leave")
     @Operation(summary = "계정 탈퇴", description = "계정 탈퇴 (상태값 변경, 실제 삭제는 30일 후 따로 진행)")
     fun deleteUser(
-        response: HttpServletResponse
     ): ResponseEntity<String> {
         userService.deleteUser()
-        // 계정 탈퇴 시, 두 토큰 초기화
-        val accessCookie = CookieUtils.createCookie("access_token", "")
-        val refreshCookie = CookieUtils.createCookie("refresh_token", "")
-        response.addCookie(accessCookie)
-        response.addCookie(refreshCookie)
+        return ResponseEntity.ok("success")
+    }
+
+    /**
+     * 계정 업데이트
+     * @param request 업데이트 요청 파라미터
+     */
+    @PutMapping("/update")
+    @Operation(summary = "계정 수정", description = "계정 수정 - 도메인, 직군, 기술 스택은 업데이트 되는 내용만 보낼 것")
+    fun updateUser(@RequestBody @Valid request: UpdateUserRequest): ResponseEntity<String> {
+        userService.updateUser(request)
 
         return ResponseEntity.ok("success")
     }
 
-    @PutMapping("/update")
-    @Operation(summary = "계정 수정", description = "계정 수정 - 도메인, 직군, 기술 스택은 업데이트 되는 내용만 보낼 것")
-    fun updateUser(@RequestBody @Valid request: UserDto.UpdateUserRequest): ResponseEntity<String> {
-        userService.updateUser(request)
+    /**
+     * 닉네임이 중복인지 확인
+     */
+    @GetMapping("/nickname/duplicate")
+    fun getNicknameDuplicate(@RequestParam nickname: String): ResponseEntity<Any> {
+        userService.isNicknameDuplicate(nickname)
 
-        return ResponseEntity.ok("success")
+        return ResponseEntity.ok().build()
     }
 
 
