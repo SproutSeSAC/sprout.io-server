@@ -53,21 +53,6 @@ class NoticeController(
         return ResponseEntity.ok(response)
     }
 
-    /**
-     * 공지사항 댓글 조회
-     *
-     * @param noticeId 조회할 공지사항 ID
-     * @param pageable 페이지네이션 요청 파라미터
-     */
-    @GetMapping("/{noticeId}/comments")
-    fun getNoticeComments(
-        @PathVariable noticeId: Long,
-        pageable: Pageable
-        ): ResponseEntity<Map<String, List<NoticeCommentResponseDto>>> {
-        val noticeComments = noticeService.getNoticeComments(noticeId, pageable)
-
-        return ResponseEntity.ok(mapOf("comments" to noticeComments))
-    }
 
     /**
      * 공지사항 검색
@@ -83,6 +68,39 @@ class NoticeController(
 
         return ResponseEntity.ok(mapOf("notices" to searchNotice))
     }
+
+    /**
+     * 공지사항 댓글 조회
+     *
+     * @param noticeId 조회할 공지사항 ID
+     * @param pageable 페이지네이션 요청 파라미터
+     */
+    @GetMapping("/{noticeId}/comments")
+    fun getNoticeComments(
+        @PathVariable noticeId: Long,
+        pageable: Pageable
+    ): ResponseEntity<Map<String, List<NoticeCommentResponseDto>>> {
+        val noticeComments = noticeService.getNoticeComments(noticeId, pageable)
+
+        return ResponseEntity.ok(mapOf("comments" to noticeComments))
+    }
+
+    /**
+     * 공지사항 댓글 작성
+     *
+     * @param noticeId 조회할 공지사항 ID
+     * @param commentRequest 댓글 생성 요청 파라미터
+     */
+    @PostMapping("/{noticeId}/comments")
+    fun createNoticeComment(
+        @PathVariable noticeId: Long,
+        @RequestBody commentRequest: NoticeCommentRequestDto
+    ): ResponseEntity<Any> {
+        noticeService.createNoticeComment(commentRequest, noticeId)
+
+        return ResponseEntity.ok().build()
+    }
+
 
     // 공지사항 삭제
     @DeleteMapping("/{id}")

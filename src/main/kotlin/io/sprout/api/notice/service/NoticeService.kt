@@ -11,6 +11,7 @@ interface NoticeService {
     fun updateNotice(noticeId: Long, noticeRequest: NoticeRequestDto)
     fun getNoticeById(noticeId: Long): NoticeDetailResponseDto
     fun getNoticeComments(noticeId: Long, pageable: Pageable): List<NoticeCommentResponseDto>
+    fun createNoticeComment(commentRequest: NoticeCommentRequestDto, noticeId: Long)
     fun deleteNotice(id: Long)
     fun searchNotice(searchRequest: NoticeSearchRequestDto): List<NoticeSearchResponseDto>
     fun requestJoinNotice(noticeId : Long): RequestResult
