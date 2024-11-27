@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository
 interface NoticeCommentRepository : JpaRepository<NoticeCommentEntity, Long> {
     @EntityGraph(attributePaths = ["user"])
     fun findByNoticeId(noticeId: Long, pageable: Pageable): List<NoticeCommentEntity>
+    fun findByIdAndUserId(commentId: Long, userId: Long): NoticeCommentEntity?
 }
