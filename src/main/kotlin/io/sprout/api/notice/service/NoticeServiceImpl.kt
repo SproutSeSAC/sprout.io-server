@@ -94,12 +94,23 @@ class NoticeServiceImpl(
      */
     override fun getNoticeComments(noticeId: Long, pageable: Pageable): List<NoticeCommentResponseDto> {
         val sortedPageable = PageRequest.of(
-            if (pageable.pageNumber == 0) 0 else pageable.pageSize - 1,
+            if (pageable.pageNumber == 0) 0 else pageable.pageNumber - 1,
             pageable.pageSize,
             Sort.by("createdAt").descending())
 
         return noticeCommentRepository.findByNoticeId(noticeId, sortedPageable)
             .map { NoticeCommentResponseDto(it) }
+    }
+
+    /**
+     * 공지사항 댓글 생성
+     * 
+     * @param commentRequest 공지사항 댓글 생성 파라미터
+     */
+    override fun createNoticeComment(commentRequest: NoticeCommentRequestDto, noticeId: Long) {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+
+        noticeCommentRepository.save(commentRequest.toEntity(userId, noticeId))
     }
 
     /**
