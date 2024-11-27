@@ -103,6 +103,20 @@ class NoticeServiceImpl(
     }
 
     /**
+     * 공지사항 댓글 삭제
+     *
+     * @param commentId 삭제할 댓글 ID
+     */
+    override fun deleteNoticeComment(commentId: Long) {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+
+        noticeCommentRepository.findByIdAndUserId(commentId, userId) ?:
+            throw CustomBadRequestException("게시글이 존재하지 않거나 삭제 권한이 없습니다.")
+
+        noticeCommentRepository.deleteById(commentId)
+    }
+
+    /**
      * 공지사항 댓글 생성
      * 
      * @param commentRequest 공지사항 댓글 생성 파라미터

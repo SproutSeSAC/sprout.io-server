@@ -88,7 +88,7 @@ class NoticeController(
     /**
      * 공지사항 댓글 작성
      *
-     * @param noticeId 조회할 공지사항 ID
+     * @param noticeId 댓글 작성할 공지사항 ID
      * @param commentRequest 댓글 생성 요청 파라미터
      */
     @PostMapping("/{noticeId}/comments")
@@ -97,6 +97,20 @@ class NoticeController(
         @RequestBody commentRequest: NoticeCommentRequestDto
     ): ResponseEntity<Any> {
         noticeService.createNoticeComment(commentRequest, noticeId)
+
+        return ResponseEntity.ok().build()
+    }
+
+    /**
+     * 공지사항 댓글 삭제
+     *
+     * @param commentId 삭제할 댓글 ID
+     */
+    @DeleteMapping("/comments/{commentId}")
+    fun deleteNoticeComment(
+        @PathVariable commentId: Long
+    ): ResponseEntity<Any> {
+        noticeService.deleteNoticeComment(commentId)
 
         return ResponseEntity.ok().build()
     }
