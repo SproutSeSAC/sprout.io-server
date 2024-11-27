@@ -57,6 +57,7 @@ class JwtFilter(
             "/api/user/verification/**",
             "/api/sse/**",
             "/api/notifications/admin",
+            "/api/mypage/**",
             "/api/aws/**",
         )
         val path = request.requestURI
