@@ -1,98 +1,78 @@
 package io.sprout.api.notice.model.entities
 
-import com.querydsl.core.types.Projections.constructor
 import io.sprout.api.common.model.entities.BaseEntity
-import io.sprout.api.notice.model.dto.NoticeResponseDto
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
-import org.springframework.data.jpa.domain.AbstractPersistable_.id
-import java.time.LocalDate
+import java.time.LocalDateTime
 
+/**
+ * 공지사항 엔티티 <br>
+ * (특강/일반공지/행사/취업정보/기타) 유형 제공 <br>
+ * 특강, 행사 유형일시 특강 Session 존재
+ */
 @Entity
 @Table(name = "notice")
 class NoticeEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    var id: Long = 0,
 
     var title: String,
 
     @Column(columnDefinition = "TEXT")
-    var content: String,  // 공지사항 내용
+    var content: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_id")
-    val writer: UserEntity,  // 공지사항 작성자
-
-    @Column(name = "start_date", nullable = false)
-    var startDate: LocalDate,  // 공지 시작일
-    @Column(name = "end_date")
-    var endDate: LocalDate? = null,  // 공지 종료일 (선택 사항)
+    @JoinColumn(name = "user_id")
+    val user: UserEntity,
 
     @Enumerated(EnumType.STRING)
-    var status: NoticeStatus? = NoticeStatus.ACTIVE,  // 공지 상태 (활성, 비활성 등)
+    var status: NoticeStatus = NoticeStatus.ACTIVE,
 
     @Enumerated(EnumType.STRING)
-    var noticeType: NoticeType,  // 공지 유형 (특강, 취업, 매칭데이, 일반)
+    var noticeType: NoticeType,
 
-    @Column(name = "participant_capacity")
-    var participantCapacity: Int = 0,
+    @Enumerated(EnumType.STRING)
+    var meetingType: NoticeMeetingType,
 
     @Column(nullable = false)
     var viewCount: Int = 0,
 
-    @Column(nullable = false)
-    var url: String,
+    val meetingPlace: String? = null,
 
-    @Column(name = "parent_id", nullable = true)
-    var parentId: Long? = null,
+    val applicationForm: String? = null,
 
-    @Column(nullable = true)
-    var subtitle: String?,
+    val applicationStartDateTime: LocalDateTime? = null,
 
-    @Column(nullable = false, name= "participant_count")
-    var participantCount : Int,
+    val applicationEndDateTime: LocalDateTime? = null,
 
-    @Version
-    var version: Long = 0
-) : BaseEntity() {
+    val participantCapacity: Int? = null,
+
+    val satisfactionSurvey: String? = null,
+
+
+    ) : BaseEntity() {
+
+
+    @OneToMany(mappedBy = "notice", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    val noticeSessions : MutableList<NoticeSessionEntity> = mutableListOf()
+
+    @OneToMany(mappedBy = "notice", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    val targetCourses : MutableList<NoticeTargetCourseEntity> = mutableListOf()
+
+    @OneToMany(mappedBy = "notice", fetch = FetchType.LAZY)
+    val noticeComments : MutableList<NoticeCommentEntity> = mutableListOf()
 
     constructor (noticeId :Long) : this(
         id = noticeId,
         title = "",
         content = "",
-        writer = UserEntity(0),
-        startDate = LocalDate.now(),
-        endDate = null,
+        user = UserEntity(0),
         status = NoticeStatus.ACTIVE,
         noticeType = NoticeType.GENERAL,
-        participantCapacity = 0,
         viewCount = 0,
-        url = "",
-        parentId = null,
-        subtitle = null,
-        participantCount = 0
+        meetingType = NoticeMeetingType.NONE
     )
 
-
-    fun toDto(): NoticeResponseDto {
-        return NoticeResponseDto(
-            id = this.id,
-            title = this.title,
-            content = this.content,
-            writerName = this.writer.name ?: "익명의 사용자",
-            profileUrl = this.writer.profileImageUrl ?: "",
-            startDate = this.startDate,
-            endDate = this.endDate ?: LocalDate.now(),
-            status = this.status ?: NoticeStatus.ACTIVE,
-            noticeType = this.noticeType,
-            createdDateTime = this.createdAt,
-            modifiedDateTime = this.updatedAt,
-            participantCapacity = this.participantCapacity,
-            viewCount = this.viewCount,
-            isScraped = false,
-            parentId = this.parentId
-        )
-    }
 }
 
 enum class NoticeStatus {
@@ -100,9 +80,17 @@ enum class NoticeStatus {
     INACTIVE,  // 비활성화된 공지사항
 }
 
+enum class NoticeMeetingType {
+    OFFLINE,
+    ONLINE,
+    NONE
+}
+
+
 enum class NoticeType {
-    SPECIAL_LECTURE,  // 특강 관련 공지
-    EMPLOYMENT,       // 취업 관련 공지
-    MATCHING_DAY,     // 매칭데이 관련 공지
-    GENERAL           // 일반 공지
+    SPECIAL_LECTURE,
+    EMPLOYMENT,
+    EVENT,
+    GENERAL,
+    ETC
 }

@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface NoticeRepository : JpaRepository<NoticeEntity, Long>, NoticeRepositoryCustom {
-    @Query("SELECT n FROM NoticeEntity n JOIN FETCH n.writer")
+    @Query("SELECT n FROM NoticeEntity n JOIN FETCH n.user")
     fun findByIdAll(): List<NoticeEntity>?
 }

@@ -1,13 +1,11 @@
 package io.sprout.api.notice.controller
 
-import io.sprout.api.notice.model.dto.NoticeFilterRequest
-import io.sprout.api.notice.model.dto.NoticeJoinRequestListDto
-import io.sprout.api.notice.model.dto.NoticeRequestDto
-import io.sprout.api.notice.model.dto.NoticeResponseDto
+import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.NoticeType
 import io.sprout.api.notice.model.enum.AcceptRequestResult
 import io.sprout.api.notice.model.enum.RequestResult
 import io.sprout.api.notice.service.NoticeService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -16,15 +14,37 @@ import org.springframework.web.bind.annotation.*
 class NoticeController(
     private val noticeService: NoticeService
 ) {
-    // 공지사항 등록
-    @PostMapping
-    fun createNotice(@RequestBody dto: NoticeRequestDto): NoticeResponseDto {
-        return noticeService.createNotice(dto)
+    /**
+     * 일반 공지사항 등록 엔드포인트
+     * (일반, 취업, 기타 타입)
+     *
+     * @param normalNoticeRequest 일반 공지사항 등록 요청 파라미터
+     * @return noticeId
+     */
+    @PostMapping("/normal")
+    fun createNotice(@RequestBody @Valid normalNoticeRequest: NormalNoticeRequestDto): ResponseEntity<Map<String, Long>> {
+        val noticeId = noticeService.createNormalNotice(normalNoticeRequest)
+
+        return ResponseEntity.ok(mapOf("noticeId" to noticeId))
+    }
+
+    /**
+     * 세션이 있는 특강 공지사항 등록 엔드포인트
+     * (특강, 이벤트 타입)
+     *
+     * @param sessionNoticeRequest 세션 공지사항 등록 요청 파라미터
+     * @return noticeId
+     */
+    @PostMapping("/session")
+    fun createNotice(@RequestBody @Valid sessionNoticeRequest: SessionNoticeRequestDto): ResponseEntity<Map<String, Long>> {
+        val noticeId = noticeService.createSessionNotice(sessionNoticeRequest)
+
+        return ResponseEntity.ok(mapOf("noticeId" to noticeId))
     }
 
     // 공지사항 수정
     @PutMapping("/{id}")
-    fun updateNotice(@PathVariable id: Long, @RequestBody dto: NoticeRequestDto): NoticeResponseDto {
+    fun updateNotice(@PathVariable id: Long, @RequestBody dto: NormalNoticeRequestDto): NoticeResponseDto {
         return noticeService.updateNotice(id, dto)
     }
 
