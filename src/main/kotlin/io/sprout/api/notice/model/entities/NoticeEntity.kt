@@ -1,6 +1,8 @@
 package io.sprout.api.notice.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.course.model.entities.CourseEntity
+import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
@@ -31,33 +33,31 @@ class NoticeEntity(
     @Enumerated(EnumType.STRING)
     var noticeType: NoticeType,
 
-    @Enumerated(EnumType.STRING)
-    var meetingType: NoticeMeetingType,
-
     @Column(nullable = false)
     var viewCount: Int = 0,
 
-    val meetingPlace: String? = null,
+    @Enumerated(EnumType.STRING)
+    var meetingType: NoticeMeetingType?,
 
-    val applicationForm: String? = null,
+    var meetingPlace: String? = null,
 
-    val applicationStartDateTime: LocalDateTime? = null,
+    var applicationForm: String? = null,
 
-    val applicationEndDateTime: LocalDateTime? = null,
+    var applicationStartDateTime: LocalDateTime? = null,
 
-    val participantCapacity: Int? = null,
+    var applicationEndDateTime: LocalDateTime? = null,
 
-    val satisfactionSurvey: String? = null,
+    var participantCapacity: Int? = null,
+
+    var satisfactionSurvey: String? = null,
 
 
     ) : BaseEntity() {
+    @OneToMany(mappedBy = "notice", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    val noticeSessions : MutableSet<NoticeSessionEntity> = mutableSetOf()
 
-
-    @OneToMany(mappedBy = "notice", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    val noticeSessions : MutableList<NoticeSessionEntity> = mutableListOf()
-
-    @OneToMany(mappedBy = "notice", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    val targetCourses : MutableList<NoticeTargetCourseEntity> = mutableListOf()
+    @OneToMany(mappedBy = "notice", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    val targetCourses : MutableSet<NoticeTargetCourseEntity> = mutableSetOf()
 
     @OneToMany(mappedBy = "notice", fetch = FetchType.LAZY)
     val noticeComments : MutableList<NoticeCommentEntity> = mutableListOf()
@@ -73,6 +73,53 @@ class NoticeEntity(
         meetingType = NoticeMeetingType.NONE
     )
 
+    /**
+     * 공지사항 update 로직
+     * 각각의 파라미터들을 수정
+     * 연관 엔티티는 PUT방식으로 비교하여 contain하지 않다면 삭제 & 동일하지 않은것은 추가하여 수정
+     */
+    fun update(noticeRequest: NoticeRequestDto) {
+        this.title = noticeRequest.title
+        this.content = noticeRequest.content
+        this.noticeType = noticeRequest.noticeType
+        this.applicationForm = noticeRequest.applicationForm
+        this.applicationEndDateTime = noticeRequest.applicationEndDateTime
+        this.applicationStartDateTime = noticeRequest.applicationStartDateTime
+        this.participantCapacity = noticeRequest.participantCapacity
+        this.meetingType = noticeRequest.meetingType
+        this.meetingPlace = noticeRequest.meetingPlace
+        this.satisfactionSurvey = noticeRequest.satisfactionSurvey
+
+        val updateCourseList = noticeRequest.targetCourseIdList.map {
+            NoticeTargetCourseEntity(
+                notice = this,
+                course = CourseEntity(it)) }
+
+        val targetCourseIterator: MutableIterator<NoticeTargetCourseEntity> = targetCourses.iterator()
+        while (targetCourseIterator.hasNext()) {
+            val course = targetCourseIterator.next()
+            if (! updateCourseList.contains(course)) {
+                targetCourseIterator.remove()
+            }
+        }
+        this.targetCourses.addAll(updateCourseList)
+
+        val updateSessions = noticeRequest.sessions.map {
+            NoticeSessionEntity(
+                notice = this,
+                eventStartDateTime = it.sessionStartDateTime,
+                eventEndDateTime = it.sessionEndDateTime,
+            )
+        }
+        val sessionIterator: MutableIterator<NoticeSessionEntity> = noticeSessions.iterator()
+        while (sessionIterator.hasNext()) {
+            val course = sessionIterator.next()
+            if (! updateSessions.contains(course)) {
+                sessionIterator.remove()
+            }
+        }
+        this.noticeSessions.addAll(updateSessions)
+    }
 }
 
 enum class NoticeStatus {
@@ -85,6 +132,7 @@ enum class NoticeMeetingType {
     ONLINE,
     NONE
 }
+
 
 
 enum class NoticeType {

@@ -15,37 +15,29 @@ class NoticeController(
     private val noticeService: NoticeService
 ) {
     /**
-     * 일반 공지사항 등록 엔드포인트
-     * (일반, 취업, 기타 타입)
+     * 공지사항 등록 엔드포인트
      *
-     * @param normalNoticeRequest 일반 공지사항 등록 요청 파라미터
+     * @param noticeRequest 공지사항 등록 요청 파라미터
      * @return noticeId
      */
-    @PostMapping("/normal")
-    fun createNotice(@RequestBody @Valid normalNoticeRequest: NormalNoticeRequestDto): ResponseEntity<Map<String, Long>> {
-        val noticeId = noticeService.createNormalNotice(normalNoticeRequest)
+    @PostMapping
+    fun createNotice(@RequestBody @Valid noticeRequest: NoticeRequestDto): ResponseEntity<Map<String, Long>> {
+        val noticeId = noticeService.createNotice(noticeRequest)
 
         return ResponseEntity.ok(mapOf("noticeId" to noticeId))
     }
 
     /**
-     * 세션이 있는 특강 공지사항 등록 엔드포인트
-     * (특강, 이벤트 타입)
+     * 공지사항 수정
      *
-     * @param sessionNoticeRequest 세션 공지사항 등록 요청 파라미터
-     * @return noticeId
+     * @param normalNoticeRequest 일반 공지사항 등록 요청 파라미터
      */
-    @PostMapping("/session")
-    fun createNotice(@RequestBody @Valid sessionNoticeRequest: SessionNoticeRequestDto): ResponseEntity<Map<String, Long>> {
-        val noticeId = noticeService.createSessionNotice(sessionNoticeRequest)
+    @PutMapping("/{noticeId}")
+    fun updateNotice(
+        @PathVariable noticeId: Long, @RequestBody noticeRequest: NoticeRequestDto): ResponseEntity<Map<String, Long>> {
+        noticeService.updateNotice(noticeId, noticeRequest)
 
         return ResponseEntity.ok(mapOf("noticeId" to noticeId))
-    }
-
-    // 공지사항 수정
-    @PutMapping("/{id}")
-    fun updateNotice(@PathVariable id: Long, @RequestBody dto: NormalNoticeRequestDto): NoticeResponseDto {
-        return noticeService.updateNotice(id, dto)
     }
 
     // 공지사항 삭제
