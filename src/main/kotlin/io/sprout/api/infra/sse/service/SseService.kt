@@ -8,17 +8,17 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class SseService {
-    private val subscribers = ConcurrentHashMap<String, ConcurrentHashMap<String, SubscriberDto>>()
+    private val subscribers = ConcurrentHashMap<String, ConcurrentHashMap<Long, SubscriberDto>>()
 
-    fun subscribe(topic: String, clientID: String): Sinks.Many<String> {
+    fun subscribe(topic: String, userId: Long): Sinks.Many<String> {
         val sink = Sinks.many().multicast().onBackpressureBuffer<String>()
-        subscribers.computeIfAbsent(topic) { ConcurrentHashMap() }[clientID] = SubscriberDto(sink, true)
+        subscribers.computeIfAbsent(topic) { ConcurrentHashMap() }[userId] = SubscriberDto(sink, true)
         return sink
     }
 
-    fun unsubscribe(topic: String, clientID: String) {
+    fun unsubscribe(topic: String, userId: Long) {
         subscribers[topic]?.let { topicSubscribers ->
-            topicSubscribers.remove(clientID)
+            topicSubscribers.remove(userId)
             if (topicSubscribers.isEmpty()) {
                 subscribers.remove(topic)
             }
@@ -31,8 +31,8 @@ class SseService {
         }
     }
 
-    fun healthCheck(topic: String, clientID: String) {
-        subscribers[topic]?.get(clientID)?.let {
+    fun healthCheck(topic: String, userId: Long) {
+        subscribers[topic]?.get(userId)?.let {
             it.isAlive = true
         }
     }
@@ -40,9 +40,9 @@ class SseService {
     @Scheduled(fixedRate = 10000)
     fun removeExpiredSubscribers() {
         subscribers.entries.removeIf { (topic, topicSubscribers) ->
-            topicSubscribers.entries.removeIf { (clientID, subscriber) ->
+            topicSubscribers.entries.removeIf { (userId, subscriber) ->
                 if (!subscriber.isAlive) {
-                    println("만료 : $topic - $clientID")
+                    println("만료 : $topic - $userId")
                     true
                 } else {
                     subscriber.isAlive = false
