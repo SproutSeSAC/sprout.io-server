@@ -7,12 +7,16 @@ import io.sprout.api.notice.model.entities.NoticeEntity
 import io.sprout.api.notice.model.entities.ScrapedNoticeEntity
 import io.sprout.api.notice.model.enum.AcceptRequestResult
 import io.sprout.api.notice.model.enum.RequestResult
+import io.sprout.api.notice.repository.NoticeCommentRepository
 import io.sprout.api.notice.repository.NoticeParticipantRepository
 import io.sprout.api.notice.repository.NoticeRepository
 import io.sprout.api.notice.repository.ScrapedNoticeRepository
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -20,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 class NoticeServiceImpl(
     private val noticeRepository: NoticeRepository,
     private val scrapedNoticeRepository: ScrapedNoticeRepository,
+    private val noticeCommentRepository: NoticeCommentRepository,
     private val noticeParticipantRepository: NoticeParticipantRepository,
     private val securityManager: SecurityManager,
     private val eventPublisher: ApplicationEventPublisher,
@@ -62,11 +67,14 @@ class NoticeServiceImpl(
      * @param noticeId 조회할 공지사항 ID
      * @return 공지사항 detail (comment 미포함)
      */
+    @Transactional
     override fun getNoticeById(noticeId: Long): NoticeDetailResponseDto {
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 
         val findNotice = noticeRepository.findByIdAndCoursesAndUser(noticeId)
             ?: throw CustomBadRequestException("Not found user")
+        findNotice.increaseViewCount()
+
         val responseDto = NoticeDetailResponseDto(findNotice)
 
         responseDto.sessions = noticeRepository.findByIdWithSession(noticeId, userId)
@@ -74,9 +82,31 @@ class NoticeServiceImpl(
         val isScraped: ScrapedNoticeEntity? = scrapedNoticeRepository.findByNoticeIdAndUserId(noticeId, userId)
         responseDto.isScraped = (isScraped != null)
 
+
         return responseDto
     }
 
+    /**
+     *  공지사항 댓글 조회
+     *
+     *  @param noticeId 공지사항 ID
+     *  @param pageable 페이지네이션 요청 파라미터
+     */
+    override fun getNoticeComments(noticeId: Long, pageable: Pageable): List<NoticeCommentResponseDto> {
+        val sortedPageable = PageRequest.of(
+            if (pageable.pageNumber == 0) 0 else pageable.pageSize - 1,
+            pageable.pageSize,
+            Sort.by("createdAt").descending())
+
+        return noticeCommentRepository.findByNoticeId(noticeId, sortedPageable)
+            .map { NoticeCommentResponseDto(it) }
+    }
+
+    /**
+     *  공지사항 검색
+     *
+     *  @param searchRequest 공지사항 검색 파라미터
+     */
     override fun searchNotice(searchRequest: NoticeSearchRequestDto): List<NoticeSearchResponseDto> {
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 

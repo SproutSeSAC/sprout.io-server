@@ -120,6 +120,13 @@ class NoticeEntity(
         }
         this.noticeSessions.addAll(updateSessions)
     }
+
+    /**
+     * 조회수 증가
+     */
+    fun increaseViewCount() {
+        viewCount += 1
+    }
 }
 
 enum class NoticeStatus {

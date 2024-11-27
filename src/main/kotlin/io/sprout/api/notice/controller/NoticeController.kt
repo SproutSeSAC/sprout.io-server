@@ -5,6 +5,7 @@ import io.sprout.api.notice.model.enum.AcceptRequestResult
 import io.sprout.api.notice.model.enum.RequestResult
 import io.sprout.api.notice.service.NoticeService
 import jakarta.validation.Valid
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -50,6 +51,22 @@ class NoticeController(
         val response = noticeService.getNoticeById(noticeId)
 
         return ResponseEntity.ok(response)
+    }
+
+    /**
+     * 공지사항 댓글 조회
+     *
+     * @param noticeId 조회할 공지사항 ID
+     * @param pageable 페이지네이션 요청 파라미터
+     */
+    @GetMapping("/{noticeId}/comments")
+    fun getNoticeComments(
+        @PathVariable noticeId: Long,
+        pageable: Pageable
+        ): ResponseEntity<Map<String, List<NoticeCommentResponseDto>>> {
+        val noticeComments = noticeService.getNoticeComments(noticeId, pageable)
+
+        return ResponseEntity.ok(mapOf("comments" to noticeComments))
     }
 
     /**
