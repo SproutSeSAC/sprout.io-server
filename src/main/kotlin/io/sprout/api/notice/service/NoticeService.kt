@@ -10,7 +10,7 @@ interface NoticeService {
     fun updateNotice(noticeId: Long, noticeRequest: NoticeRequestDto)
     fun getNoticeById(noticeId: Long): NoticeDetailResponseDto
     fun deleteNotice(id: Long)
-    fun getFilterNotice(filter: NoticeFilterRequest): Pair<List<NoticeDetailResponseDto>, Long>
+    fun searchNotice(searchRequest: NoticeSearchRequestDto): List<NoticeSearchResponseDto>
     fun requestJoinNotice(noticeId : Long): RequestResult
     fun acceptRequest(noticeId: Long , requestId :Long): AcceptRequestResult
     fun rejectRequest(noticeId: Long, requestId :Long): Boolean
