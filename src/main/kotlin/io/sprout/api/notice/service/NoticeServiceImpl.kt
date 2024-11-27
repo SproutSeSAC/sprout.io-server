@@ -4,10 +4,12 @@ import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.NoticeEntity
+import io.sprout.api.notice.model.entities.ScrapedNoticeEntity
 import io.sprout.api.notice.model.enum.AcceptRequestResult
 import io.sprout.api.notice.model.enum.RequestResult
 import io.sprout.api.notice.repository.NoticeParticipantRepository
 import io.sprout.api.notice.repository.NoticeRepository
+import io.sprout.api.notice.repository.ScrapedNoticeRepository
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import org.springframework.context.ApplicationEventPublisher
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class NoticeServiceImpl(
     private val noticeRepository: NoticeRepository,
+    private val scrapedNoticeRepository: ScrapedNoticeRepository,
     private val noticeParticipantRepository: NoticeParticipantRepository,
     private val securityManager: SecurityManager,
     private val eventPublisher: ApplicationEventPublisher,
@@ -53,12 +56,25 @@ class NoticeServiceImpl(
         noticeRepository.save(noticeEntity)
     }
 
-    @Transactional(readOnly = true)
-    override fun getNoticeById(id: Long): NoticeResponseDto {
-        TODO("Not yet implemented")
-//        val notice = noticeRepository.findById(id)
-//            .orElseThrow { IllegalArgumentException("Notice with ID $id not found") }
-//        return notice.toDto()
+    /**
+     * 공지사항 조회
+     *
+     * @param noticeId 조회할 공지사항 ID
+     * @return 공지사항 detail (comment 미포함)
+     */
+    override fun getNoticeById(noticeId: Long): NoticeDetailResponseDto {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+
+        val findNotice = noticeRepository.findByIdAndCoursesAndUser(noticeId)
+            ?: throw CustomBadRequestException("Not found user")
+        val responseDto = NoticeDetailResponseDto(findNotice)
+
+        responseDto.sessions = noticeRepository.findByIdWithSession(noticeId, userId)
+
+        val isScraped: ScrapedNoticeEntity? = scrapedNoticeRepository.findByNoticeIdAndUserId(noticeId, userId)
+        responseDto.isScraped = (isScraped != null)
+
+        return responseDto
     }
 
 
@@ -72,7 +88,7 @@ class NoticeServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getFilterNotice(filter: NoticeFilterRequest): Pair<List<NoticeResponseDto>, Long> {
+    override fun getFilterNotice(filter: NoticeFilterRequest): Pair<List<NoticeDetailResponseDto>, Long> {
         TODO("Not yet implemented")
 //
 //        return noticeRepository.filterNotices(filter, securityManager.getAuthenticatedUserName()!!)

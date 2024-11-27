@@ -13,4 +13,12 @@ interface NoticeRepository : JpaRepository<NoticeEntity, Long>, NoticeRepository
 
     @EntityGraph(attributePaths = ["noticeSessions", "targetCourses"])
     fun findByIdAndUserId(noticeId: Long, userId: Long): NoticeEntity?
+
+    @Query("SELECT notice " +
+            "FROM NoticeEntity notice " +
+            "LEFT JOIN FETCH notice.user user " +
+            "LEFT JOIN FETCH notice.targetCourses tcourse " +
+            "LEFT JOIN FETCH tcourse.course course " +
+            "WHERE notice.id = :noticeId ")
+    fun findByIdAndCoursesAndUser(noticeId: Long): NoticeEntity?
 }
