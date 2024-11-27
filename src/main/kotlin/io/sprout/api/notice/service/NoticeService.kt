@@ -6,9 +6,8 @@ import io.sprout.api.notice.model.enum.RequestResult
 
 
 interface NoticeService {
-    fun createNormalNotice(normalNoticeRequest: NormalNoticeRequestDto): Long
-    fun createSessionNotice(sessionNoticeRequest: SessionNoticeRequestDto): Long
-    fun updateNotice(id: Long, dto: NormalNoticeRequestDto): NoticeResponseDto
+    fun createNotice(noticeRequest: NoticeRequestDto): Long
+    fun updateNotice(noticeId: Long, noticeRequest: NoticeRequestDto)
     fun getNoticeById(id: Long): NoticeResponseDto
     fun deleteNotice(id: Long)
     fun getFilterNotice(filter: NoticeFilterRequest): Pair<List<NoticeResponseDto>, Long>

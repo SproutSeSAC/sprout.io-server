@@ -24,60 +24,34 @@ class NoticeServiceImpl(
 ) : NoticeService {
 
     /**
-     * 일반 공지사항 생성
-     * (일반공지, 취업, 기타 타입)
+     * 공지사항 생성
      *
-     * @param normalNoticeRequest 일반 공지사항 생성 파라미터
-     *
+     * @param noticeRequest 공지사항 생성 파라미터
      * @return noticeId
      */
-    @Transactional
-    override fun createNormalNotice(normalNoticeRequest: NormalNoticeRequestDto): Long {
+    override fun createNotice(noticeRequest: NoticeRequestDto): Long {
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 
-        val noticeEntity = normalNoticeRequest.toEntity(userId)
+        val noticeEntity = noticeRequest.toEntity(userId)
         noticeRepository.save(noticeEntity)
 
         return noticeEntity.id
     }
 
     /**
-     * 강의가 있는 세션 공지사항 생성
-     * (특별강의, 이벤트 타입)
-     *
-     * @param sessionNoticeRequest 세션 공지사항 생성 파라미터
-     *
-     * @return noticeId
+     * 공지사항 수정
+     * SET 자료구조의 equals overriding 방식으로 noticeSessions, targetCourses 수정 포함
      */
-    override fun createSessionNotice(sessionNoticeRequest: SessionNoticeRequestDto): Long {
+    override fun updateNotice(noticeId: Long, noticeRequest: NoticeRequestDto) {
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 
-        val noticeEntity = sessionNoticeRequest.toEntity(userId)
+        //권한 확인
+        val noticeEntity = (noticeRepository.findByIdAndUserId(noticeId, userId)
+            ?: throw CustomBadRequestException("게시글이 존재하지 않거나 권한이 없습니다."))
+        noticeEntity.update(noticeRequest)
+
         noticeRepository.save(noticeEntity)
-
-        return noticeEntity.id
     }
-
-
-
-
-    @Transactional
-    override fun updateNotice(id: Long, dto: NormalNoticeRequestDto): NoticeResponseDto {
-        TODO("Not yet implemented")
-
-//        val notice = noticeRepository.findById(id)
-//            .orElseThrow { IllegalArgumentException("Notice with ID $id not found") }
-//
-//        notice.title = dto.title
-//        notice.content = dto.content
-//        notice.startDate = dto.urls.first().startDate
-//        notice.endDate = dto.urls.first().endDate
-//        notice.noticeType = dto.noticeType
-//
-//        val updatedNotice = noticeRepository.save(notice)
-//        return updatedNotice.toDto()
-    }
-
 
     @Transactional(readOnly = true)
     override fun getNoticeById(id: Long): NoticeResponseDto {

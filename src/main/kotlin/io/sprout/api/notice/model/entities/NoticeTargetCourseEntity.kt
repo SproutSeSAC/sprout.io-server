@@ -1,8 +1,8 @@
 package io.sprout.api.notice.model.entities
 
-import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.course.model.entities.CourseEntity
 import jakarta.persistence.*
+import java.util.*
 
 /**
  * 공지사항 대상 교육과정 엔티티
@@ -22,4 +22,16 @@ class NoticeTargetCourseEntity (
     @JoinColumn(name = "course_id", nullable = false)
     val course : CourseEntity
 
-): BaseEntity()
+){
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is NoticeTargetCourseEntity) return false
+
+        return course.id == other.course.id
+                && notice.id == other.notice.id
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(notice.id, course.id)
+    }
+}
