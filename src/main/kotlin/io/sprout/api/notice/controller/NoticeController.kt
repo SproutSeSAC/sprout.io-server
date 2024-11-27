@@ -1,7 +1,6 @@
 package io.sprout.api.notice.controller
 
 import io.sprout.api.notice.model.dto.*
-import io.sprout.api.notice.model.entities.NoticeType
 import io.sprout.api.notice.model.enum.AcceptRequestResult
 import io.sprout.api.notice.model.enum.RequestResult
 import io.sprout.api.notice.service.NoticeService
@@ -53,44 +52,25 @@ class NoticeController(
         return ResponseEntity.ok(response)
     }
 
+    /**
+     * 공지사항 검색
+     * !! 자신의 교육과정에 해당하는 공지사항만 조회 가능 !!
+     *
+     * @param searchRequest 공지사항 검색 파라미터
+     */
+    @GetMapping
+    fun getNotices(
+        @ModelAttribute searchRequest: NoticeSearchRequestDto
+    ): ResponseEntity<Map<String, Any?>> {
+        val searchNotice = noticeService.searchNotice(searchRequest)
+
+        return ResponseEntity.ok(mapOf("notices" to searchNotice))
+    }
+
     // 공지사항 삭제
     @DeleteMapping("/{id}")
     fun deleteNotice(@PathVariable id: Long) {
         noticeService.deleteNotice(id)
-    }
-
-    // 모든 공지사항 조회
-    @GetMapping
-    fun getNotices(
-        @RequestParam(required = false) noticeType: NoticeType?,
-        @RequestParam(required = false) keyword: String?,
-        @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam(defaultValue = "20") size: Int,
-        @RequestParam(defaultValue = "false") onlyScraped: Boolean,
-        @RequestParam(defaultValue = "latest") sort: String
-    ): ResponseEntity<Map<String, Any?>> {
-        val filterRequest = NoticeFilterRequest(
-            noticeType = noticeType,
-            keyword = keyword,
-            page = page,
-            size = size,
-            onlyScraped = onlyScraped,
-            sort = sort
-        )
-
-        val (filteredProjects, totalCount) = noticeService.getFilterNotice(filterRequest)
-        val totalPages = (totalCount + filterRequest.size - 1) / filterRequest.size
-        val nextPage = if (filterRequest.page.toLong() != totalPages) filterRequest.page + 1 else null
-
-        val responseBody = mapOf(
-            "projects" to filteredProjects,
-            "totalCount" to totalCount,
-            "currentPage" to filterRequest.page,
-            "pageSize" to filterRequest.size,
-            "totalPages" to totalPages,
-            "nextPage" to nextPage
-        )
-        return ResponseEntity.ok(responseBody)
     }
 
     @PostMapping("/{noticeId}/join")

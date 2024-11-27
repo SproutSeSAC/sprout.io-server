@@ -77,6 +77,12 @@ class NoticeServiceImpl(
         return responseDto
     }
 
+    override fun searchNotice(searchRequest: NoticeSearchRequestDto): List<NoticeSearchResponseDto> {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+
+        return noticeRepository.search(searchRequest, userId)
+    }
+
 
     @Transactional
     override fun deleteNotice(id: Long) {
@@ -85,13 +91,6 @@ class NoticeServiceImpl(
 //            throw IllegalArgumentException("Notice with ID $id does not exist")
 //        }
 //        noticeRepository.deleteById(id)
-    }
-
-    @Transactional(readOnly = true)
-    override fun getFilterNotice(filter: NoticeFilterRequest): Pair<List<NoticeDetailResponseDto>, Long> {
-        TODO("Not yet implemented")
-//
-//        return noticeRepository.filterNotices(filter, securityManager.getAuthenticatedUserName()!!)
     }
 
     @Transactional
