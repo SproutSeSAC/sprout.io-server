@@ -22,5 +22,5 @@ data class NoticeResponseDto  @QueryProjection constructor(
     val viewCount: Int,
     var isScraped: Boolean,
     val parentId: Long? = null,
-    val children:  MutableList<NoticeUrlInfo> = mutableListOf()
+    val children:  MutableList<NoticeSessionDTO> = mutableListOf()
 )

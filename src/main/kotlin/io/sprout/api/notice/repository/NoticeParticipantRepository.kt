@@ -8,5 +8,4 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface NoticeParticipantRepository : JpaRepository<NoticeParticipantEntity, Long> {
-    fun findByUserAndNotice(user: UserEntity, notice: NoticeEntity): NoticeParticipantEntity?
 }
