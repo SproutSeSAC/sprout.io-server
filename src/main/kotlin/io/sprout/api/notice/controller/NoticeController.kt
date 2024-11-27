@@ -30,7 +30,8 @@ class NoticeController(
     /**
      * 공지사항 수정
      *
-     * @param normalNoticeRequest 일반 공지사항 등록 요청 파라미터
+     * @param noticeRequest 일반 공지사항 등록 요청 파라미터
+     * @param noticeId 수정할 공지사항 ID
      */
     @PutMapping("/{noticeId}")
     fun updateNotice(
@@ -38,6 +39,18 @@ class NoticeController(
         noticeService.updateNotice(noticeId, noticeRequest)
 
         return ResponseEntity.ok(mapOf("noticeId" to noticeId))
+    }
+
+    /**
+     * 공지사항 조회
+     *
+     * @param noticeId 조회할 공지사항 ID
+     */
+    @GetMapping("/{noticeId}")
+    fun getNoticeById(@PathVariable noticeId: Long): ResponseEntity<NoticeDetailResponseDto> {
+        val response = noticeService.getNoticeById(noticeId)
+
+        return ResponseEntity.ok(response)
     }
 
     // 공지사항 삭제
@@ -78,12 +91,6 @@ class NoticeController(
             "nextPage" to nextPage
         )
         return ResponseEntity.ok(responseBody)
-    }
-
-    // 특정 공지사항 조회
-    @GetMapping("/{id}")
-    fun getNoticeById(@PathVariable id: Long): NoticeResponseDto {
-        return noticeService.getNoticeById(id)
     }
 
     @PostMapping("/{noticeId}/join")

@@ -25,7 +25,7 @@ class NoticeParticipantEntity (
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notice_session_id", nullable = false)
     val noticeSession : NoticeSessionEntity
-):BaseEntity()
+)
 
 enum class ParticipantStatus{
     WAIT,
