@@ -27,7 +27,7 @@ class BaseEntity {
 
     @PrePersist
     fun formattingBeforeCreateDate() {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val customLocalDateTime = LocalDateTime.now().format(formatter)
         createdAt = LocalDateTime.parse(customLocalDateTime, formatter)
         updatedAt = LocalDateTime.parse(customLocalDateTime, formatter)
@@ -35,7 +35,7 @@ class BaseEntity {
 
     @PreUpdate
     fun formattingBeforeModifiedDate() {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val customLocalDateTime = LocalDateTime.now().format(formatter)
         updatedAt = LocalDateTime.parse(customLocalDateTime, formatter)
     }
