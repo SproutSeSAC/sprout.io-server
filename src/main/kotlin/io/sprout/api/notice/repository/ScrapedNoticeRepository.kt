@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ScrapedNoticeRepository : JpaRepository<ScrapedNoticeEntity, Long> {
     fun findByNoticeIdAndUserId(noticeId: Long, userId: Long): ScrapedNoticeEntity?
+    fun deleteByNoticeId(noticeId: Long)
 }

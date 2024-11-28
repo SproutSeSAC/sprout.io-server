@@ -139,13 +139,22 @@ class NoticeServiceImpl(
     }
 
 
+    /**
+     * 공지사항 삭제
+     * 공지사항과 연결된 - 댓글, 세션, 세션참여자, 타겟 교육과정 모두 삭제된다.
+     *
+     * @param noticeId 삭제할 공지사항 ID
+     */
     @Transactional
-    override fun deleteNotice(id: Long) {
-        TODO("Not yet implemented")
-//        if (!noticeRepository.existsById(id)) {
-//            throw IllegalArgumentException("Notice with ID $id does not exist")
-//        }
-//        noticeRepository.deleteById(id)
+    override fun deleteNotice(noticeId: Long) {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+
+        noticeRepository.findByIdAndUserId(noticeId, userId) ?:
+            throw CustomBadRequestException("게시글이 존재하지 않거나 삭제 권한이 없습니다.")
+
+        noticeCommentRepository.deleteByNoticeId(noticeId)
+        scrapedNoticeRepository.deleteByNoticeId(noticeId)
+        noticeRepository.deleteById(noticeId)
     }
 
     @Transactional

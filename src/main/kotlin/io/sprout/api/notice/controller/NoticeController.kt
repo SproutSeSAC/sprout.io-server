@@ -116,10 +116,14 @@ class NoticeController(
     }
 
 
-    // 공지사항 삭제
-    @DeleteMapping("/{id}")
-    fun deleteNotice(@PathVariable id: Long) {
-        noticeService.deleteNotice(id)
+    /**
+     * 공지사항 삭제
+     *
+     * @param noticeId 삭제할 공지사항 ID
+     */
+    @DeleteMapping("/{noticeId}")
+    fun deleteNotice(@PathVariable noticeId: Long) {
+        noticeService.deleteNotice(noticeId)
     }
 
     @PostMapping("/{noticeId}/join")

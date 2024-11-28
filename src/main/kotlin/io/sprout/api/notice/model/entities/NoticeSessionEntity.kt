@@ -25,7 +25,7 @@ class NoticeSessionEntity (
     val eventEndDateTime: LocalDateTime,
 
 ){
-    @OneToMany(mappedBy = "noticeSession", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "noticeSession", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     val noticeParticipants : MutableSet<NoticeParticipantEntity> = mutableSetOf()
 
     override fun equals(other: Any?): Boolean {
