@@ -117,38 +117,70 @@ class StoreRepositoryCustomImpl(
         return result
     }
 
-    override fun findStoreFilterList(campusId: Long): List<StoreProjectionDto.StoreFilterDto> {
+    override fun findStoreFilterList(campusId: Long): StoreProjectionDto.StoreFilterCount {
         val store = QStoreEntity.storeEntity
         val storeMenu = QStoreMenuEntity.storeMenuEntity
 
-        return jpaQueryFactory
-            .selectFrom(store)
-            .leftJoin(storeMenu).on(store.id.eq(storeMenu.store.id))
-            .where(
-                searchInCampus(campusId)
-            )
-            .distinct()
-            .transform(
-                groupBy(store.id).list(
-                    Projections.constructor(
-                        StoreProjectionDto.StoreFilterDto::class.java,
-                        store.id,
-                        store.name,
-                        store.foodType,
-                        store.isZeropay,
-                        store.walkTime,
-                        store.isOverPerson,
-                        list(
-                            Projections.constructor(
-                                StoreProjectionDto.StoreMenuDto::class.java,
-                                storeMenu.id,
-                                storeMenu.name,
-                                storeMenu.price
-                            )
-                        )
+        val foodTypeCount = jpaQueryFactory
+            .select(Projections.constructor(
+                StoreProjectionDto.FoodTypeCount::class.java,
+                store.foodType,
+                store.foodType.count()
+            ))
+            .from(store)
+            .where(store.campus.id.eq(campusId))
+            .groupBy(store.foodType)
+            .fetch()
+
+        val storeOptionCount = jpaQueryFactory
+            .select(Projections.constructor(
+                StoreProjectionDto.StoreOptionCount::class.java,
+                JPAExpressions
+                    .select(store.count())
+                    .from(store)
+                    .where(
+                        store.campus.id.eq(campusId),
+                        store.isZeropay.eq(true)
+                    ),
+                JPAExpressions
+                    .select(store.count())
+                    .from(store)
+                    .where(
+                        store.campus.id.eq(campusId),
+                        store.isVoucher.eq(true)
+                    ),
+                JPAExpressions
+                    .select(store.count())
+                    .from(store)
+                    .where(
+                        store.campus.id.eq(campusId),
+                        store.isOverPerson.eq(true)
                     )
-                )
+            ))
+            .from(store)
+            .fetchFirst()!!
+
+        val isLessThan10000Price = jpaQueryFactory
+            .select(store.count())
+            .from(store)
+            .where(
+                store.campus.id.eq(campusId)
+                    .and(
+                        JPAExpressions
+                            .selectOne()
+                            .from(storeMenu)
+                            .where(
+                                storeMenu.store.id.eq(store.id)
+                                    .and(storeMenu.price.loe(10000))
+                            )
+                            .exists()
+                    )
             )
+            .fetchOne()!!
+
+        storeOptionCount.isLessThan10000Price = isLessThan10000Price
+
+        return StoreProjectionDto.StoreFilterCount(foodTypeCount, storeOptionCount)
     }
 
     // Dynamic predicates

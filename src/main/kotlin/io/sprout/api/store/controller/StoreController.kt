@@ -36,7 +36,7 @@ class StoreController(
 
     @GetMapping("/filterCount")
     @Operation(summary = "맛집 필터 카운트 조회", description = "맛집 필터 카운트 조회")
-    fun getFilterCount(@RequestParam campusId: Long): StoreDto.StoreFilterResponse {
+    fun getFilterCount(@RequestParam campusId: Long): StoreProjectionDto.StoreFilterCount {
         return storeService.getFilterCount(campusId)
     }
 

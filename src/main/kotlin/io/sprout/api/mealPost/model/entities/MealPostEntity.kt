@@ -1,8 +1,8 @@
 package io.sprout.api.mealPost.model.entities
 
 import io.sprout.api.common.model.entities.BaseEntity
-import io.sprout.api.store.model.entities.StoreEntity
 import jakarta.persistence.*
+import org.springframework.data.annotation.Version
 import java.time.LocalDateTime
 
 @Entity
@@ -26,7 +26,7 @@ class MealPostEntity(
     val mealPostStatus: MealPostStatus,
 
     @Column(name = "store_name", length = 100)
-    var storeName: String
+    var storeName: String,
 
     // mealPost 첫번째 사람으로 글쓴이 판별하자
 
