@@ -1,21 +1,24 @@
 package io.sprout.api.notice.service
 
-import io.sprout.api.notice.model.dto.NoticeFilterRequest
-import io.sprout.api.notice.model.dto.NoticeJoinRequestListDto
-import io.sprout.api.notice.model.dto.NoticeRequestDto
-import io.sprout.api.notice.model.dto.NoticeResponseDto
-import io.sprout.api.notice.model.enum.AcceptRequestResult
-import io.sprout.api.notice.model.enum.RequestResult
+import io.sprout.api.notice.model.dto.*
+import io.sprout.api.notice.model.entities.ParticipantStatus
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 
 
 interface NoticeService {
-    fun createNotice(dto: NoticeRequestDto): NoticeResponseDto
-    fun updateNotice(id: Long, dto: NoticeRequestDto): NoticeResponseDto
-    fun getNoticeById(id: Long): NoticeResponseDto
-    fun deleteNotice(id: Long)
-    fun getFilterNotice(filter: NoticeFilterRequest): Pair<List<NoticeResponseDto>, Long>
-    fun requestJoinNotice(noticeId : Long): RequestResult
-    fun acceptRequest(noticeId: Long , requestId :Long): AcceptRequestResult
-    fun rejectRequest(noticeId: Long, requestId :Long): Boolean
-    fun getRequestList(noticeId: Long) : List<NoticeJoinRequestListDto>
+    fun createNotice(noticeRequest: NoticeRequestDto): Long
+    fun updateNotice(noticeId: Long, noticeRequest: NoticeRequestDto)
+    fun getNoticeById(noticeId: Long): NoticeDetailResponseDto
+    fun getNoticeComments(noticeId: Long, pageable: Pageable): List<NoticeCommentResponseDto>
+    fun createNoticeComment(commentRequest: NoticeCommentRequestDto, noticeId: Long)
+    fun deleteNoticeComment(commentId: Long)
+    fun deleteNotice(noticeId: Long)
+    fun searchNotice(searchRequest: NoticeSearchRequestDto): List<NoticeSearchResponseDto>
+    fun applyForNoticeSession(sessionId: Long)
+    fun acceptNoticeSessionApplication(sessionId: Long, participantId :Long)
+    fun rejectNoticeSessionApplication(sessionId: Long, participantId :Long)
+    fun cancelNoticeSessionParticipant(sessionId: Long, participantId: Long)
+    fun getSessionParticipants(sessionId: Long, pageable: PageRequest, searchParticipantStatus: List<ParticipantStatus>): Page<NoticeParticipantResponseDto>
 }
