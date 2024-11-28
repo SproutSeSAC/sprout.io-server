@@ -13,9 +13,8 @@ import java.util.*
 @Entity
 @Table(name = "notice_session")
 class NoticeSessionEntity (
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    val id : Long = 0,
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notice_id", nullable = false)
@@ -27,6 +26,17 @@ class NoticeSessionEntity (
 ){
     @OneToMany(mappedBy = "noticeSession", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     val noticeParticipants : MutableSet<NoticeParticipantEntity> = mutableSetOf()
+
+    /**
+     * notice SessionId 만을 가지고있는 dummy constructor
+     */
+    constructor(noticeSessionId: Long): this(
+        id = noticeSessionId,
+        notice = NoticeEntity(-1),
+        eventEndDateTime = LocalDateTime.now(),
+        eventStartDateTime = LocalDateTime.now()
+    )
+
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

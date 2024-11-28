@@ -10,9 +10,8 @@ import java.util.*
 @Entity
 @Table(name = "notice_target_course")
 class NoticeTargetCourseEntity (
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    val id : Long = 0,
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notice_id", nullable = false)
