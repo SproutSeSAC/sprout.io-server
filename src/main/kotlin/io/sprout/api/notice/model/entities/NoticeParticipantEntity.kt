@@ -11,9 +11,8 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "notice_participant")
 class NoticeParticipantEntity (
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    val id : Long,
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
 
     @Enumerated(EnumType.STRING)
     var status: ParticipantStatus,
@@ -25,10 +24,11 @@ class NoticeParticipantEntity (
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notice_session_id", nullable = false)
     val noticeSession : NoticeSessionEntity
-)
+):BaseEntity()
 
 enum class ParticipantStatus{
     WAIT,
-    PARTICIPANT
+    PARTICIPANT,
+    REJECT
 }
 

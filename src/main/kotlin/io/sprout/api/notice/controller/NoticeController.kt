@@ -1,11 +1,13 @@
 package io.sprout.api.notice.controller
 
 import io.sprout.api.notice.model.dto.*
-import io.sprout.api.notice.model.enum.AcceptRequestResult
-import io.sprout.api.notice.model.enum.RequestResult
+import io.sprout.api.notice.model.entities.ParticipantStatus
 import io.sprout.api.notice.service.NoticeService
 import jakarta.validation.Valid
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -126,43 +128,83 @@ class NoticeController(
         noticeService.deleteNotice(noticeId)
     }
 
-    @PostMapping("/{noticeId}/join")
-    fun requestJoinNotice(@PathVariable noticeId: Long): ResponseEntity<String> {
-        return when (val result = noticeService.requestJoinNotice(noticeId)) {
-            RequestResult.SUCCESS -> ResponseEntity.ok("Participation request successful.")
-            RequestResult.ALREADY_PARTICIPATED -> ResponseEntity.badRequest().body("User has already joined this notice.")
-            RequestResult.ALREADY_REQUESTED -> ResponseEntity.badRequest().body("User has already requested to join this notice.")
-            RequestResult.ERROR -> ResponseEntity.status(500).body("An error occurred while processing the participation request.")
-        }
+    /**
+     * 공지사항 세션 참가 신청
+     *
+     * @param sessionId 공지사항 강의 세션 ID
+     */
+    @PostMapping("/sessions/{sessionId}/application")
+    fun applyForNoticeSession(@PathVariable sessionId: Long): ResponseEntity<Any> {
+        noticeService.applyForNoticeSession(sessionId)
+
+        return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/{noticeId}/accept/{requestId}")
+    /**
+     * 공지사항 세션 참가 수락
+     *
+     * @param sessionId 강의 세션 아이디
+     * @param participantId 강의 참가 요청 ID
+     */
+    @PostMapping("/sessions/{sessionId}/accept/{participantId}")
     fun acceptParticipationRequest(
-        @PathVariable noticeId: Long,
-        @PathVariable requestId: Long
-    ): ResponseEntity<String> {
-        return when (noticeService.acceptRequest(noticeId,requestId)) {
-            AcceptRequestResult.SUCCESS -> ResponseEntity.ok("Participation confirmed.")
-            AcceptRequestResult.REQUEST_NOT_FOUND -> ResponseEntity.status(410).body("The participation request has already been canceled.")
-            AcceptRequestResult.VERSION_CONFLICT -> ResponseEntity.status(409).body("Another user has already confirmed this request.")
-            AcceptRequestResult.CAPACITY_EXCEEDED -> ResponseEntity.status(403).body("Participation limit exceeded.")
-        }
+        @PathVariable sessionId: Long,
+        @PathVariable participantId: Long
+    ): ResponseEntity<Any> {
+        noticeService.acceptNoticeSessionApplication(sessionId, participantId)
+
+        return ResponseEntity.ok().build()
     }
 
-    @PostMapping("/{noticeId}/reject/{requestId}")
+    /**
+     * 공지사항 세션 참가 거절
+     *
+     * @param sessionId 강의 세션 아이디
+     * @param participantId 강의 참가 요청 ID
+     */
+    @PostMapping("/sessions/{sessionId}/reject/{participantId}")
     fun rejectParticipationRequest(
-        @PathVariable noticeId: Long,
-        @PathVariable requestId: Long
-    ): ResponseEntity<String> {
-        return if (noticeService.rejectRequest(noticeId, requestId)) {
-            ResponseEntity.ok("Participation request rejected.")
-        } else {
-            ResponseEntity.status(404).body("Participation request not found or already canceled.")
-        }
+        @PathVariable sessionId: Long,
+        @PathVariable participantId: Long
+    ): ResponseEntity<Any> {
+        noticeService.rejectNoticeSessionApplication(sessionId, participantId)
+
+        return ResponseEntity.ok().build()
     }
 
-    @GetMapping("/{noticeId}/requests")
-    fun getRequestList(@PathVariable noticeId: Long): List<NoticeJoinRequestListDto> {
-        return noticeService.getRequestList(noticeId)
+    /**
+     * 공지사항 세션 참가 취소 (삭제)
+     *
+     * @param sessionId 강의 세션 아이디
+     * @param participantId 강의 참가 요청 ID
+     */
+    @DeleteMapping("/sessions/{sessionId}/cancel/{participantId}")
+    fun cancelParticipantRequest(
+        @PathVariable sessionId: Long,
+        @PathVariable participantId: Long
+    ): ResponseEntity<Any> {
+        noticeService.cancelNoticeSessionParticipant(sessionId, participantId)
+
+        return ResponseEntity.ok().build()
     }
+
+    /**
+     * 공지사항 세션 확인 (신청자, 참가자, ... 포함)
+     */
+    @GetMapping("/sessions/{sessionId}")
+    fun getSessionDetail(
+        @PathVariable sessionId: Long,
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(required = false, defaultValue = "WAIT, PARTICIPANT, REJECT") searchParticipantStatus: List<ParticipantStatus>
+    ): ResponseEntity<Page<NoticeParticipantResponseDto>> {
+        val pageable = PageRequest.of(page-1, size, Sort.by("createdAt").descending())
+        val result = noticeService.getSessionParticipants(sessionId, pageable, searchParticipantStatus)
+
+        return ResponseEntity.ok(result)
+    }
+
 }
+
+
+

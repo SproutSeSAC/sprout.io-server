@@ -2,18 +2,14 @@ package io.sprout.api.notice.service
 
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
+import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.notice.model.dto.*
-import io.sprout.api.notice.model.entities.NoticeEntity
-import io.sprout.api.notice.model.entities.ScrapedNoticeEntity
-import io.sprout.api.notice.model.enum.AcceptRequestResult
-import io.sprout.api.notice.model.enum.RequestResult
-import io.sprout.api.notice.repository.NoticeCommentRepository
-import io.sprout.api.notice.repository.NoticeParticipantRepository
-import io.sprout.api.notice.repository.NoticeRepository
-import io.sprout.api.notice.repository.ScrapedNoticeRepository
+import io.sprout.api.notice.model.entities.*
+import io.sprout.api.notice.repository.*
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -27,6 +23,7 @@ class NoticeServiceImpl(
     private val noticeCommentRepository: NoticeCommentRepository,
     private val noticeParticipantRepository: NoticeParticipantRepository,
     private val securityManager: SecurityManager,
+    private val noticeSessionRepository: NoticeSessionRepository,
     private val eventPublisher: ApplicationEventPublisher,
     private val userRepository: UserRepository
 ) : NoticeService {
@@ -138,7 +135,6 @@ class NoticeServiceImpl(
         return noticeRepository.search(searchRequest, userId)
     }
 
-
     /**
      * 공지사항 삭제
      * 공지사항과 연결된 - 댓글, 세션, 세션참여자, 타겟 교육과정 모두 삭제된다.
@@ -157,110 +153,119 @@ class NoticeServiceImpl(
         noticeRepository.deleteById(noticeId)
     }
 
+    /**
+     * 공지사항 세션 신청 (대기 인원으로 시작)
+     *
+     * @param sessionId 공지사항 강의 세션 ID
+     */
     @Transactional
-    override fun requestJoinNotice(noticeId: Long): RequestResult {
-        TODO("Not yet implemented")
-//        val userId = securityManager.getAuthenticatedUserName()
-//        val requestUser = userRepository.findUserById(userId!!)
-//        val notice = noticeRepository.findById(noticeId).orElseThrow {
-//            IllegalArgumentException("Notice with ID $noticeId not found")
-//        }
-//
-//         이미 공지에 참여한 사용자인지 확인
-//        if (noticeParticipantRepository.findByUserAndNotice(requestUser!!, notice) != null) {
-//            return RequestResult.ALREADY_PARTICIPATED // 이미 참여한 경우
-//        }
-//
-//         이미 참여 요청을 한 경우 확인
-//        if (noticeJoinRequestRepository.findByUserAndNotice(requestUser, notice) != null) {
-//            return RequestResult.ALREADY_REQUESTED // 이미 요청한 경우
-//        }
-//
-//        return try {
-//            noticeJoinRequestRepository.save(NoticeJoinRequestEntity(0, requestUser, notice))
-//            publishParticipationRequestEvent(notice, requestUser)
-//            RequestResult.SUCCESS // 요청 성공
-//        } catch (e: Exception) {
-//            RequestResult.ERROR // 기타 오류 발생
-//        }
+    override fun applyForNoticeSession(sessionId: Long) {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+
+        if(noticeParticipantRepository.findByNoticeSessionIdAndUserId(sessionId, userId) != null) {
+            throw CustomDataIntegrityViolationException("중복된 요청입니다.")
+        }
+
+        noticeParticipantRepository.save(NoticeParticipantEntity(
+            status = ParticipantStatus.WAIT,
+            user = UserEntity(userId),
+            noticeSession = NoticeSessionEntity(sessionId)
+        ))
     }
 
+    /**
+     * 세션 참가 신청 수락
+     *
+     * @param sessionId 세션 ID
+     * @param participantId 참가 신청 ID
+     */
     @Transactional
-    override fun acceptRequest(noticeId: Long, requestId: Long): AcceptRequestResult {
-        TODO("Not yet implemented")
+    override fun acceptNoticeSessionApplication(sessionId: Long, participantId: Long) {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 
-//        val notice = noticeRepository.findById(noticeId).orElseThrow {
-//            IllegalArgumentException("Notice with ID $id not found")
-//        }
-//         참여 요청 확인
-//        val joinRequest = noticeJoinRequestRepository.findById(requestId).orElse(null)
-//            ?: return AcceptRequestResult.REQUEST_NOT_FOUND // 요청이 이미 취소된 경우
-//
-//        noticeJoinRequestRepository.delete(joinRequest)
-//
-//         정원 초과 확인
-//        if (notice.participantCount >= notice.participantCapacity) {
-//            return AcceptRequestResult.CAPACITY_EXCEEDED
-//        }
-//
-//         참가자 정보 저장
-//        notice.participantCount++
-//
-//
-//        return try {
-//            noticeRepository.save(notice) // 버전 충돌 발생 시 예외
-//            val requestUser = UserEntity(joinRequest.user.id)
-//            noticeParticipantRepository.save(NoticeParticipantEntity(0, requestUser, notice))
-//            publishParticipationResponseEvent(notice, requestUser, accepted = true)
-//            AcceptRequestResult.SUCCESS
-//        } catch (e: OptimisticLockException) {
-//            AcceptRequestResult.VERSION_CONFLICT
-//        }
+        val participant = noticeParticipantRepository.findByIdAndNoticeSessionId(participantId, sessionId)
+            ?: throw CustomBadRequestException("참가요청이 존재하지 않습니다.")
+
+        val noticeSession = noticeSessionRepository.findByIdWithLock(sessionId)
+            ?: throw CustomBadRequestException("해당 세션이 없습니다.")
+
+        if (noticeSession.notice.user.id != userId) {
+            throw CustomBadRequestException("세션에 대한 권한이 없습니다.")
+        }
+
+        val currentParticipantCount = noticeParticipantRepository.countParticipantBySessionId(sessionId)
+        val participantCapacity = noticeSession.notice.participantCapacity ?:
+            throw CustomBadRequestException("세션 참가 정원 데이터 에러")
+        if (currentParticipantCount >= participantCapacity){
+            throw CustomBadRequestException("참가 정원이 다 찼습니다.")
+        }
+
+        participant.status = ParticipantStatus.PARTICIPANT
+        noticeParticipantRepository.save(participant)
     }
 
+    /**
+     * 세션 참가 거절
+     * (WAIT -> REJECT or PARTICIPANT -> REJECT)
+     *
+     * @param sessionId 세션 ID
+     * @param participantId 참가 신청 ID
+     */
     @Transactional
-    override fun rejectRequest(noticeId: Long, requestId: Long): Boolean {
-        TODO("Not yet implemented")
+    override fun rejectNoticeSessionApplication(sessionId: Long, participantId: Long) {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 
-//        // 해당 공지사항에 대한 사용자의 참여 요청 확인
-//        val joinRequest = noticeJoinRequestRepository.findById(requestId).orElse(null)
-//            ?: return false // 요청이 없는 경우 false 반환
-//
-//        // 참여 요청 거절 로직 - 요청 삭제
-//        noticeJoinRequestRepository.delete(joinRequest)
-//        publishParticipationResponseEvent(joinRequest.notice, joinRequest.user, accepted = false)
-//        return true
+        val participant = noticeParticipantRepository.findByIdAndNoticeSessionId(participantId, sessionId)
+            ?: throw CustomBadRequestException("참가요청이 존재하지 않습니다.")
+
+        val noticeSession = noticeSessionRepository.findById(sessionId)
+            .orElseThrow {CustomBadRequestException("해당 세션이 없습니다.")}
+
+        if (noticeSession.notice.user.id != userId) {
+            throw CustomBadRequestException("세션에 대한 권한이 없습니다.")
+        }
+
+        participant.status = ParticipantStatus.REJECT
+        noticeParticipantRepository.save(participant)
     }
 
-    override fun getRequestList(noticeId: Long): List<NoticeJoinRequestListDto> {
-        TODO("Not yet implemented")
-//        return noticeJoinRequestRepository.getRequestList(noticeId)
+    /**
+     * 세션 참가 취소 (row 삭제)
+     *
+     * @param sessionId 세션 ID
+     * @param participantId 참가 신청 ID
+     */
+    override fun cancelNoticeSessionParticipant(sessionId: Long, participantId: Long) {
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+
+        val participant = noticeParticipantRepository.findByIdAndNoticeSessionId(participantId, sessionId)
+            ?: throw CustomBadRequestException("참가요청이 존재하지 않습니다.")
+
+        noticeSessionRepository.findById(sessionId)
+            .orElseThrow {CustomBadRequestException("해당 세션이 없습니다.")}
+
+        if (participant.user.id != userId) {
+            throw CustomBadRequestException("세션 참가 삭제에 대한 권한이 없습니다.")
+        }
+
+        noticeParticipantRepository.deleteById(participantId)
     }
 
-
-    // 공통 이벤트 발생 메서드
-    private fun publishParticipationRequestEvent(notice: NoticeEntity, user: UserEntity) {
-        TODO("Not yet implemented")
-//        val event = ParticipationRequestEvent(
-//            noticeId = notice.id,
-//            userId = user.id,
-//            userName =       user.name ?: "이름 없음",
-//            userNickName = user.nickname,
-//            noticeTitle = notice.title
-//        )
-//        eventPublisher.publishEvent(event)
+    /**
+     * 세션 참가자 조회
+     * (searchParticipantStatus == null 이면 모든 상태 조회)
+     *
+     * @param sessionId 조회할 sessionId
+     * @param pageable 세션 참가자 페이지네이션 요청 파라미터
+     * @param searchParticipantStatus 세션 참가자 상태 검색 요청 파라미터
+     */
+    override fun getSessionParticipants(
+        sessionId: Long,
+        pageable: PageRequest,
+        searchParticipantStatus: List<ParticipantStatus>
+    ): Page<NoticeParticipantResponseDto> {
+        return noticeParticipantRepository.findBySessionIdAndStatusList(sessionId, searchParticipantStatus, pageable)
+            .map { NoticeParticipantResponseDto(it) }
     }
 
-    private fun publishParticipationResponseEvent(notice: NoticeEntity, user: UserEntity, accepted: Boolean) {
-        TODO("Not yet implemented")
-//        val event = ParticipationResponseEvent(
-//            noticeId = notice.id,
-//            userId = user.id,
-//            userName = user.name ?: "이름 없음",
-//            userNickName = user.nickname,
-//            noticeTitle = notice.title,
-//            accepted = accepted
-//        )
-//        eventPublisher.publishEvent(event)
-    }
 }
