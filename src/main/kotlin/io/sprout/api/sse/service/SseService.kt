@@ -1,4 +1,4 @@
-package io.sprout.api.infra.sse.service
+package io.sprout.api.sse.service
 
 import io.sprout.api.infra.sse.model.SubscriberDto
 import org.springframework.scheduling.annotation.Scheduled
