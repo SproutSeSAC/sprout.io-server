@@ -159,7 +159,7 @@ class NoticeServiceImpl(
      * @param sessionId 공지사항 강의 세션 ID
      */
     @Transactional
-    override fun applyForNoticeSession(sessionId: Long) {
+    override fun applyForNoticeSession(sessionId: Long, participantRequest: NoticeSessionParticipantRequestDto) {
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 
         if(noticeParticipantRepository.findByNoticeSessionIdAndUserId(sessionId, userId) != null) {
@@ -168,6 +168,7 @@ class NoticeServiceImpl(
 
         noticeParticipantRepository.save(NoticeParticipantEntity(
             status = ParticipantStatus.WAIT,
+            phoneNumber = participantRequest.phoneNumber,
             user = UserEntity(userId),
             noticeSession = NoticeSessionEntity(sessionId)
         ))
