@@ -55,8 +55,10 @@ class StoreService(
     }
 
     fun getStoreDetail(storeId: Long): StoreDto.StoreDetailResponse {
-
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
         val store = storeRepository.findStoreById(storeId) ?: throw CustomBadRequestException("Not found store")
+
+        val isScraped = scrapedStoreRepository.findByUserIdAndStoreId(userId, storeId) != null
 
         return StoreDto.StoreDetailResponse(
             name = store.name,
@@ -70,6 +72,7 @@ class StoreService(
             walkTime = store.walkTime,
             isZeropay = store.isZeropay,
             isOverPerson = store.isOverPerson,
+            isScraped = isScraped,
             storeMenuList = store.storeMenuList.map {
                 StoreMenuDetail(
                     id = it.id,
