@@ -1,7 +1,7 @@
-package io.sprout.api.infra.sse.controller
+package io.sprout.api.sse.controller
 
 import io.sprout.api.auth.security.manager.SecurityManager
-import io.sprout.api.infra.sse.service.SseService
+import io.sprout.api.sse.service.SseService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -12,8 +12,8 @@ import reactor.core.publisher.Flux
 @RestController
 @RequestMapping("/sse")
 class SseController(
-        private val sseService: SseService,
-        private val securityManager: SecurityManager
+    private val sseService: SseService,
+    private val securityManager: SecurityManager
 ) {
 
     @ExceptionHandler(Exception::class)
