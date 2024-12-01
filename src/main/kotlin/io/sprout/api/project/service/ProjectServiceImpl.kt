@@ -173,5 +173,12 @@ class ProjectServiceImpl(
         }
     }
 
-
+    @Transactional
+    override fun postProjectAndGetId(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Long {
+        val projectEntity = projectRecruitmentRequestDTO.toEntity(securityManager.getAuthenticatedUserName())
+        val savedProjectEntity = projectRepository.save(projectEntity)
+        saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
+        saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
+        return savedProjectEntity.id
+    }
 }

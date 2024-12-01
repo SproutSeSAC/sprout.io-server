@@ -15,4 +15,5 @@ interface ProjectService {
     fun deleteProject(projectId: Long): Boolean
     fun updateProject(projectId: Long, projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean
     fun getProjectsEndingTomorrow(): List<ProjectSimpleResponseDto>
+    fun postProjectAndGetId(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Long
 }
