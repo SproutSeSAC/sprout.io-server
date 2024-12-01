@@ -16,7 +16,7 @@ interface NoticeService {
     fun deleteNoticeComment(commentId: Long)
     fun deleteNotice(noticeId: Long)
     fun searchNotice(searchRequest: NoticeSearchRequestDto): List<NoticeSearchResponseDto>
-    fun applyForNoticeSession(sessionId: Long)
+    fun applyForNoticeSession(sessionId: Long, participantRequest: NoticeSessionParticipantRequestDto)
     fun acceptNoticeSessionApplication(sessionId: Long, participantId :Long)
     fun rejectNoticeSessionApplication(sessionId: Long, participantId :Long)
     fun cancelNoticeSessionParticipant(sessionId: Long, participantId: Long)
