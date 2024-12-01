@@ -17,6 +17,8 @@ class NoticeParticipantEntity (
     @Enumerated(EnumType.STRING)
     var status: ParticipantStatus,
 
+    var phoneNumber: String?,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     val user : UserEntity,
