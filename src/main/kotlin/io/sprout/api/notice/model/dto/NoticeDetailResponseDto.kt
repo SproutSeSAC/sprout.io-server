@@ -11,6 +11,7 @@ data class NoticeDetailResponseDto(
     val noticeType: NoticeType,
     val viewCount: Int,
     val status: NoticeStatus,
+    val isPhoneNumberRequired: Boolean,
 
     var applicationStartDateTime: LocalDateTime? = null,
     var applicationEndDateTime: LocalDateTime? = null,
@@ -36,6 +37,7 @@ data class NoticeDetailResponseDto(
         noticeType = notice.noticeType,
         viewCount = notice.viewCount,
         status = notice.status,
+        isPhoneNumberRequired = notice.isPhoneNumberRequired,
         applicationStartDateTime = notice.applicationStartDateTime,
         applicationEndDateTime = notice.applicationEndDateTime,
         applicationForm = notice.applicationForm,
