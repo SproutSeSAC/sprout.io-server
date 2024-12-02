@@ -36,6 +36,9 @@ class NoticeEntity(
     @Column(nullable = false)
     var viewCount: Int = 0,
 
+    @Column(nullable = false)
+    var isPhoneNumberRequired: Boolean = false,
+
     @Enumerated(EnumType.STRING)
     var meetingType: NoticeMeetingType?,
 
@@ -82,6 +85,7 @@ class NoticeEntity(
         this.title = noticeRequest.title
         this.content = noticeRequest.content
         this.noticeType = noticeRequest.noticeType
+        this.isPhoneNumberRequired = noticeRequest.isPhoneNumberRequired
         this.applicationForm = noticeRequest.applicationForm
         this.applicationEndDateTime = noticeRequest.applicationEndDateTime
         this.applicationStartDateTime = noticeRequest.applicationStartDateTime
