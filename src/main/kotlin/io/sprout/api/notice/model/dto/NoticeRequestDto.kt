@@ -21,6 +21,8 @@ data class NoticeRequestDto(
 
     val noticeType: NoticeType,
 
+    val isPhoneNumberRequired: Boolean,
+
     val applicationForm: String?,
 
     val applicationStartDateTime: LocalDateTime?,
@@ -46,6 +48,7 @@ data class NoticeRequestDto(
             noticeType = this.noticeType,
             meetingType = this.meetingType,
             viewCount = 0,
+            isPhoneNumberRequired = this.isPhoneNumberRequired,
             meetingPlace = this.meetingPlace,
             applicationForm = this.applicationForm,
             applicationEndDateTime = this.applicationEndDateTime,
