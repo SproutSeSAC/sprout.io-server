@@ -69,7 +69,7 @@ class NoticeServiceImpl(
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 
         val findNotice = noticeRepository.findByIdAndCoursesAndUser(noticeId)
-            ?: throw CustomBadRequestException("Not found user")
+            ?: throw CustomBadRequestException("Not found notice")
         findNotice.increaseViewCount()
 
         val responseDto = NoticeDetailResponseDto(findNotice)
