@@ -70,10 +70,10 @@ class NoticeController(
     @Operation(summary = "공지사항 검색", description = "공지사항을 검색합니다. keyword는 제목과 내용중 포함되는 부분을 찾습니다.")
     fun getNotices(
         @ModelAttribute searchRequest: NoticeSearchRequestDto
-    ): ResponseEntity<Map<String, Any?>> {
+    ): ResponseEntity<NoticeSearchResponseDto> {
         val searchNotice = noticeService.searchNotice(searchRequest)
 
-        return ResponseEntity.ok(mapOf("notices" to searchNotice))
+        return ResponseEntity.ok(searchNotice)
     }
 
     /**
@@ -87,10 +87,10 @@ class NoticeController(
     fun getNoticeComments(
         @PathVariable noticeId: Long,
         pageable: Pageable
-    ): ResponseEntity<Map<String, List<NoticeCommentResponseDto>>> {
+    ): ResponseEntity<NoticeCommentResponseDto> {
         val noticeComments = noticeService.getNoticeComments(noticeId, pageable)
 
-        return ResponseEntity.ok(mapOf("comments" to noticeComments))
+        return ResponseEntity.ok(noticeComments)
     }
 
     /**

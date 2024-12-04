@@ -89,14 +89,16 @@ class NoticeServiceImpl(
      *  @param noticeId 공지사항 ID
      *  @param pageable 페이지네이션 요청 파라미터
      */
-    override fun getNoticeComments(noticeId: Long, pageable: Pageable): List<NoticeCommentResponseDto> {
+    override fun getNoticeComments(noticeId: Long, pageable: Pageable): NoticeCommentResponseDto {
         val sortedPageable = PageRequest.of(
             if (pageable.pageNumber == 0) 0 else pageable.pageNumber - 1,
             pageable.pageSize,
             Sort.by("createdAt").descending())
 
-        return noticeCommentRepository.findByNoticeId(noticeId, sortedPageable)
-            .map { NoticeCommentResponseDto(it) }
+        val comments = noticeCommentRepository.findByNoticeId(noticeId, sortedPageable)
+            .map { NoticeCommentResponseDto.NoticeCommentDto(it) }
+
+        return NoticeCommentResponseDto(comments)
     }
 
     /**
@@ -129,10 +131,10 @@ class NoticeServiceImpl(
      *
      *  @param searchRequest 공지사항 검색 파라미터
      */
-    override fun searchNotice(searchRequest: NoticeSearchRequestDto): List<NoticeSearchResponseDto> {
+    override fun searchNotice(searchRequest: NoticeSearchRequestDto): NoticeSearchResponseDto {
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
 
-        return noticeRepository.search(searchRequest, userId)
+        return NoticeSearchResponseDto(noticeRepository.search(searchRequest, userId))
     }
 
     /**
