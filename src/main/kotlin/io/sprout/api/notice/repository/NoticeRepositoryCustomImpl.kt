@@ -11,7 +11,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import io.sprout.api.course.model.entities.QCourseEntity
 import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
-import io.sprout.api.notice.model.dto.NoticeSearchResponseDto
+import io.sprout.api.notice.model.dto.NoticeSearchDto
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.user.model.entities.QUserCourseEntity
 import io.sprout.api.user.model.entities.QUserEntity
@@ -72,7 +72,7 @@ class NoticeRepositoryCustomImpl(
      *
      * @param searchRequest 공지사항 검색 파라미터
      */
-    override fun search(searchRequest: NoticeSearchRequestDto, userId: Long): List<NoticeSearchResponseDto> {
+    override fun search(searchRequest: NoticeSearchRequestDto, userId: Long): List<NoticeSearchDto> {
         val myCourseIds: List<Long> = queryFactory
             .select(userCourse.course.id)
             .from(userCourse)
@@ -101,12 +101,14 @@ class NoticeRepositoryCustomImpl(
             .transform(
                 groupBy(notice.id).list(
                     Projections.constructor(
-                        NoticeSearchResponseDto::class.java,
+                        NoticeSearchDto::class.java,
                         notice.id,
                         user.id,
                         user.name,
                         user.role,
                         notice.title,
+                        notice.content.substring(0, 200),
+                        notice.content.length().gt(200),
                         notice.viewCount,
                         notice.noticeType,
                         notice.createdAt,

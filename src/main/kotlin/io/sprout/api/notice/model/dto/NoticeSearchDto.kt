@@ -5,14 +5,10 @@ import io.sprout.api.user.model.entities.RoleType
 import java.time.LocalDateTime
 
 
-//글쓴이, 제목, 내용, 타입, 대상코스, 조회수, isScraped, 작성일자, 수정일자
-// user 필요하고
-// noticeCourse 필요하고
-// scraped Notice 필요하고,
 /**
  * 공지사항 검색 응답 DTO
  */
-data class NoticeSearchResponseDto(
+data class NoticeSearchDto(
     val noticeId: Long,
 
     val userId: Long,
@@ -20,6 +16,8 @@ data class NoticeSearchResponseDto(
     val roleType: RoleType,
 
     val title: String,
+    val content: String,
+    val isContentOverMaxLength: Boolean,
     val viewCount: Int,
     val noticeType: NoticeType,
     val createdDateTime: LocalDateTime,
@@ -27,5 +25,8 @@ data class NoticeSearchResponseDto(
 
     var isScraped: Boolean,
     val targetCourse: List<String>
-){
-}
+)
+
+data class NoticeSearchResponseDto(
+    val notices: List<NoticeSearchDto>
+)
