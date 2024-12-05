@@ -296,6 +296,26 @@ class NoticeServiceImpl(
             .map { NoticeParticipantResponseDto(it) }
     }
 
+    /**
+     * 공지사항 좋아요 toggle
+     *
+     * @param noticeId 공지사항 ID
+     */
+    override fun toggleNoticeScrap(noticeId: Long) {
+        val userId = getUserId()
+
+        val scrapedNotice = scrapedNoticeRepository.findByNoticeIdAndUserId(noticeId, userId)
+        if (scrapedNotice == null) {
+            val newScrapedNotice = ScrapedNoticeEntity(
+                user = UserEntity(userId),
+                notice = NoticeEntity(noticeId)
+            )
+            scrapedNoticeRepository.save(newScrapedNotice)
+        } else {
+            scrapedNoticeRepository.deleteById(scrapedNotice.id)
+        }
+    }
+
 
     private fun getUserId(): Long {
         return securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")

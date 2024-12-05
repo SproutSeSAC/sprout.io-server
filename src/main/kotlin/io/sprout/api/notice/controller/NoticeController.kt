@@ -220,6 +220,20 @@ class NoticeController(
         return ResponseEntity.ok(result)
     }
 
+    /**
+     * 공지사항 좋아요 토글
+     *
+     * @param noticeId 공지사항 ID
+     * @return 200 ok
+     */
+    @PostMapping("/{noticeId}/scrap")
+    @Operation(summary = "공지사항 좋아요 토글", description = "ture -> false, false -> true toggle")
+    fun toggleNoticeScrap(@PathVariable noticeId: Long): ResponseEntity<Any> {
+        noticeService.toggleNoticeScrap(noticeId)
+
+        return ResponseEntity.ok().build()
+    }
+
 }
 
 
