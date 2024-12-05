@@ -17,7 +17,6 @@ data class NoticeDetailResponseDto(
     var applicationEndDateTime: LocalDateTime? = null,
     var meetingPlace: String? = null,
     var meetingType: NoticeMeetingType?,
-    var applicationForm: String? = null,
     var satisfactionSurvey: String? = null,
     var participantCapacity: Int? = null,
 
@@ -40,7 +39,6 @@ data class NoticeDetailResponseDto(
         isPhoneNumberRequired = notice.isPhoneNumberRequired,
         applicationStartDateTime = notice.applicationStartDateTime,
         applicationEndDateTime = notice.applicationEndDateTime,
-        applicationForm = notice.applicationForm,
         meetingType = notice.meetingType,
         meetingPlace = notice.meetingPlace,
         participantCapacity = notice.participantCapacity,
