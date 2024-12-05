@@ -23,8 +23,6 @@ data class NoticeRequestDto(
 
     val isPhoneNumberRequired: Boolean,
 
-    val applicationForm: String?,
-
     val applicationStartDateTime: LocalDateTime?,
 
     val applicationEndDateTime: LocalDateTime?,
@@ -39,7 +37,33 @@ data class NoticeRequestDto(
 
     val sessions: List<NoticeSessionDTO> = mutableListOf()
 ) {
-    fun toEntity(userId: Long): NoticeEntity {
+
+    fun toNormalEntity(userId: Long): NoticeEntity {
+        val noticeEntity = NoticeEntity(
+            title = this.title,
+            content = this.content,
+            user = UserEntity(userId),
+            status = NoticeStatus.ACTIVE,
+            noticeType = this.noticeType,
+            meetingType = null,
+            viewCount = 0,
+            isPhoneNumberRequired = false,
+            meetingPlace = null,
+            applicationEndDateTime = null,
+            applicationStartDateTime = null,
+            participantCapacity = null,
+            satisfactionSurvey = null
+        )
+
+        noticeEntity.targetCourses.plusAssign(targetCourseIdList.map { NoticeTargetCourseEntity(
+            notice = noticeEntity,
+            course = CourseEntity(it)
+        ) }
+            .toMutableSet())
+
+        return noticeEntity
+    }
+    fun toSessionEntity(userId: Long): NoticeEntity {
         val noticeEntity = NoticeEntity(
             title = this.title,
             content = this.content,
@@ -50,7 +74,6 @@ data class NoticeRequestDto(
             viewCount = 0,
             isPhoneNumberRequired = this.isPhoneNumberRequired,
             meetingPlace = this.meetingPlace,
-            applicationForm = this.applicationForm,
             applicationEndDateTime = this.applicationEndDateTime,
             applicationStartDateTime = this.applicationStartDateTime,
             participantCapacity = this.participantCapacity,
@@ -72,6 +95,13 @@ data class NoticeRequestDto(
 
         return noticeEntity
 
+    }
+
+    /**
+     * 세션이 있는 Notice 인지 확인
+     */
+    fun isSessionNotice(): Boolean {
+        return listOf(NoticeType.EVENT, NoticeType.SPECIAL_LECTURE).contains(this.noticeType)
     }
 }
 

@@ -44,8 +44,6 @@ class NoticeEntity(
 
     var meetingPlace: String? = null,
 
-    var applicationForm: String? = null,
-
     var applicationStartDateTime: LocalDateTime? = null,
 
     var applicationEndDateTime: LocalDateTime? = null,
@@ -86,7 +84,6 @@ class NoticeEntity(
         this.content = noticeRequest.content
         this.noticeType = noticeRequest.noticeType
         this.isPhoneNumberRequired = noticeRequest.isPhoneNumberRequired
-        this.applicationForm = noticeRequest.applicationForm
         this.applicationEndDateTime = noticeRequest.applicationEndDateTime
         this.applicationStartDateTime = noticeRequest.applicationStartDateTime
         this.participantCapacity = noticeRequest.participantCapacity

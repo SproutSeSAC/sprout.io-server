@@ -6,6 +6,7 @@ import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationExceptio
 import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.notice.repository.*
+import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import org.springframework.context.ApplicationEventPublisher
@@ -30,14 +31,21 @@ class NoticeServiceImpl(
 
     /**
      * 공지사항 생성
+     * 공지사항은 type에 따라 크게 2가지로 나뉜다. 강의 세션이 있는 것과 아닌 것
      *
      * @param noticeRequest 공지사항 생성 파라미터
      * @return noticeId
      */
     override fun createNotice(noticeRequest: NoticeRequestDto): Long {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        val user = getUser()
+        validateUserIsManagerRole(user)
+        validateUserCourseContainAllTargetCourses(user, noticeRequest.targetCourseIdList)
 
-        val noticeEntity = noticeRequest.toEntity(userId)
+        val noticeEntity = if (noticeRequest.isSessionNotice()) {
+            noticeRequest.toSessionEntity(user.id)
+        } else {
+            noticeRequest.toNormalEntity(user.id)
+        }
         noticeRepository.save(noticeEntity)
 
         return noticeEntity.id
@@ -48,7 +56,7 @@ class NoticeServiceImpl(
      * SET 자료구조의 equals overriding 방식으로 noticeSessions, targetCourses 수정 포함
      */
     override fun updateNotice(noticeId: Long, noticeRequest: NoticeRequestDto) {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        val userId = getUserId()
 
         //권한 확인
         val noticeEntity = (noticeRepository.findByIdAndUserId(noticeId, userId)
@@ -60,25 +68,27 @@ class NoticeServiceImpl(
 
     /**
      * 공지사항 조회
+     * 공지사항 targetCourse에 자신이 속한 course가 있어야 조회 가능
      *
      * @param noticeId 조회할 공지사항 ID
      * @return 공지사항 detail (comment 미포함)
      */
     @Transactional
     override fun getNoticeById(noticeId: Long): NoticeDetailResponseDto {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        val user = getUser()
 
         val findNotice = noticeRepository.findByIdAndCoursesAndUser(noticeId)
             ?: throw CustomBadRequestException("Not found notice")
         findNotice.increaseViewCount()
 
+        validateUserCourseContainAtLeastOneTargetCourses(user, findNotice.targetCourses.map { it.course.id }.toSet())
+
         val responseDto = NoticeDetailResponseDto(findNotice)
 
-        responseDto.sessions = noticeRepository.findByIdWithSession(noticeId, userId)
+        responseDto.sessions = noticeRepository.findByIdWithSession(noticeId, user.id)
 
-        val isScraped: ScrapedNoticeEntity? = scrapedNoticeRepository.findByNoticeIdAndUserId(noticeId, userId)
+        val isScraped: ScrapedNoticeEntity? = scrapedNoticeRepository.findByNoticeIdAndUserId(noticeId, user.id)
         responseDto.isScraped = (isScraped != null)
-
 
         return responseDto
     }
@@ -93,7 +103,8 @@ class NoticeServiceImpl(
         val sortedPageable = PageRequest.of(
             if (pageable.pageNumber == 0) 0 else pageable.pageNumber - 1,
             pageable.pageSize,
-            Sort.by("createdAt").descending())
+            Sort.by("createdAt").descending()
+        )
 
         val comments = noticeCommentRepository.findByNoticeId(noticeId, sortedPageable)
             .map { NoticeCommentResponseDto.NoticeCommentDto(it) }
@@ -107,32 +118,33 @@ class NoticeServiceImpl(
      * @param commentId 삭제할 댓글 ID
      */
     override fun deleteNoticeComment(commentId: Long) {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        val userId = getUserId()
 
-        noticeCommentRepository.findByIdAndUserId(commentId, userId) ?:
-            throw CustomBadRequestException("게시글이 존재하지 않거나 삭제 권한이 없습니다.")
+        noticeCommentRepository.findByIdAndUserId(commentId, userId)
+            ?: throw CustomBadRequestException("게시글이 존재하지 않거나 삭제 권한이 없습니다.")
 
         noticeCommentRepository.deleteById(commentId)
     }
 
     /**
      * 공지사항 댓글 생성
-     * 
+     *
      * @param commentRequest 공지사항 댓글 생성 파라미터
      */
     override fun createNoticeComment(commentRequest: NoticeCommentRequestDto, noticeId: Long) {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        val userId = getUserId()
 
         noticeCommentRepository.save(commentRequest.toEntity(userId, noticeId))
     }
 
     /**
      *  공지사항 검색
+     *  공지사항 targetCourse에 자신이 속한 course가 있어야 조회 가능
      *
      *  @param searchRequest 공지사항 검색 파라미터
      */
     override fun searchNotice(searchRequest: NoticeSearchRequestDto): NoticeSearchResponseDto {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        val userId = getUserId()
 
         return NoticeSearchResponseDto(noticeRepository.search(searchRequest, userId))
     }
@@ -145,10 +157,10 @@ class NoticeServiceImpl(
      */
     @Transactional
     override fun deleteNotice(noticeId: Long) {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        val userId = getUserId()
 
-        noticeRepository.findByIdAndUserId(noticeId, userId) ?:
-            throw CustomBadRequestException("게시글이 존재하지 않거나 삭제 권한이 없습니다.")
+        noticeRepository.findByIdAndUserId(noticeId, userId)
+            ?: throw CustomBadRequestException("게시글이 존재하지 않거나 삭제 권한이 없습니다.")
 
         noticeCommentRepository.deleteByNoticeId(noticeId)
         scrapedNoticeRepository.deleteByNoticeId(noticeId)
@@ -162,18 +174,23 @@ class NoticeServiceImpl(
      */
     @Transactional
     override fun applyForNoticeSession(sessionId: Long, participantRequest: NoticeSessionParticipantRequestDto) {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        val user = getUser()
+        val session = noticeSessionRepository.findById(sessionId)
+            .orElseThrow { throw CustomBadRequestException("세션이 존재하지 않습니다.") }
+        validateUserCourseContainAtLeastOneTargetCourses(user, session.notice.targetCourses.map { it.course.id }.toSet())
 
-        if(noticeParticipantRepository.findByNoticeSessionIdAndUserId(sessionId, userId) != null) {
+        if (noticeParticipantRepository.findByNoticeSessionIdAndUserId(sessionId, user.id) != null) {
             throw CustomDataIntegrityViolationException("중복된 요청입니다.")
         }
 
-        noticeParticipantRepository.save(NoticeParticipantEntity(
-            status = ParticipantStatus.WAIT,
-            phoneNumber = participantRequest.phoneNumber,
-            user = UserEntity(userId),
-            noticeSession = NoticeSessionEntity(sessionId)
-        ))
+        noticeParticipantRepository.save(
+            NoticeParticipantEntity(
+                status = ParticipantStatus.WAIT,
+                phoneNumber = participantRequest.phoneNumber,
+                user = UserEntity(user.id),
+                noticeSession = NoticeSessionEntity(sessionId)
+            )
+        )
     }
 
     /**
@@ -197,9 +214,9 @@ class NoticeServiceImpl(
         }
 
         val currentParticipantCount = noticeParticipantRepository.countParticipantBySessionId(sessionId)
-        val participantCapacity = noticeSession.notice.participantCapacity ?:
-            throw CustomBadRequestException("세션 참가 정원 데이터 에러")
-        if (currentParticipantCount >= participantCapacity){
+        val participantCapacity =
+            noticeSession.notice.participantCapacity ?: throw CustomBadRequestException("세션 참가 정원 데이터 에러")
+        if (currentParticipantCount >= participantCapacity) {
             throw CustomBadRequestException("참가 정원이 다 찼습니다.")
         }
 
@@ -222,7 +239,7 @@ class NoticeServiceImpl(
             ?: throw CustomBadRequestException("참가요청이 존재하지 않습니다.")
 
         val noticeSession = noticeSessionRepository.findById(sessionId)
-            .orElseThrow {CustomBadRequestException("해당 세션이 없습니다.")}
+            .orElseThrow { CustomBadRequestException("해당 세션이 없습니다.") }
 
         if (noticeSession.notice.user.id != userId) {
             throw CustomBadRequestException("세션에 대한 권한이 없습니다.")
@@ -245,7 +262,7 @@ class NoticeServiceImpl(
             ?: throw CustomBadRequestException("참가요청이 존재하지 않습니다.")
 
         noticeSessionRepository.findById(sessionId)
-            .orElseThrow {CustomBadRequestException("해당 세션이 없습니다.")}
+            .orElseThrow { CustomBadRequestException("해당 세션이 없습니다.") }
 
         if (participant.user.id != userId) {
             throw CustomBadRequestException("세션 참가 삭제에 대한 권한이 없습니다.")
@@ -267,8 +284,60 @@ class NoticeServiceImpl(
         pageable: PageRequest,
         searchParticipantStatus: List<ParticipantStatus>
     ): Page<NoticeParticipantResponseDto> {
+        val userId = getUserId()
+        val session = noticeSessionRepository.findById(sessionId)
+            .orElseThrow { CustomBadRequestException("해당 세션이 존재하지 않습니다.") }
+
+        if (session.notice.user.id != userId) {
+            throw CustomBadRequestException("열람 권한이 없습니다.")
+        }
+
         return noticeParticipantRepository.findBySessionIdAndStatusList(sessionId, searchParticipantStatus, pageable)
             .map { NoticeParticipantResponseDto(it) }
+    }
+
+
+    private fun getUserId(): Long {
+        return securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+    }
+
+    private fun getUser(): UserEntity {
+        val userId =  securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
+        return userRepository.findById(userId).orElseThrow { throw CustomBadRequestException("Not found user") }
+    }
+
+    private fun validateUserIsManagerRole(user: UserEntity) {
+        val isManagerRole = listOf(
+            RoleType.ADMIN,
+            RoleType.CAMPUS_MANAGER,
+            RoleType.EDU_MANAGER,
+            RoleType.JOB_COORDINATOR
+        )
+            .contains(user.role)
+
+        if (isManagerRole.not()) {
+            throw CustomBadRequestException("user role ${user.role} is not authorization")
+        }
+    }
+
+    private fun validateUserCourseContainAllTargetCourses(user: UserEntity, targetCourses: Set<Long>) {
+        val isUserCourseContainsAllTargetCourse = user.userCourseList
+            .map { uc -> uc.course.id }
+            .containsAll(targetCourses)
+
+        if (isUserCourseContainsAllTargetCourse.not()) {
+            throw CustomBadRequestException("user courses are not contain target courses")
+        }
+    }
+
+    private fun validateUserCourseContainAtLeastOneTargetCourses(user: UserEntity, targetCourses: Set<Long>) {
+        val isNotUserCourseContainsAtLeastOneTargetCourse = user.userCourseList
+            .map { uc -> uc.course.id }
+            .none { targetCourses.contains(it) }
+
+        if (isNotUserCourseContainsAtLeastOneTargetCourse) {
+            throw CustomBadRequestException("user courses are not contain target courses")
+        }
     }
 
 }

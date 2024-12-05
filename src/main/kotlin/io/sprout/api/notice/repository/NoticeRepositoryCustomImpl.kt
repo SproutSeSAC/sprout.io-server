@@ -95,7 +95,7 @@ class NoticeRepositoryCustomImpl(
                 isNoticeType(searchRequest.noticeType),
                 isOnlyScraped(searchRequest.onlyScraped, userId)
             )
-            .orderBy(OrderSpecifier(Order.DESC, notice.updatedAt))
+            .orderBy(OrderSpecifier(Order.DESC, notice.createdAt))
             .limit(searchRequest.size.toLong())
             .offset(searchRequest.offset.toLong())
             .transform(
