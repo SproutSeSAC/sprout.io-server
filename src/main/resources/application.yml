@@ -2,9 +2,9 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:mariadb://localhost:3307/sprout
+    url: jdbc:mariadb://localhost:3306/sprout
     username: root
-    password: root
+    password: hiworld
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect

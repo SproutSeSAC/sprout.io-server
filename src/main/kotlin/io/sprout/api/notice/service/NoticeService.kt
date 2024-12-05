@@ -21,4 +21,5 @@ interface NoticeService {
     fun rejectNoticeSessionApplication(sessionId: Long, participantId :Long)
     fun cancelNoticeSessionParticipant(sessionId: Long, participantId: Long)
     fun getSessionParticipants(sessionId: Long, pageable: PageRequest, searchParticipantStatus: List<ParticipantStatus>): Page<NoticeParticipantResponseDto>
+    fun toggleNoticeScrap(noticeId: Long)
 }
