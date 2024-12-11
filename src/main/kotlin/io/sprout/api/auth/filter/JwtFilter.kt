@@ -53,6 +53,8 @@ class JwtFilter(
 //            "/api/store/list",
 //            "/api/store/**",
 //            "/api/user/check",
+            "/api/user/nickname/duplicate", // 닉네임 중복 확인 - 필수회원이 아니면 304 에러 발생
+
             "/api/store/filterCount",
             "/api/course/list/**",
             "/api/campus/list",
