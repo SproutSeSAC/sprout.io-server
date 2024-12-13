@@ -7,5 +7,5 @@ import io.sprout.api.notice.model.dto.NoticeSearchDto
 interface NoticeRepositoryCustom {
 
     fun findByIdWithSession(noticeId: Long, userId: Long): List<NoticeDetailResponseDto.Session>
-    fun search(searchRequest: NoticeSearchRequestDto, userId: Long): List<NoticeSearchDto>
+    fun search(searchRequest: NoticeSearchRequestDto, userId: Long): MutableList<NoticeSearchDto>
 }
