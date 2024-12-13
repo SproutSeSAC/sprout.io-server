@@ -9,6 +9,9 @@ import java.time.LocalDate
 
 @Schema(description = "계정 정보 조회 response")
 data class UserDetailResponse(
+    @Schema(description = "유저 ID", nullable = false)
+    val userId: Long,
+
     @Schema(description = "이메일", nullable = false)
     val email: String,
 
@@ -51,6 +54,7 @@ data class UserDetailResponse(
     )
 
     constructor(user: UserEntity, campusEntities: List<CampusEntity>) : this(
+        userId = user.id,
         name = user.name,
         email = user.email,
         campusList = campusEntities.map {
