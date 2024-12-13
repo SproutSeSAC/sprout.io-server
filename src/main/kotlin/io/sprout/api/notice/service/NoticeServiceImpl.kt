@@ -41,7 +41,7 @@ class NoticeServiceImpl(
         validateUserIsManagerRole(user)
         validateUserCourseContainAllTargetCourses(user, noticeRequest.targetCourseIdList)
 
-        val noticeEntity = if (noticeRequest.isSessionNotice()) {
+        val noticeEntity = if (noticeRequest.addIsSessionNotice()) {
             noticeRequest.toSessionEntity(user.id)
         } else {
             noticeRequest.toNormalEntity(user.id)
@@ -146,7 +146,12 @@ class NoticeServiceImpl(
     override fun searchNotice(searchRequest: NoticeSearchRequestDto): NoticeSearchResponseDto {
         val userId = getUserId()
 
-        return NoticeSearchResponseDto(noticeRepository.search(searchRequest, userId))
+        val searchResult = noticeRepository.search(searchRequest, userId)
+        val searchResponse = NoticeSearchResponseDto(searchResult)
+        searchResponse.addPageResult(searchRequest)
+        searchResponse.removeHtmlTags()
+
+        return searchResponse
     }
 
     /**

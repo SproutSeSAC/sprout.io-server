@@ -2,6 +2,7 @@ package io.sprout.api.notice.model.dto
 
 import io.sprout.api.notice.model.entities.NoticeType
 import io.sprout.api.user.model.entities.RoleType
+import org.jsoup.Jsoup
 import java.time.LocalDateTime
 
 
@@ -16,7 +17,7 @@ data class NoticeSearchDto(
     val roleType: RoleType,
 
     val title: String,
-    val content: String,
+    var content: String,
     val isContentOverMaxLength: Boolean,
     val viewCount: Int,
     val noticeType: NoticeType,
@@ -28,5 +29,37 @@ data class NoticeSearchDto(
 )
 
 data class NoticeSearchResponseDto(
-    val notices: List<NoticeSearchDto>
-)
+    val notices: MutableList<NoticeSearchDto>,
+){
+    var isLastPage: Boolean = true
+
+    fun addPageResult(searchRequest: NoticeSearchRequestDto){
+        if (notices.size > searchRequest.size) {
+            isLastPage = false
+            notices.removeLast()
+        }
+    }
+
+    // 미리보기용
+    fun removeHtmlTags() {
+        notices
+            .forEach {
+                var fixedContent: String = Jsoup.parse(it.content).text()
+
+                val parsedCharacterStartIndex = fixedContent.lastIndexOf('&')
+                val parsedCharacterLastIndex = fixedContent.lastIndexOf(';')
+                if (parsedCharacterStartIndex != -1 && parsedCharacterStartIndex > parsedCharacterLastIndex) {
+                    fixedContent = fixedContent.substring(0, parsedCharacterStartIndex)
+                }
+
+                if (fixedContent.endsWith("<")) {
+                    fixedContent = fixedContent.substring(0, fixedContent.length-1)
+            }
+                if (fixedContent.endsWith("</")) {
+                    fixedContent = fixedContent.substring(0, fixedContent.length-2)
+                }
+
+                it.content = fixedContent
+            }
+    }
+}
