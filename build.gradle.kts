@@ -80,6 +80,9 @@ dependencies {
 	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")  // Annotation Processor
 	kapt("jakarta.persistence:jakarta.persistence-api")  // JPA API
 
+	// jsoup
+	implementation("org.jsoup:jsoup:1.14.3")
+
 	// test code 관련
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
