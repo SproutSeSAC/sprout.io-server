@@ -173,5 +173,14 @@ class ProjectServiceImpl(
         }
     }
 
-
+    @Transactional
+    override fun createProject(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Long {
+        return handleExceptions {
+            val projectEntity = projectRecruitmentRequestDTO.toEntity(securityManager.getAuthenticatedUserName())
+            val savedProjectEntity = projectRepository.save(projectEntity)
+            saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
+            saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
+            savedProjectEntity.id
+        }
+    }
 }
