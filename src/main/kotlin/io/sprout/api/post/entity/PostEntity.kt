@@ -1,5 +1,6 @@
 package io.sprout.api.post.entity
 
+import io.sprout.api.comment.entity.CommentEntity
 import jakarta.persistence.*
 
 @Entity
@@ -14,7 +15,10 @@ class PostEntity(
     var postType: PostType,
 
     @Column(name = "reference_id", nullable = false)
-    var referenceId: Long
+    var referenceId: Long,
+
+    @OneToMany(mappedBy = "post", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var comments: MutableList<CommentEntity> = mutableListOf()
 )
 
 enum class PostType {
