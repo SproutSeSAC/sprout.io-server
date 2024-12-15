@@ -1,6 +1,7 @@
 package io.sprout.api.comment.service
 
 import io.sprout.api.comment.dto.CommentRequestDto
+import io.sprout.api.comment.dto.CommentResponseDto
 import io.sprout.api.comment.entity.CommentEntity
 import io.sprout.api.comment.repository.CommentRepository
 import io.sprout.api.post.repository.PostRepository
@@ -25,5 +26,16 @@ class CommentService(
     fun deleteComment(commentId: Long) {
         val comment = commentRepository.findById(commentId).orElseThrow { IllegalArgumentException("댓글이 존재하지 않음") }
         commentRepository.delete(comment)
+    }
+
+    @Transactional(readOnly = true)
+    fun getCommentsByPostId(postId: Long): List<CommentResponseDto> {
+        val post = postRepository.findById(postId).orElseThrow { IllegalArgumentException("찾을 수 없는 게시글") }
+        return commentRepository.findByPost(post).map { comment ->
+            CommentResponseDto(
+                id = comment.id,
+                content = comment.content
+            )
+        }
     }
 }

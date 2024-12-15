@@ -1,5 +1,8 @@
 package io.sprout.api.post.controller
 
+import io.sprout.api.comment.dto.CommentResponseDto
+import io.sprout.api.comment.entity.CommentEntity
+import io.sprout.api.comment.service.CommentService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
@@ -11,7 +14,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/post")
 class PostController(
-    private val postService: PostService
+    private val postService: PostService,
+    private val commentService: CommentService
 ) {
 
     @Operation(summary = "공지사항 글 생성")
@@ -60,6 +64,13 @@ class PostController(
             val errorResponse = ErrorResponse("글 조회 실패", e.message ?: "로그 확인")
             ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
         }
+    }
+
+    @Operation(summary = "댓글 조회")
+    @GetMapping("/{postId}/comments")
+    fun getCommentsByPostId(@PathVariable postId: Long): ResponseEntity<List<CommentResponseDto>> {
+        val comments = commentService.getCommentsByPostId(postId)
+        return ResponseEntity.ok(comments)
     }
 
     data class ErrorResponse(
