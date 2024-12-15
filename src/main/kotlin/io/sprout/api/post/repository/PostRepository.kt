@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface PostRepository : JpaRepository<PostEntity, Long> {
     fun findByPostType(postType: PostType): List<PostEntity>
+    fun findByPostTypeAndReferenceId(postType: PostType, referenceId: Long): PostEntity?
+
 }

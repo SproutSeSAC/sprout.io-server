@@ -8,9 +8,9 @@ import io.sprout.api.post.entity.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.service.ProjectService
-import org.springframework.boot.runApplication
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool
 
 @Service
 class PostService(
@@ -70,18 +70,33 @@ class PostService(
         return false
     }
 
-    fun getPostsByType(postType: String): List<PostResponseDto> {
-        val type = try {
-            PostType.valueOf(postType.uppercase())
-        } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException("존재하지 않는 타입: $postType")
-        }
-
-        return postRepository.findByPostType(type).map { post ->
-            PostResponseDto(
-                id = post.id,
-                title = post.referenceId.toString()
-            )
+    fun getTitlesByPostType(postType: String, pageable: Pageable): Page<PostResponseDto> {
+        return when (postType.uppercase()) {
+            "NOTICE" -> {
+                val notices = noticeService.getNoticeDataWithPagination(pageable)
+                notices.map { (refId, title) ->
+                    val post = postRepository.findByPostTypeAndReferenceId(PostType.NOTICE, refId)
+                        ?: throw IllegalArgumentException("찾을 수 없는 게시글 : $refId")
+                    PostResponseDto(
+                        id = post.id,
+                        title = title,
+                        refId = refId
+                    )
+                }
+            }
+            "PROJECT" -> {
+                val projects = projectService.getProjectDataWithPagination(pageable)
+                projects.map { (refId, title) ->
+                    val post = postRepository.findByPostTypeAndReferenceId(PostType.PROJECT, refId)
+                        ?: throw IllegalArgumentException("찾을 수 없는 게시글 : $refId")
+                    PostResponseDto(
+                        id = post.id,
+                        title = title,
+                        refId = refId
+                    )
+                }
+            }
+            else -> throw IllegalArgumentException("잘못된 타입 : $postType")
         }
     }
 }
