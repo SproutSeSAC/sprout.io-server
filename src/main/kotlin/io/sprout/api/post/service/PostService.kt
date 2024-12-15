@@ -18,6 +18,15 @@ class PostService(
     private val noticeService: NoticeService,
     private val projectService: ProjectService
 ) {
+    fun getOrigin(Post_id: Long): Long {
+        val post = postRepository.findById(Post_id)
+        if (post.isPresent) {
+            return post.get().referenceId
+        }
+
+        throw IllegalArgumentException("찾을 수 없는 게시글")
+    }
+
     fun createNotice(noticeRequestDto: NoticeRequestDto): PostEntity {
         val ref_id = noticeService.createNotice(noticeRequestDto)
         val post = PostEntity(
