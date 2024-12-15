@@ -2,6 +2,7 @@ package io.sprout.api.post.service
 
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.post.dto.PostResponseDto
 import io.sprout.api.post.entity.PostEntity
 import io.sprout.api.post.entity.PostType
 import io.sprout.api.post.repository.PostRepository
@@ -58,5 +59,20 @@ class PostService(
             }
         }
         return false
+    }
+
+    fun getPostsByType(postType: String): List<PostResponseDto> {
+        val type = try {
+            PostType.valueOf(postType.uppercase())
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException("존재하지 않는 타입: $postType")
+        }
+
+        return postRepository.findByPostType(type).map { post ->
+            PostResponseDto(
+                id = post.id,
+                title = post.referenceId.toString()
+            )
+        }
     }
 }

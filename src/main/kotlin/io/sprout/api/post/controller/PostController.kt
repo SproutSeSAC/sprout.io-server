@@ -4,6 +4,7 @@ import io.sprout.api.comment.dto.CommentResponseDto
 import io.sprout.api.comment.entity.CommentEntity
 import io.sprout.api.comment.service.CommentService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
+import io.sprout.api.post.dto.PostResponseDto
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.swagger.v3.oas.annotations.Operation
@@ -62,6 +63,18 @@ class PostController(
             ResponseEntity.ok(result)
         } catch (e: Exception) {
             val errorResponse = ErrorResponse("글 조회 실패", e.message ?: "로그 확인")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @Operation(summary = "글들 조회 (타입 기준)")
+    @GetMapping("/get/{postType}")
+    fun getPostsByType(@PathVariable postType: String): ResponseEntity<Any> {
+        return try {
+            val posts = postService.getPostsByType(postType)
+            ResponseEntity.ok(posts)
+        } catch (e: Exception) {
+            val errorResponse = ErrorResponse("글 목록 조회 실패", e.message ?: "로그 확인")
             ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
