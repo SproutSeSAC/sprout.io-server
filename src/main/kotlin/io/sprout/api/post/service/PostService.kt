@@ -7,7 +7,9 @@ import io.sprout.api.post.entity.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.service.ProjectService
+import org.springframework.boot.runApplication
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool
 
 @Service
 class PostService(
@@ -31,5 +33,19 @@ class PostService(
             referenceId = ref_id
         )
         return postRepository.save(post)
+    }
+
+    fun deletePost(post_id: Long): Boolean {
+        val post = postRepository.findById(post_id)
+
+        if (post.isPresent) {
+            when (post.get().postType) {
+                PostType.NOTICE -> noticeService.deleteNotice(post.get().referenceId)
+                PostType.PROJECT -> projectService.deleteProject(post.get().referenceId)
+            }
+            postRepository.deleteById(post_id)
+            return true
+        }
+        return false
     }
 }
