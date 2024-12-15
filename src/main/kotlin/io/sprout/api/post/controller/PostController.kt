@@ -42,8 +42,20 @@ class PostController(
         }
     }
 
+    @Operation(summary = "글 삭제")
+    @DeleteMapping("/remove")
+    fun deletePost(@RequestBody post_id: Long): ResponseEntity<Any> {
+        return try {
+            val result = postService.deletePost(post_id)
+            ResponseEntity.ok(result);
+        } catch (e: Exception) {
+            val errorResponse = ErrorResponse("글 삭제 실패", e.message ?: "로그 확인")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
     data class ErrorResponse(
-        val message: String,
+        val error_message: String,
         val details: String
     )
 }
