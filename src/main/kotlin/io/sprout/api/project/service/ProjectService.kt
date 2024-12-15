@@ -1,7 +1,8 @@
 package io.sprout.api.project.service
 
 import io.sprout.api.project.model.dto.*
-import io.sprout.api.project.model.entities.ProjectCommentEntity
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface ProjectService {
     fun postProject(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean
@@ -16,4 +17,5 @@ interface ProjectService {
     fun updateProject(projectId: Long, projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean
     fun getProjectsEndingTomorrow(): List<ProjectSimpleResponseDto>
     fun createProject(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Long
+    fun getProjectDataWithPagination(pageable: Pageable): Page<Pair<Long, String>>
 }

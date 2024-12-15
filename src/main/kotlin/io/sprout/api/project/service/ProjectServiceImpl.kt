@@ -11,6 +11,8 @@ import io.sprout.api.project.repository.*
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -181,6 +183,12 @@ class ProjectServiceImpl(
             saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
             saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
             savedProjectEntity.id
+        }
+    }
+
+    override fun getProjectDataWithPagination(pageable: Pageable): Page<Pair<Long, String>> {
+        return projectRepository.findAll(pageable).map { project ->
+            Pair(project.id, project.title)
         }
     }
 }

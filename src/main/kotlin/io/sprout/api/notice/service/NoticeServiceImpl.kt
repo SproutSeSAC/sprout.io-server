@@ -365,4 +365,9 @@ class NoticeServiceImpl(
         }
     }
 
+    override fun getNoticeDataWithPagination(pageable: Pageable): Page<Pair<Long, String>> {
+        return noticeRepository.findAll(pageable).map { notice ->
+            Pair(notice.id, notice.title)
+        }
+    }
 }

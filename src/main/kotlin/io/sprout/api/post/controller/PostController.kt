@@ -7,6 +7,7 @@ import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.swagger.v3.oas.annotations.Operation
 import org.apache.naming.ResourceRef
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -80,10 +81,16 @@ class PostController(
 
     @Operation(summary = "글들 조회 (타입 기준)")
     @GetMapping("/get/{postType}")
-    fun getPostsByType(@PathVariable postType: String): ResponseEntity<Any> {
+    fun getPostsByType(
+        @PathVariable postType: String,
+        pageable: Pageable
+    ): ResponseEntity<Any> {
         return try {
-            val posts = postService.getPostsByType(postType)
+            val posts = postService.getTitlesByPostType(postType, pageable)
             ResponseEntity.ok(posts)
+        } catch (e: IllegalArgumentException) {
+            val errorResponse = ErrorResponse("유효하지 않은 글 타입입니다.", e.message ?: "Invalid post type")
+            ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST)
         } catch (e: Exception) {
             val errorResponse = ErrorResponse("글 목록 조회 실패", e.message ?: "로그 확인")
             ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
