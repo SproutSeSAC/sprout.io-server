@@ -1,8 +1,11 @@
 package io.sprout.api.comment.repository
 
 import io.sprout.api.comment.entity.CommentEntity
+import io.sprout.api.post.entity.PostEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface CommentRepository : JpaRepository<CommentEntity, Long>
+interface CommentRepository : JpaRepository<CommentEntity, Long> {
+    fun findByPost(post: PostEntity): List<CommentEntity>
+}
