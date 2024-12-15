@@ -48,4 +48,15 @@ class PostService(
         }
         return false
     }
+
+    fun getPost(post_id: Long): Any? {
+        val post = postRepository.findById(post_id)
+        if (post.isPresent) {
+            return when (post.get().postType) {
+                PostType.NOTICE -> noticeService.getNoticeById(post.get().referenceId)
+                PostType.PROJECT -> projectService.findProjectDetailById(post.get().referenceId)
+            }
+        }
+        return false
+    }
 }

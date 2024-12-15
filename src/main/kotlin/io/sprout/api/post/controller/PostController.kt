@@ -1,16 +1,12 @@
 package io.sprout.api.post.controller
 
 import io.sprout.api.notice.model.dto.NoticeRequestDto
-import io.sprout.api.post.entity.PostEntity
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.swagger.v3.oas.annotations.Operation
-import jakarta.persistence.Id
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.annotation.*
-import retrofit2.Response
 
 @RestController
 @RequestMapping("/post")
@@ -50,6 +46,18 @@ class PostController(
             ResponseEntity.ok(result);
         } catch (e: Exception) {
             val errorResponse = ErrorResponse("글 삭제 실패", e.message ?: "로그 확인")
+            ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @Operation(summary = "글 조회")
+    @GetMapping("/get/{post_id}")
+    fun getPost(@PathVariable post_id: Long): ResponseEntity<Any> {
+        return try {
+            val result = postService.getPost(post_id)
+            ResponseEntity.ok(result)
+        } catch (e: Exception) {
+            val errorResponse = ErrorResponse("글 조회 실패", e.message ?: "로그 확인")
             ResponseEntity(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
