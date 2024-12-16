@@ -12,6 +12,7 @@ data class NoticeDetailResponseDto(
     val viewCount: Int,
     val status: NoticeStatus,
     val isPhoneNumberRequired: Boolean,
+    val createdAt: LocalDateTime,
 
     var applicationStartDateTime: LocalDateTime? = null,
     var applicationEndDateTime: LocalDateTime? = null,
@@ -37,6 +38,8 @@ data class NoticeDetailResponseDto(
         viewCount = notice.viewCount,
         status = notice.status,
         isPhoneNumberRequired = notice.isPhoneNumberRequired,
+        createdAt = notice.createdAt,
+
         applicationStartDateTime = notice.applicationStartDateTime,
         applicationEndDateTime = notice.applicationEndDateTime,
         meetingType = notice.meetingType,
