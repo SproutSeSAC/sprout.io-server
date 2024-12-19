@@ -14,11 +14,15 @@ class PostController(
 ) {
     @PostMapping
     @Operation(
-        summary = "프로젝트 등록 API",
-        description = "프로젝트 및 스터디 모집 관련 정보를 받아 프로젝트를 생성하는 API입니다.", // 상세 설명
+            summary = "게시글 등록 API",
+            description = "공지사항 또는 프로젝트를 생성하는 API입니다. 입력 DTO의 타입에 따라 저장 데이터가 바뀝니다."
     )
-    fun postProject(@RequestBody dto: ProjectRecruitmentRequestDto): ResponseEntity<Boolean> {
-        val result = postService.createProjectPost(dto)
+    fun createPost(@RequestBody dto: Any): ResponseEntity<Boolean> {
+        val result = when (dto) {
+            is NoticeRequestDto -> postService.createNoticePost(dto)
+            is ProjectRecruitmentRequestDto -> postService.createProjectPost(dto)
+            else -> throw IllegalArgumentException("DTO 구성을 확인 해 주세요.")
+        }
         return ResponseEntity.ok(result)
     }
 
