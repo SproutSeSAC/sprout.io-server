@@ -1,5 +1,6 @@
 package io.sprout.api.post.entities
 
+import io.sprout.api.notice.repository.NoticeRepository
 import io.sprout.api.project.repository.ProjectRepository
 import jakarta.persistence.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,12 +25,16 @@ class PostEntity(
     @Autowired
     private lateinit var projectRepository: ProjectRepository
 
+    @Transient
+    @Autowired
+    private lateinit var noticeRepository: NoticeRepository
+
     @PreRemove
     fun deleteLinkedEntity() {
         try {
             when (postType) {
                 PostType.PROJECT -> linkedId?.let { projectRepository.deleteById(it) }
-                PostType.NOTICE -> {}
+                PostType.NOTICE -> linkedId?.let { noticeRepository.deleteById(it) }
             }
         } catch (e: Exception) {
             println("삭제 실패 : ${e.message}")

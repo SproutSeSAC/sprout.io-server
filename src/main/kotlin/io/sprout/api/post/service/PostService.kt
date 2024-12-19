@@ -7,6 +7,7 @@ import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.service.ProjectService
+import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
@@ -20,7 +21,7 @@ class PostService(
     fun createNoticePost(noticeRequestDto: NoticeRequestDto): Boolean {
         return try {
             val post = PostEntity(
-                    postType = PostType.NOTICE
+                postType = PostType.NOTICE
             )
 
             val projectId = noticeService.createNotice(noticeRequestDto)
@@ -51,6 +52,25 @@ class PostService(
             false
         }
     }
+
+    @Transactional
+    fun getPostById(postId: Long): Any {
+        val post = postRepository.findById(postId)
+                .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
+
+        return when (post.postType) {
+            PostType.NOTICE -> {
+                val noticeId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+                noticeService.getNoticeById(noticeId)
+            }
+            PostType.PROJECT -> {
+                val projectId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+                projectService.findProjectDetailById(projectId)
+                        ?: throw EntityNotFoundException("프로젝트를 찾을 수 없습니다. -> 공지는 원본 안 건드림")
+            }
+        }
+    }
+
 
     @Transactional
     fun deletePost(postId: Long): Boolean {

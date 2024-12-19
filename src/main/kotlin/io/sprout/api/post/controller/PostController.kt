@@ -26,6 +26,16 @@ class PostController(
         return ResponseEntity.ok(result)
     }
 
+    @GetMapping("/{postId}")
+    @Operation(
+            summary = "게시글 조회 API",
+            description = "게시글을 조회하는 API입니다. ID를 입력받아 반환합니다."
+    )
+    fun getPostById(@PathVariable postId: Long): ResponseEntity<Any> {
+        val responseDto = postService.getPostById(postId)
+        return ResponseEntity.ok(responseDto)
+    }
+
     @DeleteMapping("/{postId}")
     @Operation(
         summary = "게시글 삭제 API",
