@@ -36,6 +36,16 @@ class PostController(
         return ResponseEntity.ok(responseDto)
     }
 
+    @PutMapping("/{postId}")
+    @Operation(
+            summary = "게시글 수정 API",
+            description = "입력된 DTO 타입에 따라 공지사항 또는 프로젝트 게시글을 수정합니다."
+    )
+    fun updatePost(@PathVariable postId: Long, @RequestBody dto: Any): ResponseEntity<Boolean> {
+        val result = postService.updatePost(postId, dto)
+        return ResponseEntity.ok(result)
+    }
+
     @DeleteMapping("/{postId}")
     @Operation(
         summary = "게시글 삭제 API",

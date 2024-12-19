@@ -17,6 +17,11 @@ class PostService(
     private val projectService: ProjectService,
     private val noticeService: NoticeService
 ) {
+
+    /**
+     * 공지사항 추가
+     * NoticeService의 createNotice를 호출합니다.
+     */
     @Transactional
     fun createNoticePost(noticeRequestDto: NoticeRequestDto): Boolean {
         return try {
@@ -35,6 +40,12 @@ class PostService(
         }
     }
 
+    /**
+     * 프로젝트 추가
+     * projectService의 createProjectAndGetId를 호출합니다.
+     * createProjectAndGetId는 이번에 새로 만든 녀석입니다. ID 매핑을 위해...
+     * 원본 entity를 건드리지 않기 위해 일단은 이렇게 설정했습니다.
+     */
     @Transactional
     fun createProjectPost(projectDto: ProjectRecruitmentRequestDto): Boolean {
         return try {
@@ -53,6 +64,10 @@ class PostService(
         }
     }
 
+    /**
+     * 게시글 읽기
+     * 입력 ID에 맞는 dto값을 반환합니다.
+     */
     @Transactional
     fun getPostById(postId: Long): Any {
         val post = postRepository.findById(postId)
@@ -71,7 +86,44 @@ class PostService(
         }
     }
 
+    /**
+     * 게시글 수정
+     * 입력 id에 맞게 dto를 완전히 덮어씌웁니다.
+     */
+    @Transactional
+    fun updatePost(postId: Long, dto: Any): Boolean {
+        val post = postRepository.findById(postId)
+                .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
 
+        val linkedId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+
+        return try {
+            when (post.postType) {
+                PostType.NOTICE -> {
+                    if (dto !is NoticeRequestDto) {
+                        throw IllegalArgumentException("Notice DTO를 확인 해 주세요.")
+                    }
+                    noticeService.updateNotice(linkedId, dto)
+                    true
+                }
+
+                PostType.PROJECT -> {
+                    if (dto !is ProjectRecruitmentRequestDto) {
+                        throw IllegalArgumentException("Project DTO를 확인 해 주세요.")
+                    }
+                    projectService.updateProject(linkedId, dto)
+                }
+            }
+        } catch (e: Exception) {
+            println("업데이트 실패 : ${e.message}")
+            false
+        }
+    }
+
+    /**
+     * 게시글 삭제
+     * 삭제합니다. notice와 project는 jpa 의존으로 묶어놨습니다.
+     */
     @Transactional
     fun deletePost(postId: Long): Boolean {
         return try {
