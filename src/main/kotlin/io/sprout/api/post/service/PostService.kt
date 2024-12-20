@@ -182,4 +182,17 @@ class PostService(
             false
         }
     }
+
+
+    /**
+     * Linked ID 읽기
+     * 해당 POST ID에 맞는 LINK ID를 가져오는 메서드입니다.
+     */
+    @Transactional
+    fun getLinkedIdByPostId(postId: Long): Long {
+        val post = postRepository.findById(postId)
+                .orElseThrow { EntityNotFoundException("존재하지 않는 게시글 ID: $postId") }
+
+        return post.linkedId ?: throw IllegalArgumentException("테이블 매핑 오류")
+    }
 }

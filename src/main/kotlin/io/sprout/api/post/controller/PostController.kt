@@ -92,4 +92,14 @@ class PostController(
         val comments = commentService.getCommentsByPostId(postId)
         return ResponseEntity.ok(comments)
     }
+
+    @GetMapping("/{postId}/link")
+    @Operation(
+            summary = "게시글 Linked ID 조회 API",
+            description = "특정 게시글의 Linked ID를 반환합니다."
+    )
+    fun getLinkedIdByPostId(@PathVariable postId: Long): ResponseEntity<Long> {
+        val linkedId = postService.getLinkedIdByPostId(postId)
+        return ResponseEntity.ok(linkedId)
+    }
 }
