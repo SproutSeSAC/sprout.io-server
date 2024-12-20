@@ -197,5 +197,11 @@ class PostService(
         return post.linkedId ?: throw IllegalArgumentException("테이블 매핑 오류")
     }
 
-
+    /**
+     * 내가 작성한 글 목록 읽기
+     */
+    @Transactional()
+    fun getPostsByClientId(clientId: Long): List<PostEntity> {
+        return postRepository.findAllByClientId(clientId)
+    }
 }

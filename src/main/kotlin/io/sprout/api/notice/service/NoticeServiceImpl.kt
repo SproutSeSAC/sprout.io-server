@@ -9,6 +9,7 @@ import io.sprout.api.notice.repository.*
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -365,4 +366,9 @@ class NoticeServiceImpl(
         }
     }
 
+    override fun getNoticeTitleById(linkedId: Long): String {
+        val notice = noticeRepository.findById(linkedId)
+                .orElseThrow { EntityNotFoundException("공지사항을 찾을 수 없습니다. ID: $linkedId") }
+        return notice.title ?: "No Title"
+    }
 }

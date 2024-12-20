@@ -10,6 +10,7 @@ import io.sprout.api.project.model.entities.*
 import io.sprout.api.project.repository.*
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
@@ -180,5 +181,11 @@ class ProjectServiceImpl(
         saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
         saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
         return savedProjectEntity.id
+    }
+
+    override fun getProjectTitleById(linkedId: Long): String {
+        val project = projectRepository.findById(linkedId)
+                .orElseThrow { EntityNotFoundException("프로젝트를 찾을 수 없습니다. ID: $linkedId") }
+        return project.title ?: "No Title"
     }
 }

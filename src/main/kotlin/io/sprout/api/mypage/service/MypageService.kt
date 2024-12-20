@@ -6,6 +6,10 @@ import io.sprout.api.mypage.entity.DummyPostComment
 import io.sprout.api.mypage.entity.DummyPostParticipant
 import io.sprout.api.mypage.entity.DummyPostScrap
 import io.sprout.api.mypage.repository.*
+import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.post.entities.PostType
+import io.sprout.api.post.service.PostService
+import io.sprout.api.project.service.ProjectService
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
@@ -18,7 +22,10 @@ class MypageService(
         private val dummyPostScrapRepository: DummyPostScrapRepository,
         private val dummyPostRepository: DummyPostRepository,
         private val dummyPostParticipantRepository: DummyPostParticipantRepository,
-        private val dummyPostCommentRepository: DummyPostCommentRepository
+        private val dummyPostCommentRepository: DummyPostCommentRepository,
+        private val postService: PostService,
+        private val noticeService: NoticeService,
+        private val projectService: ProjectService
 ) {
 
     // region [프로필 관련 API]
@@ -90,14 +97,31 @@ class MypageService(
     // region [게시글 관련 API]
 
     // 작성 글 목록 조회
-    fun getPostListByUserId(userId: Int): List<PostDto> {
-        val posts: List<DummyPost> = dummyPostRepository.findAllByUserId(userId)
+    fun getPostListByUserId(clientId: Long): List<PostDto> {
+        val posts = postService.getPostsByClientId(clientId)
 
         // DTO 변환
-        return posts.map {
+        return posts.map { post ->
+            val title = when (post.postType) {
+                PostType.NOTICE -> {
+                    val linkedId = post.linkedId
+                            ?: throw IllegalArgumentException("테이블 매핑 오류")
+                    noticeService.getNoticeTitleById(linkedId)
+                }
+                PostType.PROJECT -> {
+                    val linkedId = post.linkedId
+                            ?: throw IllegalArgumentException("테이블 매핑 오류")
+                    projectService.getProjectTitleById(linkedId)
+                }
+            }
+
             PostDto(
-                    postId = it.postid,
-                    userId = it.userId
+                    postId = post.id,
+                    clientId = post.clientId,
+                    postType = post.postType.name,
+                    title = title,
+                    createdAt = post.createdAt,
+                    updatedAt = post.updatedAt
             )
         }
     }

@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface PostRepository : JpaRepository<PostEntity, Long> {
     fun findByPostType(postType: PostType): List<PostEntity>
-    fun findAllByUserId(userId: Long): List<PostEntity>
+    fun findAllByClientId(clientId: Long): List<PostEntity>
 }
