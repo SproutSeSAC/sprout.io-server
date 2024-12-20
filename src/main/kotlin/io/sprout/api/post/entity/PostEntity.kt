@@ -6,6 +6,9 @@ import io.sprout.api.project.repository.ProjectRepository
 import jakarta.persistence.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Configurable
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "post")
@@ -15,12 +18,23 @@ class PostEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
+    @Column(name = "client_id", nullable = false)
+    var clientId: Long,
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var postType: PostType,
 
     @Column(name = "linked_id", nullable = true)
     var linkedId: Long? = null,
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    var updatedAt: LocalDateTime = LocalDateTime.now(),
 
     @OneToMany(mappedBy = "post", cascade = [CascadeType.REMOVE], orphanRemoval = true)
     val comments: MutableList<CommentEntity> = mutableListOf()

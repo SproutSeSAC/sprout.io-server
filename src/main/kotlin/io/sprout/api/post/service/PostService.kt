@@ -23,9 +23,10 @@ class PostService(
      * NoticeService의 createNotice를 호출합니다.
      */
     @Transactional
-    fun createNoticePost(noticeRequestDto: NoticeRequestDto): Boolean {
+    fun createNoticePost(noticeRequestDto: NoticeRequestDto, clientId: Long): Boolean {
         return try {
             val post = PostEntity(
+                clientId = clientId,
                 postType = PostType.NOTICE
             )
 
@@ -47,9 +48,10 @@ class PostService(
      * 원본 entity를 건드리지 않기 위해 일단은 이렇게 설정했습니다.
      */
     @Transactional
-    fun createProjectPost(projectDto: ProjectRecruitmentRequestDto): Boolean {
+    fun createProjectPost(projectDto: ProjectRecruitmentRequestDto, clientId: Long): Boolean {
         return try {
             val post = PostEntity(
+                clientId = clientId,
                 postType = PostType.PROJECT
             )
 
@@ -194,4 +196,6 @@ class PostService(
 
         return post.linkedId ?: throw IllegalArgumentException("테이블 매핑 오류")
     }
+
+
 }
