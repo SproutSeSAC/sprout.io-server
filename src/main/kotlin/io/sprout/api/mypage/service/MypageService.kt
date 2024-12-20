@@ -1,5 +1,6 @@
 package io.sprout.api.mypage.service
 
+import io.sprout.api.comment.service.CommentService
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.entity.DummyPost
 import io.sprout.api.mypage.entity.DummyPostComment
@@ -25,7 +26,8 @@ class MypageService(
         private val dummyPostCommentRepository: DummyPostCommentRepository,
         private val postService: PostService,
         private val noticeService: NoticeService,
-        private val projectService: ProjectService
+        private val projectService: ProjectService,
+        private val commentService: CommentService
 ) {
 
     // region [프로필 관련 API]
@@ -127,15 +129,15 @@ class MypageService(
     }
 
     // 댓글 조회
-    fun getPostCommentListByUserId(userId: Int): List<PostCommentDto> {
-        val comments: List<DummyPostComment> = dummyPostCommentRepository.findAllByUserId(userId)
+    fun getPostCommentListByUserId(clientId: Long): List<PostCommentDto> {
+        val comments = commentService.getCommentsByClientId(clientId)
 
-        // DTO 변환
         return comments.map {
             PostCommentDto(
-                    commentId = it.commentId,
+                    commentId = it.id,
                     userId = it.userId,
-                    postId = it.postId
+                    postId = it.postId,
+                    content = it.content
             )
         }
     }
