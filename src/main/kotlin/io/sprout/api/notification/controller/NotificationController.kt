@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("/noti")
 class NotificationController(
         private val notificationService: NotificationService,
         private val securityManager: SecurityManager
@@ -24,5 +24,22 @@ class NotificationController(
 
         val notifications = notificationService.getNotificationsByUserId(clientID)
         return ResponseEntity.ok(notifications)
+    }
+
+    @GetMapping("/unread")
+    @Operation(summary = "읽지 않은 알림 조회 API", description = "읽지 않은 알림만 가져옵니다.")
+    fun getUnreadNotifications(): ResponseEntity<List<NotificationEntity>> {
+        val clientID = securityManager.getAuthenticatedUserName()
+                ?: return ResponseEntity.status(401).build()
+
+        val notifications = notificationService.getUnreadNotificationsByUserId(clientID.toLong())
+        return ResponseEntity.ok(notifications)
+    }
+
+    @PutMapping("/{notificationId}/read")
+    @Operation(summary = "알림 읽음 상태 업데이트 API", description = "알림을 읽음 상태로 표시합니다.")
+    fun markNotificationAsRead(@PathVariable notificationId: Long): ResponseEntity<Boolean> {
+        val result = notificationService.markNotificationAsRead(notificationId)
+        return ResponseEntity.ok(result)
     }
 }
