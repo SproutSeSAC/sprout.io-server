@@ -37,7 +37,7 @@ class CommentController(
         return ResponseEntity.ok(responses)
     }
 
-    @PutMapping("/{commentId}")
+    @PatchMapping("/{commentId}")
     @Operation(summary = "댓글 수정", description = "댓글 ID를 통해 해당 댓글을 수정합니다.")
     fun updateComment(
             @PathVariable commentId: Long,

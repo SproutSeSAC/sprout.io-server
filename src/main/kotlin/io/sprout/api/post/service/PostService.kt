@@ -183,7 +183,6 @@ class PostService(
         }
     }
 
-
     /**
      * Linked ID 읽기
      * 해당 POST ID에 맞는 LINK ID를 가져오는 메서드입니다.
