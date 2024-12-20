@@ -36,7 +36,7 @@ class NotificationController(
         return ResponseEntity.ok(notifications)
     }
 
-    @PutMapping("/{notificationId}/read")
+    @PatchMapping("/{notificationId}/read")
     @Operation(summary = "알림 읽음 상태 업데이트 API", description = "알림을 읽음 상태로 표시합니다.")
     fun markNotificationAsRead(@PathVariable notificationId: Long): ResponseEntity<Boolean> {
         val result = notificationService.markNotificationAsRead(notificationId)

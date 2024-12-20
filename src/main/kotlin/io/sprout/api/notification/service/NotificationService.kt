@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional
 class NotificationService(
         private val notificationRepository: NotificationRepository
 ) {
+    private val MAX_NOTIFICATIONSCOUNT = 20 // 우선 20개
+
     @Transactional(readOnly = true)
     fun getNotificationsByUserId(userId: Long): List<NotificationEntity> {
         return notificationRepository.findAllByUserId(userId)
@@ -20,7 +22,23 @@ class NotificationService(
                 userId = userId,
                 content = content
         )
-        return notificationRepository.save(notification)
+        val savedNotification = notificationRepository.save(notification)
+
+        ensureMaxNotifications(userId)
+
+        return savedNotification
+    }
+
+    private fun ensureMaxNotifications(userId: Long) {
+        val notifications = notificationRepository.findAllByUserId(userId)
+        if (notifications.size > MAX_NOTIFICATIONSCOUNT) {
+            val excessCount = notifications.size - MAX_NOTIFICATIONSCOUNT
+            val toDelete = notifications.sortedBy { it.id }.take(excessCount)
+
+            toDelete.forEach { notification ->
+                notificationRepository.delete(notification)
+            }
+        }
     }
 
     @Transactional(readOnly = true)
