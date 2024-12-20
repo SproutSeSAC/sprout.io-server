@@ -4,6 +4,7 @@ import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.notification.entity.NotificationEntity
 import io.sprout.api.notification.service.NotificationService
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -41,5 +42,19 @@ class NotificationController(
     fun markNotificationAsRead(@PathVariable notificationId: Long): ResponseEntity<Boolean> {
         val result = notificationService.markNotificationAsRead(notificationId)
         return ResponseEntity.ok(result)
+    }
+
+    @DeleteMapping("/{notificationId}")
+    @Operation(
+            summary = "알림 삭제 API",
+            description = "특정 알림을 삭제합니다."
+    )
+    fun deleteNotification(@PathVariable notificationId: Long): ResponseEntity<Boolean> {
+        return try {
+            val result = notificationService.deleteNotification(notificationId)
+            ResponseEntity.ok(result)
+        } catch (e: EntityNotFoundException) {
+            ResponseEntity.notFound().build()
+        }
     }
 }

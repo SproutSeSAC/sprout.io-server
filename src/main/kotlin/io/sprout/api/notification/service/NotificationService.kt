@@ -2,6 +2,7 @@ package io.sprout.api.notification.service
 
 import io.sprout.api.notification.entity.NotificationEntity
 import io.sprout.api.notification.repository.NotificationRepository
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -24,12 +25,13 @@ class NotificationService(
         )
         val savedNotification = notificationRepository.save(notification)
 
-        ensureMaxNotifications(userId)
+        MaxNotifications(userId)
 
         return savedNotification
     }
 
-    private fun ensureMaxNotifications(userId: Long) {
+    @Transactional
+    private fun MaxNotifications(userId: Long) {
         val notifications = notificationRepository.findAllByUserId(userId)
         if (notifications.size > MAX_NOTIFICATIONSCOUNT) {
             val excessCount = notifications.size - MAX_NOTIFICATIONSCOUNT
@@ -49,9 +51,18 @@ class NotificationService(
     @Transactional
     fun markNotificationAsRead(notificationId: Long): Boolean {
         val notification = notificationRepository.findById(notificationId)
-                .orElseThrow { IllegalArgumentException("알림 ID를 찾을 수 없음 : $notificationId") }
+                .orElseThrow { EntityNotFoundException("알림 ID를 찾을 수 없음 : $notificationId") }
         notification.isRead = true
         notificationRepository.save(notification)
+        return true
+    }
+
+    @Transactional
+    fun deleteNotification(notificationId: Long): Boolean {
+        val notification = notificationRepository.findById(notificationId)
+                .orElseThrow { EntityNotFoundException("알림 ID를 찾을 수 없음 : $notificationId") }
+
+        notificationRepository.delete(notification)
         return true
     }
 }
