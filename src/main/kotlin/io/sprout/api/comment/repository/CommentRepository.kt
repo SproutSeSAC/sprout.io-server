@@ -1,0 +1,7 @@
+package io.sprout.api.comment.repository
+
+import io.sprout.api.comment.entity.CommentEntity
+import org.springframework.data.jpa.repository.JpaRepository
+
+interface CommentRepository : JpaRepository<CommentEntity, Long> {
+}

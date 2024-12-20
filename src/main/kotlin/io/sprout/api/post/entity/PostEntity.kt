@@ -1,5 +1,6 @@
 package io.sprout.api.post.entities
 
+import io.sprout.api.comment.entity.CommentEntity
 import io.sprout.api.notice.repository.NoticeRepository
 import io.sprout.api.project.repository.ProjectRepository
 import jakarta.persistence.*
@@ -19,7 +20,10 @@ class PostEntity(
     var postType: PostType,
 
     @Column(name = "linked_id", nullable = true)
-    var linkedId: Long? = null
+    var linkedId: Long? = null,
+
+    @OneToMany(mappedBy = "post", cascade = [CascadeType.REMOVE], orphanRemoval = true)
+    val comments: MutableList<CommentEntity> = mutableListOf()
 ) {
     @Transient
     @Autowired
@@ -29,7 +33,7 @@ class PostEntity(
     @Autowired
     private lateinit var noticeRepository: NoticeRepository
 
-    @PreRemove
+    @PreRemove // 이건 차후 삭제하면서 서비스에 병합시키는게 좋아 보입니다.
     fun deleteLinkedEntity() {
         try {
             when (postType) {
