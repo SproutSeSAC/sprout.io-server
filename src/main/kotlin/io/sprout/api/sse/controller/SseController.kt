@@ -12,8 +12,8 @@ import reactor.core.publisher.Flux
 @RestController
 @RequestMapping("/sse")
 class SseController(
-        private val sseService: SseService,
-        private val securityManager: SecurityManager
+    private val sseService: SseService,
+    private val securityManager: SecurityManager
 ) {
 
     @ExceptionHandler(Exception::class)

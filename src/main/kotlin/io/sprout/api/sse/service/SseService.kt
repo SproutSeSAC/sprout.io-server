@@ -38,7 +38,6 @@ class SseService (
                 userId = userId,
                 content = message,
         )
-
         subscribers[topic]?.values?.forEach { subscriber ->
             subscriber.sink.tryEmitNext(message).orThrow()
         }

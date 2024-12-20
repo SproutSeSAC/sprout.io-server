@@ -3,6 +3,7 @@ package io.sprout.api.notice.model.dto
 import io.sprout.api.course.model.entities.CourseEntity
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.user.model.entities.UserEntity
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime
 
@@ -21,10 +22,12 @@ data class NoticeRequestDto(
 
     val noticeType: NoticeType,
 
-    val applicationForm: String?,
+    val isPhoneNumberRequired: Boolean,
 
+    @Schema(description = "등록 시작 시간", example = "2024-11-30T00:00:00", type = "string")
     val applicationStartDateTime: LocalDateTime?,
 
+    @Schema(description = "등록 마감 시간", example = "2024-11-31T00:00:00", type = "string")
     val applicationEndDateTime: LocalDateTime?,
 
     val participantCapacity: Int?,
@@ -37,7 +40,33 @@ data class NoticeRequestDto(
 
     val sessions: List<NoticeSessionDTO> = mutableListOf()
 ) {
-    fun toEntity(userId: Long): NoticeEntity {
+
+    fun toNormalEntity(userId: Long): NoticeEntity {
+        val noticeEntity = NoticeEntity(
+            title = this.title,
+            content = this.content,
+            user = UserEntity(userId),
+            status = NoticeStatus.ACTIVE,
+            noticeType = this.noticeType,
+            meetingType = null,
+            viewCount = 0,
+            isPhoneNumberRequired = false,
+            meetingPlace = null,
+            applicationEndDateTime = null,
+            applicationStartDateTime = null,
+            participantCapacity = null,
+            satisfactionSurvey = null
+        )
+
+        noticeEntity.targetCourses.plusAssign(targetCourseIdList.map { NoticeTargetCourseEntity(
+            notice = noticeEntity,
+            course = CourseEntity(it)
+        ) }
+            .toMutableSet())
+
+        return noticeEntity
+    }
+    fun toSessionEntity(userId: Long): NoticeEntity {
         val noticeEntity = NoticeEntity(
             title = this.title,
             content = this.content,
@@ -46,8 +75,8 @@ data class NoticeRequestDto(
             noticeType = this.noticeType,
             meetingType = this.meetingType,
             viewCount = 0,
+            isPhoneNumberRequired = this.isPhoneNumberRequired,
             meetingPlace = this.meetingPlace,
-            applicationForm = this.applicationForm,
             applicationEndDateTime = this.applicationEndDateTime,
             applicationStartDateTime = this.applicationStartDateTime,
             participantCapacity = this.participantCapacity,
@@ -70,6 +99,13 @@ data class NoticeRequestDto(
         return noticeEntity
 
     }
+
+    /**
+     * 세션이 있는 Notice 인지 확인
+     */
+    fun addIsSessionNotice(): Boolean {
+        return listOf(NoticeType.EVENT, NoticeType.SPECIAL_LECTURE).contains(this.noticeType)
+    }
 }
 
 /**
@@ -77,9 +113,11 @@ data class NoticeRequestDto(
  */
 data class NoticeSessionDTO(
     @field:NotBlank(message = "startDate가 비어있습니다.")
+    @Schema(description = "세션 시작 시간", example = "2024-11-30T00:00:00", type = "string")
     val sessionStartDateTime: LocalDateTime,
 
     @field:NotBlank(message = "endDate가 비어있습니다.")
+    @Schema(description = "세션 종료 시간", example = "2024-11-30T00:00:00", type = "string")
     val sessionEndDateTime: LocalDateTime,
 )
 
