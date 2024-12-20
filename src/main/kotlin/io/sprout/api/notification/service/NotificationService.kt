@@ -65,4 +65,16 @@ class NotificationService(
         notificationRepository.delete(notification)
         return true
     }
+
+    @Transactional
+    fun deleteAllNotification(clientId: Long): Boolean {
+        return try {
+            val notifications = notificationRepository.findAllByUserId(clientId)
+            notificationRepository.deleteAll(notifications)
+            true
+        } catch (e: Exception) {
+            println("알림 삭제 오류 : ${e.message}")
+            false
+        }
+    }
 }

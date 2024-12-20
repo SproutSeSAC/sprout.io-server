@@ -57,4 +57,18 @@ class NotificationController(
             ResponseEntity.notFound().build()
         }
     }
+
+    @DeleteMapping("/all")
+    @Operation( summary = "알림 전체 삭제 API", description = "해당 유저의 알림을 전부 삭제합니다.")
+    fun deleteAllNotification(): ResponseEntity<Boolean> {
+        return try {
+            val clientID = securityManager.getAuthenticatedUserName()
+                    ?: return ResponseEntity.status(401).build()
+
+            val result = notificationService.deleteAllNotification(clientID)
+            ResponseEntity.ok(result)
+        } catch (e: EntityNotFoundException) {
+            ResponseEntity.notFound().build()
+        }
+    }
 }
