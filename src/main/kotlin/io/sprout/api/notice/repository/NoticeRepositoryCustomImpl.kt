@@ -11,7 +11,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import io.sprout.api.course.model.entities.QCourseEntity
 import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
-import io.sprout.api.notice.model.dto.NoticeSearchResponseDto
+import io.sprout.api.notice.model.dto.NoticeSearchDto
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.user.model.entities.QUserCourseEntity
 import io.sprout.api.user.model.entities.QUserEntity
@@ -72,41 +72,48 @@ class NoticeRepositoryCustomImpl(
      *
      * @param searchRequest 공지사항 검색 파라미터
      */
-    override fun search(searchRequest: NoticeSearchRequestDto, userId: Long): List<NoticeSearchResponseDto> {
+    override fun search(searchRequest: NoticeSearchRequestDto, userId: Long): MutableList<NoticeSearchDto> {
         val myCourseIds: List<Long> = queryFactory
             .select(userCourse.course.id)
             .from(userCourse)
             .where(userCourse.user.id.eq(userId))
             .fetch()
 
+        val ids = getSearchedIds(userId, myCourseIds, searchRequest)
+
+        val result = getNoticeDetail(userId, ids)
+
+        return result
+    }
+
+    private fun getNoticeDetail(
+        userId: Long,
+        ids: MutableList<Long>?
+    ): MutableList<NoticeSearchDto> {
         val result = queryFactory
-            .selectFrom(notice)
+            .select(notice.id)
+            .from(notice)
             .leftJoin(notice.user, user)
             .leftJoin(notice.targetCourses, targetCourse)
-                .on(targetCourse.notice.id.eq(notice.id))
             .leftJoin(targetCourse.course, course)
             .leftJoin(scrapedNotice)
-                .on(scrapedNotice.notice.id.eq(notice.id)
-                    .and(scrapedNotice.user.id.eq(userId)))
-            .where(
-                isInCourse(myCourseIds),
-                containKeyword(searchRequest.keyword),
-                isWriterRoleType(searchRequest.roleType),
-                isNoticeType(searchRequest.noticeType),
-                isOnlyScraped(searchRequest.onlyScraped, userId)
+            .on(
+                scrapedNotice.notice.id.eq(notice.id)
+                    .and(scrapedNotice.user.id.eq(userId))
             )
-            .orderBy(OrderSpecifier(Order.DESC, notice.updatedAt))
-            .limit(searchRequest.size.toLong())
-            .offset(searchRequest.offset.toLong())
+            .where(notice.id.`in`(ids))
+            .orderBy(OrderSpecifier(Order.DESC, notice.createdAt))
             .transform(
                 groupBy(notice.id).list(
                     Projections.constructor(
-                        NoticeSearchResponseDto::class.java,
+                        NoticeSearchDto::class.java,
                         notice.id,
                         user.id,
                         user.name,
                         user.role,
                         notice.title,
+                        notice.content.substring(0, 150),
+                        notice.content.length().gt(150),
                         notice.viewCount,
                         notice.noticeType,
                         notice.createdAt,
@@ -124,6 +131,37 @@ class NoticeRepositoryCustomImpl(
             )
 
         return result
+    }
+
+    private fun getSearchedIds(
+        userId: Long,
+        myCourseIds: List<Long>,
+        searchRequest: NoticeSearchRequestDto
+    ): MutableList<Long>? {
+        val ids = queryFactory
+            .select(notice.id)
+            .from(notice)
+            .leftJoin(notice.user, user)
+            .leftJoin(notice.targetCourses, targetCourse)
+            .leftJoin(targetCourse.course, course)
+            .leftJoin(scrapedNotice)
+            .on(
+                scrapedNotice.notice.id.eq(notice.id)
+                    .and(scrapedNotice.user.id.eq(userId))
+            )
+            .where(
+                isInCourse(myCourseIds),
+                containKeyword(searchRequest.keyword),
+                isWriterRoleType(searchRequest.roleType),
+                isNoticeType(searchRequest.noticeType),
+                isOnlyScraped(searchRequest.onlyScraped, userId)
+            )
+            .groupBy(notice.id)
+            .orderBy(OrderSpecifier(Order.DESC, notice.createdAt))
+            .limit(searchRequest.size.toLong() + 1)
+            .offset(searchRequest.offset.toLong())
+            .fetch()
+        return ids
     }
 
     private fun isInCourse(myCoursesIds: List<Long>): BooleanExpression? {
