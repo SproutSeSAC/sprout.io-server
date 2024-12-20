@@ -3,6 +3,7 @@ package io.sprout.api.post.controller
 import io.sprout.api.comment.dto.CommentResponseDto
 import io.sprout.api.comment.service.CommentService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
+import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.swagger.v3.oas.annotations.Operation
@@ -37,6 +38,22 @@ class PostController(
     fun getPostById(@PathVariable postId: Long): ResponseEntity<Any> {
         val responseDto = postService.getPostById(postId)
         return ResponseEntity.ok(responseDto)
+    }
+
+    @GetMapping("/type/{posttype}")
+    @Operation(
+            summary = "게시글 목록 조회 API",
+            description = "type 파라미터에 따라 NOTICE 또는 PROJECT 게시글 목록을 조회합니다."
+    )
+    fun getPostsByType(@PathVariable posttype: String): ResponseEntity<List<Any>> {
+        val postType = try {
+            PostType.valueOf(posttype.uppercase())
+        } catch (e: IllegalArgumentException) {
+            return ResponseEntity.badRequest().body(emptyList())
+        }
+
+        val posts = postService.getPostsByPostType(postType)
+        return ResponseEntity.ok(posts)
     }
 
     @PutMapping("/{postId}")

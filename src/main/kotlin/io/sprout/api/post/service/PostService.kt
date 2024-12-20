@@ -87,6 +87,29 @@ class PostService(
     }
 
     /**
+     * 타입별 게시글 읽기
+     * 입력 TYPE에 맞는 값을 반환합니다.
+     */
+    @Transactional
+    fun getPostsByPostType(type: PostType): List<Any> {
+        val posts = postRepository.findByPostType(type)
+
+        return posts.map { post ->
+            when (post.postType) {
+                PostType.NOTICE -> {
+                    val noticeId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+                    noticeService.getNoticeById(noticeId)
+                }
+                PostType.PROJECT -> {
+                    val projectId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+                    projectService.findProjectDetailById(projectId)
+                            ?: throw EntityNotFoundException("프로젝트를 찾을 수 없습니다.")
+                }
+            }
+        }
+    }
+
+    /**
      * 게시글 수정
      * 입력 id에 맞게 dto를 완전히 덮어씌웁니다.
      */
