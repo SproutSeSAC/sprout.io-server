@@ -25,13 +25,13 @@ class NotificationService(
         )
         val savedNotification = notificationRepository.save(notification)
 
-        MaxNotifications(userId)
+        maxNotifications(userId)
 
         return savedNotification
     }
 
     @Transactional
-    private fun MaxNotifications(userId: Long) {
+    fun maxNotifications(userId: Long) {
         val notifications = notificationRepository.findAllByUserId(userId)
         if (notifications.size > MAX_NOTIFICATIONSCOUNT) {
             val excessCount = notifications.size - MAX_NOTIFICATIONSCOUNT
