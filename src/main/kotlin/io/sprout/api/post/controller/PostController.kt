@@ -1,5 +1,7 @@
 package io.sprout.api.post.controller
 
+import io.sprout.api.comment.dto.CommentResponseDto
+import io.sprout.api.comment.service.CommentService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
@@ -10,7 +12,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/posts")
 class PostController(
-    private val postService: PostService
+    private val postService: PostService,
+    private val commentService: CommentService
 ) {
     @PostMapping
     @Operation(
@@ -28,8 +31,8 @@ class PostController(
 
     @GetMapping("/{postId}")
     @Operation(
-            summary = "게시글 조회 API",
-            description = "게시글을 조회하는 API입니다. ID를 입력받아 반환합니다."
+            summary = "게시글 상세 조회 API",
+            description = "게시글을 상세 조회하는 API입니다. ID를 입력받아 반환합니다."
     )
     fun getPostById(@PathVariable postId: Long): ResponseEntity<Any> {
         val responseDto = postService.getPostById(postId)
@@ -51,12 +54,22 @@ class PostController(
         summary = "게시글 삭제 API",
         description = "특정 게시글을 삭제하는 API입니다."
     )
-    fun deleteProject(@PathVariable postId: Long): ResponseEntity<Boolean> {
+    fun deletePost(@PathVariable postId: Long): ResponseEntity<Boolean> {
         val result = postService.deletePost(postId)
         return if (result) {
             ResponseEntity.ok(true)
         } else {
             ResponseEntity.badRequest().body(false)
         }
+    }
+
+    @GetMapping("/{postId}/comments")
+    @Operation(
+            summary = "특정 게시글 댓글 조회 API",
+            description = "해당 postId에 달린 모든 댓글을 조회합니다."
+    )
+    fun getCommentsByPostId(@PathVariable postId: Long): ResponseEntity<List<CommentResponseDto>> {
+        val comments = commentService.getCommentsByPostId(postId)
+        return ResponseEntity.ok(comments)
     }
 }

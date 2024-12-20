@@ -83,6 +83,19 @@ class CommentService(
         return true
     }
 
+    @Transactional(readOnly = true)
+    fun getCommentsByPostId(postId: Long): List<CommentResponseDto> {
+        val comments = commentRepository.findByPostId(postId)
+        return comments.map { comment ->
+            CommentResponseDto(
+                    id = comment.id,
+                    content = comment.content,
+                    userId = comment.user.id,
+                    postId = comment.post.id
+            )
+        }
+    }
+
     private fun convertToResponseDto(comment: CommentEntity): CommentResponseDto {
         return CommentResponseDto(
                 id = comment.id,
