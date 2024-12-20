@@ -91,23 +91,44 @@ class PostService(
      * 입력 TYPE에 맞는 값을 반환합니다.
      */
     @Transactional
-    fun getPostsByPostType(type: PostType): List<Any> {
+    fun getPostsByPostType(type: PostType, compact: Boolean): List<Any> {
         val posts = postRepository.findByPostType(type)
 
         return posts.map { post ->
             when (post.postType) {
                 PostType.NOTICE -> {
                     val noticeId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
-                    noticeService.getNoticeById(noticeId)
+                    val notice = noticeService.getNoticeById(noticeId)
+                    if (compact) {
+                        mapOf(
+                                "id" to post.id,
+                                "noticeid" to post.linkedId,
+                                "title" to (notice.title ?: "No title"),
+                                "content" to (notice.content ?: "No content")
+                        )
+                    } else {
+                        notice
+                    }
                 }
                 PostType.PROJECT -> {
                     val projectId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
-                    projectService.findProjectDetailById(projectId)
+                    val project = projectService.findProjectDetailById(projectId)
                             ?: throw EntityNotFoundException("프로젝트를 찾을 수 없습니다.")
+                    if (compact) {
+                        mapOf(
+                                "id" to post.id,
+                                "projectid" to post.linkedId,
+                                "title" to (project.title ?: "No title"),
+                                "content" to (project.writerNickName ?: "No NickName")
+                        )
+                    } else {
+                        project
+                    }
                 }
             }
         }
     }
+
 
     /**
      * 게시글 수정

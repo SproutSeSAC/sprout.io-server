@@ -43,16 +43,19 @@ class PostController(
     @GetMapping("/type/{posttype}")
     @Operation(
             summary = "게시글 목록 조회 API",
-            description = "type 파라미터에 따라 NOTICE 또는 PROJECT 게시글 목록을 조회합니다."
+            description = "compact=true 시 제목, 내용, ID만 반환합니다. (프로젝트는 내용 대신 작성자 ID를 반환합니다.)"
     )
-    fun getPostsByType(@PathVariable posttype: String): ResponseEntity<List<Any>> {
+    fun getPostsByType(
+            @PathVariable posttype: String,
+            @RequestParam(required = false, defaultValue = "false") compact: Boolean
+    ): ResponseEntity<List<Any>> {
         val postType = try {
             PostType.valueOf(posttype.uppercase())
         } catch (e: IllegalArgumentException) {
             return ResponseEntity.badRequest().body(emptyList())
         }
 
-        val posts = postService.getPostsByPostType(postType)
+        val posts = postService.getPostsByPostType(postType, compact)
         return ResponseEntity.ok(posts)
     }
 
