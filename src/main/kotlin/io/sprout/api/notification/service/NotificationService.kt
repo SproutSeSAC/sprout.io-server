@@ -77,4 +77,21 @@ class NotificationService(
             false
         }
     }
+
+    @Transactional
+    fun markAllNotificationsAsRead(clientId: Long): Boolean {
+        return try {
+            val notifications = notificationRepository.findAllByUserId(clientId)
+            notifications.forEach { notification ->
+                if (!notification.isRead) {
+                    notification.isRead = true
+                }
+            }
+            notificationRepository.saveAll(notifications)
+            true
+        } catch (e: Exception) {
+            println("모든 알림 읽음 처리 오류: ${e.message}")
+            false
+        }
+    }
 }

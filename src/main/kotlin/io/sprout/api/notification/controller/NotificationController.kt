@@ -59,7 +59,7 @@ class NotificationController(
     }
 
     @DeleteMapping("/all")
-    @Operation( summary = "알림 전체 삭제 API", description = "해당 유저의 알림을 전부 삭제합니다.")
+    @Operation( summary = "알림 전체 삭제 API (일괄)", description = "해당 유저의 알림을 전부 삭제합니다.")
     fun deleteAllNotification(): ResponseEntity<Boolean> {
         return try {
             val clientID = securityManager.getAuthenticatedUserName()
@@ -69,6 +69,20 @@ class NotificationController(
             ResponseEntity.ok(result)
         } catch (e: EntityNotFoundException) {
             ResponseEntity.notFound().build()
+        }
+    }
+
+    @PatchMapping("/all")
+    @Operation(summary = "알림 읽음 처리 API (일괄)", description = "해당 유저의 모든 알림을 읽음 상태로 표시합니다.")
+    fun markAllNotificationsAsRead(): ResponseEntity<Boolean> {
+        return try {
+            val clientID = securityManager.getAuthenticatedUserName()
+                    ?: return ResponseEntity.status(401).build()
+
+            val result = notificationService.markAllNotificationsAsRead(clientID)
+            ResponseEntity.ok(result)
+        } catch (e: EntityNotFoundException) {
+            ResponseEntity.status(404).body(false)
         }
     }
 }
