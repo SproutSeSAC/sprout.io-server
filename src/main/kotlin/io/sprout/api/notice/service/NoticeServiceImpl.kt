@@ -306,7 +306,7 @@ class NoticeServiceImpl(
      *
      * @param noticeId 공지사항 ID
      */
-    override fun toggleNoticeScrap(noticeId: Long) {
+    override fun toggleNoticeScrap(noticeId: Long): ToggleResponse {
         val userId = getUserId()
 
         val scrapedNotice = scrapedNoticeRepository.findByNoticeIdAndUserId(noticeId, userId)
@@ -316,8 +316,10 @@ class NoticeServiceImpl(
                 notice = NoticeEntity(noticeId)
             )
             scrapedNoticeRepository.save(newScrapedNotice)
+            return ToggleResponse(true)
         } else {
             scrapedNoticeRepository.deleteById(scrapedNotice.id)
+            return ToggleResponse(false)
         }
     }
 
