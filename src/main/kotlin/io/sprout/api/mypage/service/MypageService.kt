@@ -1,11 +1,14 @@
 package io.sprout.api.mypage.service
 
+import io.sprout.api.comment.service.CommentService
 import io.sprout.api.mypage.dto.*
-import io.sprout.api.mypage.entity.DummyPost
-import io.sprout.api.mypage.entity.DummyPostComment
 import io.sprout.api.mypage.entity.DummyPostParticipant
-import io.sprout.api.mypage.entity.DummyPostScrap
 import io.sprout.api.mypage.repository.*
+import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.post.entities.PostType
+import io.sprout.api.post.service.PostService
+import io.sprout.api.project.service.ProjectService
+import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
@@ -15,10 +18,12 @@ class MypageService(
         private val userRepository: UserRepository,
         private val userCampusRepository: UserCampusRepository,
         private val userCourseRepository: UserCourseRepository,
-        private val dummyPostScrapRepository: DummyPostScrapRepository,
-        private val dummyPostRepository: DummyPostRepository,
         private val dummyPostParticipantRepository: DummyPostParticipantRepository,
-        private val dummyPostCommentRepository: DummyPostCommentRepository
+        private val postService: PostService,
+        private val noticeService: NoticeService,
+        private val projectService: ProjectService,
+        private val commentService: CommentService,
+        private val scrapService: ScrapService
 ) {
 
     // region [프로필 관련 API]
@@ -90,52 +95,65 @@ class MypageService(
     // region [게시글 관련 API]
 
     // 작성 글 목록 조회
-    fun getPostListByUserId(userId: Int): List<PostDto> {
-        val posts: List<DummyPost> = dummyPostRepository.findAllByUserId(userId)
+    fun getPostListByUserId(clientId: Long): List<PostDto> {
+        val posts = postService.getPostsByClientId(clientId)
 
         // DTO 변환
-        return posts.map {
+        return posts.map { post ->
+            val title = when (post.postType) {
+                PostType.NOTICE -> {
+                    val linkedId = post.linkedId
+                            ?: throw IllegalArgumentException("테이블 매핑 오류")
+                    noticeService.getNoticeTitleById(linkedId)
+                }
+                PostType.PROJECT -> {
+                    val linkedId = post.linkedId
+                            ?: throw IllegalArgumentException("테이블 매핑 오류")
+                    projectService.getProjectTitleById(linkedId)
+                }
+            }
+
             PostDto(
-                    postId = it.postid,
-                    userId = it.userId
+                    postId = post.id,
+                    clientId = post.clientId,
+                    postType = post.postType.name,
+                    title = title,
+                    createdAt = post.createdAt,
+                    updatedAt = post.updatedAt
             )
         }
     }
 
     // 댓글 조회
-    fun getPostCommentListByUserId(userId: Int): List<PostCommentDto> {
-        val comments: List<DummyPostComment> = dummyPostCommentRepository.findAllByUserId(userId)
+    fun getPostCommentListByUserId(clientId: Long): List<PostCommentDto> {
+        val comments = commentService.getCommentsByClientId(clientId)
 
-        // DTO 변환
         return comments.map {
             PostCommentDto(
-                    commentId = it.commentId,
+                    commentId = it.id,
                     userId = it.userId,
-                    postId = it.postId
+                    postId = it.postId,
+                    content = it.content
             )
         }
     }
 
     // 찜한 글 목록 조회
-    fun getPostScrapListByUserId(userId: Int): List<PostScrapDto> {
-        val scraps: List<DummyPostScrap> = dummyPostScrapRepository.findAllByUserId(userId)
+    fun getPostScrapListByUserId(clientId: Long): List<PostScrapDto> {
+        val scraps = scrapService.getScrapsByUserId(clientId)
 
-        // DTO 변환
         return scraps.map {
             PostScrapDto(
-                    postScrapId = it.postscrapid,
-                    userId = it.userId
+                    postScrapId = it.id,
+                    userId = it.userId,
+                    postId = it.postId,
+                    createdAt = it.createdAt
             )
         }
     }
 
-    // 찜한글 삭제
-    fun deletePostScrap(scrapid: Int, userId: Int) {
-        dummyPostScrapRepository.deleteBypostscrapidAndUserId(scrapid, userId)
-    }
-
     // 참여 글 목록 조회
-    fun getPostParticipantListByUserId(userId: Int): List<PostParticipantDto> {
+    fun getPostParticipantListByUserId(userId: Long): List<PostParticipantDto> {
         val particis: List<DummyPostParticipant> = dummyPostParticipantRepository.findAllByUserId(userId)
 
         // DTO 변환
@@ -148,7 +166,7 @@ class MypageService(
     }
 
     // 참여글 삭제
-    fun deletePostParticipant(postparticipantId: Int, userId: Int) {
+    fun deletePostParticipant(postparticipantId: Int, userId: Long) {
         dummyPostParticipantRepository.deleteByPostparticipantidAndUserId(postparticipantId, userId)
     }
     // endregion

@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface DummyPostParticipantRepository : JpaRepository<DummyPostParticipant, Int> {
-    fun findAllByUserId(userId: Int): List<DummyPostParticipant>
+interface DummyPostParticipantRepository : JpaRepository<DummyPostParticipant, Long> {
+    fun findAllByUserId(userId: Long): List<DummyPostParticipant>
 
-    fun deleteByPostparticipantidAndUserId(postparticipantid: Int, userId: Int): Int
+    fun deleteByPostparticipantidAndUserId(postparticipantid: Int, userId: Long): Int
 }
