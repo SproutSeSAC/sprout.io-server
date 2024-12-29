@@ -228,10 +228,10 @@ class NoticeController(
      */
     @PostMapping("/{noticeId}/scrap")
     @Operation(summary = "공지사항 좋아요 토글", description = "ture -> false, false -> true toggle")
-    fun toggleNoticeScrap(@PathVariable noticeId: Long): ResponseEntity<Any> {
-        noticeService.toggleNoticeScrap(noticeId)
+    fun toggleNoticeScrap(@PathVariable noticeId: Long): ResponseEntity<ToggleResponse> {
+        val result = noticeService.toggleNoticeScrap(noticeId)
 
-        return ResponseEntity.ok().build()
+        return ResponseEntity.ok(result)
     }
 
 }
