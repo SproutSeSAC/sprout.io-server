@@ -1,6 +1,8 @@
 package io.sprout.api.notification.service
 
 import io.sprout.api.notification.entity.NotificationEntity
+import io.sprout.api.notification.entity.NotificationLogEntity
+import io.sprout.api.notification.repository.NotificationLogRepository
 import io.sprout.api.notification.repository.NotificationRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
@@ -8,7 +10,8 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class NotificationService(
-        private val notificationRepository: NotificationRepository
+        private val notificationRepository: NotificationRepository,
+        private val notificationLogRepository: NotificationLogRepository
 ) {
     private val MAX_NOTIFICATIONSCOUNT = 20 // 우선 20개
 
@@ -21,9 +24,18 @@ class NotificationService(
     fun saveNotification(userId: Long, content: String): NotificationEntity {
         val notification = NotificationEntity(
                 userId = userId,
-                content = content
+                type = content.split(',')[0].toLong(),
+                content = content.split(',')[1]
         )
+
+        val notification_log = NotificationLogEntity(
+            userId = notification.userId,
+            type = notification.type,
+            content = notification.content
+        )
+
         val savedNotification = notificationRepository.save(notification)
+        notificationLogRepository.save(notification_log)
 
         maxNotifications(userId)
 
