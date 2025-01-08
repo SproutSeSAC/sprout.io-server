@@ -8,6 +8,7 @@ import io.sprout.api.position.model.entities.PositionEntity
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
 import io.sprout.api.project.repository.*
+import io.sprout.api.specification.model.entities.jobEntityOf
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.EntityNotFoundException
@@ -161,7 +162,7 @@ class ProjectServiceImpl(
     private fun saveProjectPositions(savedProjectEntity: ProjectEntity, positions: List<Long>) {
         positions.forEach {
             val selectedPosition = PositionEntity(it)
-            val projectPositionEntity = ProjectPositionEntity(savedProjectEntity, selectedPosition)
+            val projectPositionEntity = ProjectPositionEntity(savedProjectEntity, jobEntityOf(it))
             projectPositionRepository.save(projectPositionEntity)
         }
     }

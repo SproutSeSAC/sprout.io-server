@@ -7,6 +7,7 @@ import io.sprout.api.project.model.entities.ContactMethod
 import io.sprout.api.project.model.entities.MeetingType
 import io.sprout.api.project.model.entities.PType
 import io.sprout.api.project.model.entities.ProjectStatus
+import io.sprout.api.specification.model.entities.JobEntity
 import io.sprout.api.specification.model.entities.TechStackEntity
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -31,6 +32,6 @@ data class ProjectDetailResponseDto @QueryProjection constructor(
     val contactDetail : String?,
 ){
     var isScraped: Boolean = false
-    var position : List<PositionEntity> =  emptyList()
+    var position : List<JobEntity> =  emptyList()
     var techStack: List<TechStackEntity> =  emptyList()
 }
