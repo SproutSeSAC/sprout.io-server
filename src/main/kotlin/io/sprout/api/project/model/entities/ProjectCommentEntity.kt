@@ -16,7 +16,7 @@ class ProjectCommentEntity(
     val content: String, // 댓글 내용
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     val writer: UserEntity, // 작성자 (유저와의 관계)
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -3,7 +3,6 @@ package io.sprout.api.project.model.entities
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.project.model.dto.ProjectDetailResponseDto
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
-import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -19,7 +18,7 @@ class ProjectEntity(
     var title: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer")
+    @JoinColumn(name = "user_id")
     val writer: UserEntity,
 
     @Column(columnDefinition = "TEXT", nullable = false)

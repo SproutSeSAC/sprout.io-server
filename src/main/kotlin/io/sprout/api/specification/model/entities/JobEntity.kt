@@ -3,6 +3,13 @@ package io.sprout.api.specification.model.entities
 import io.sprout.api.user.model.entities.UserJobEntity
 import jakarta.persistence.*
 
+fun jobEntityOf(jobId: Long): JobEntity {
+    val jobEntity = JobEntity("temp", false)
+    jobEntity.id = jobId
+
+    return jobEntity
+}
+
 @Entity
 @Table(name = "job")
 class JobEntity(
@@ -18,7 +25,4 @@ class JobEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
-
-    @OneToMany(mappedBy = "job", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    var userJobList: MutableSet<UserJobEntity> = LinkedHashSet()
 }

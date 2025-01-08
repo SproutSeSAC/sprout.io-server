@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import io.sprout.api.position.model.entities.QPositionEntity
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
+import io.sprout.api.specification.model.entities.QJobEntity
 import io.sprout.api.specification.model.entities.QTechStackEntity
 import io.sprout.api.user.model.entities.QUserEntity
 import org.springframework.stereotype.Repository
@@ -38,7 +39,8 @@ class ProjectCustomRepositoryImpl(
     override fun findProjectDetailById(id: Long, userId: Long): ProjectDetailResponseDto? {
         val projectEntity = QProjectEntity.projectEntity
         val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
-        val positionEntity = QPositionEntity.positionEntity
+//        val positionEntity = QPositionEntity.positionEntity
+        val positionEntity = QJobEntity.jobEntity
         val userEntity = QUserEntity.userEntity
         val techStackEntity = QTechStackEntity.techStackEntity
         val projectTechStackEntity = QProjectTechStackEntity.projectTechStackEntity
@@ -222,7 +224,8 @@ class ProjectCustomRepositoryImpl(
     ): List<ProjectResponseDto> {
         val projectEntity = QProjectEntity.projectEntity
         val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
-        val positionEntity = QPositionEntity.positionEntity
+//        val positionEntity = QPositionEntity.positionEntity
+        val positionEntity = QJobEntity.jobEntity
         val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
         val projectTechStackEntity = QProjectTechStackEntity.projectTechStackEntity
         val techStackEntity = QTechStackEntity.techStackEntity
