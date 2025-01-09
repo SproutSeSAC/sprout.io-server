@@ -1,9 +1,11 @@
 package io.sprout.api.aws.controller
 
+import io.sprout.api.aws.dto.DeleteFileRequestDto
 import io.sprout.api.aws.dto.PresignedUrlRequestDto
 import io.sprout.api.aws.dto.PresignedUrlResponseDto
 import io.sprout.api.aws.service.S3Service
 import io.swagger.v3.oas.annotations.Operation
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URL
 
@@ -25,5 +27,16 @@ class S3Controller(private val s3Service: S3Service) {
             presignedUrl = presignedUrl.toString(),
             expirationMinutes = request.expirationMinutes
         )
+    }
+
+    @DeleteMapping("/deletefile")
+    @Operation(summary = "파일 삭제", description = "삭제 할 이미지 파일을 선택합니다.")
+    fun deleteFile(@RequestBody request: DeleteFileRequestDto): ResponseEntity<String> {
+        return try {
+            s3Service.deleteFile(request.bucketName, request.objectKey)
+            ResponseEntity.ok("파일 삭제 성공")
+        } catch (e: Exception) {
+            ResponseEntity.status(500).body("파일 삭제 실패 : ${e.message}")
+        }
     }
 }
