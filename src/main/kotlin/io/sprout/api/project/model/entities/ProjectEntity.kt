@@ -58,11 +58,11 @@ class ProjectEntity(
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
     val projectParticipations: List<ProjectParticipationEntity> = listOf(),
 
-    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
-    val positions: Set<ProjectPositionEntity> = setOf(),
+    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var positions: MutableSet<ProjectPositionEntity> = mutableSetOf(),
 
-    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL])
-    val techStacks: Set<ProjectTechStackEntity> = setOf(),
+    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    var techStacks: MutableSet<ProjectTechStackEntity> = mutableSetOf(),
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val comments: List<ProjectCommentEntity> = listOf()
