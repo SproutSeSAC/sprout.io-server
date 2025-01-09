@@ -65,7 +65,7 @@ class UserController(
     /**
      * 계정 탈퇴
      */
-    @PutMapping("/leave")
+    @DeleteMapping("/leave")
     @Operation(summary = "계정 탈퇴", description = "계정 탈퇴 (상태값 변경, 실제 삭제는 30일 후 따로 진행)")
     fun deleteUser(
     ): ResponseEntity<String> {
