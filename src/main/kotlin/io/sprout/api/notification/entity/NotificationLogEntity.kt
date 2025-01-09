@@ -3,8 +3,8 @@ package io.sprout.api.notification.entity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "notification")
-class NotificationEntity(
+@Table(name = "notification_log")
+class NotificationLogEntity(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         val id: Long = 0,
