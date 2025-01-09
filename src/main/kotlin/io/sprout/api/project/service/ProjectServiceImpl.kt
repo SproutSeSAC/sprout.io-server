@@ -139,17 +139,20 @@ class ProjectServiceImpl(
             val projectEntity = projectRepository.findById(projectId)
                 .orElseThrow { IllegalArgumentException("Project not found") }
             projectEntity.updateFromDto(projectRecruitmentRequestDTO)
-            val savedProjectEntity = projectRepository.save(projectEntity)
 
-            projectRecruitmentRequestDTO.positions.forEach {
-                projectPositionRepository.deleteById(it)
+            projectEntity.positions.forEach {
+                projectPositionRepository.delete(it)
             }
+            projectEntity.positions = mutableSetOf()
 
-            projectRecruitmentRequestDTO.requiredStacks.forEach {
-                projectTechStackRepository.deleteById(it)
+            projectEntity.techStacks.forEach {
+                projectTechStackRepository.deleteById(it.id)
             }
-            saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
-            saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
+            projectEntity.techStacks = mutableSetOf()
+
+
+            saveProjectPositions(projectEntity, projectRecruitmentRequestDTO.positions)
+            saveProjectTechStacks(projectEntity, projectRecruitmentRequestDTO.requiredStacks)
             true
         }
     }
@@ -161,7 +164,6 @@ class ProjectServiceImpl(
 
     private fun saveProjectPositions(savedProjectEntity: ProjectEntity, positions: List<Long>) {
         positions.forEach {
-            val selectedPosition = PositionEntity(it)
             val projectPositionEntity = ProjectPositionEntity(savedProjectEntity, jobEntityOf(it))
             projectPositionRepository.save(projectPositionEntity)
         }
