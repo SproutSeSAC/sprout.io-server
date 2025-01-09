@@ -9,12 +9,12 @@ import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
-import io.sprout.api.user.model.dto.UserDetailResponse
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
 import io.sprout.api.specification.repository.TechStackRepository
 import io.sprout.api.user.model.dto.CreateUserRequest
 import io.sprout.api.user.model.dto.UpdateUserRequest
+import io.sprout.api.user.model.dto.UserDetailResponse
 import io.sprout.api.user.model.entities.*
 import io.sprout.api.user.repository.UserDomainRepository
 import io.sprout.api.user.repository.UserJobRepository
@@ -25,8 +25,12 @@ import io.sprout.api.utils.NicknameGenerator
 import io.sprout.api.verificationCode.repository.VerificationCodeRepository
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.sql.ResultSet
+
+private const val i = 9999
 
 @Service
 class UserService(
@@ -40,7 +44,8 @@ class UserService(
     private val userTechStackRepository: UserTechStackRepository,
     private val securityManager: SecurityManager,
     private val jwtToken: JwtToken,
-    private val verificationCodeRepository: VerificationCodeRepository
+    private val verificationCodeRepository: VerificationCodeRepository,
+    private val jdbcTemplate: JdbcTemplate
 ) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
@@ -121,18 +126,39 @@ class UserService(
     }
 
     /**
-     * User 삭제 처리
+     * user 삭제 처리
+     * - user pk 를 유령회원 pk로 바꾸기
      */
     @Transactional
     fun deleteUser() {
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Check reissued access token")
-        val user = userRepository.findById(userId).orElseThrow { CustomBadRequestException("Not found user") }
-        user.status = UserStatus.LEAVE
-        user.refreshToken = ""
+        val anonymousUserId = 9999L
 
-        userRepository.save(user)
-        log.debug("deleteUser, userId is: ${user.id}")
+        val findTablesSql = """
+            SELECT table_name, column_name 
+            FROM information_schema.key_column_usage 
+            WHERE referenced_table_name = 'user' 
+        """
 
+        val deleteTable = listOf(
+            "user_course", "user_domain", "user_job",
+            "user_tech_stack", "notice_participant", "project_post_participant"
+        )
+
+        jdbcTemplate.queryForList(findTablesSql).forEach { row ->
+            val tableName = row["table_name"] as String
+            val columnName = row["column_name"] as String
+
+            if (deleteTable.contains(tableName)) {
+                val deleteSql = "DELETE FROM $tableName WHERE $columnName = ?"
+                jdbcTemplate.update(deleteSql, userId)
+            } else {
+                val updateSql = "UPDATE $tableName SET $columnName = ? WHERE $columnName = ?"
+                jdbcTemplate.update(updateSql, anonymousUserId, userId)
+            }
+        }
+
+        userRepository.deleteById(userId)
     }
 
     /**
