@@ -1,6 +1,7 @@
 package io.sprout.api.mypage.service
 
 import io.sprout.api.comment.service.CommentService
+import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.entity.DummyPostParticipant
 import io.sprout.api.mypage.repository.*
@@ -16,8 +17,8 @@ import org.springframework.stereotype.Service
 @Service
 class MypageService(
         private val userRepository: UserRepository,
-        private val userCampusRepository: UserCampusRepository,
         private val userCourseRepository: UserCourseRepository,
+        private val courseRepository: CourseRepository,
         private val dummyPostParticipantRepository: DummyPostParticipantRepository,
         private val postService: PostService,
         private val noticeService: NoticeService,
@@ -33,14 +34,6 @@ class MypageService(
         val user = userRepository.findById(userId)
                 .orElseThrow { IllegalArgumentException("User not found") }
 
-        // UserCampusEntity 조회
-        val userCampus = userCampusRepository.findByUser_Id(userId)
-                .orElseThrow { IllegalArgumentException("Campus not found") }
-
-        // UserCourseEntity 조회
-        val userCourse = userCourseRepository.findByUser_Id(userId)
-                .orElseThrow { IllegalArgumentException("Course not found") }
-
         // ProfileCard 생성
         val profileCard = CardDto.ProfileCard(
                 name = user.name,
@@ -48,21 +41,25 @@ class MypageService(
                 profileUrl = user.profileImageUrl
         )
 
-        val CampusMini = CardDto.CampusMini(
-                id = userCampus.campus.id,
-                name = userCampus.campus.name
-        )
+        val CampusCard = courseRepository.findUserCampusByUserId(userId).map {
+            CardDto.CampusInfo(
+                id = it.id,
+                campusName = it.name
+            )
+        }
 
-        val CourseMini = CardDto.CourseMini(
-                id = userCourse.course.id,
-                name = userCourse.course.title
-        )
+        val CourseCard = userCourseRepository.findByUser_Id(userId).map {
+            CardDto.CourseInfo(
+                id = it.course.id,
+                courseName = it.course.title
+            )
+        }
 
         // StudyCard 생성
         val studyCard = CardDto.StudyCard(
                 email = user.email,
-                campus = CampusMini,
-                course = CourseMini
+                campus = CampusCard,
+                course = CourseCard
         )
 
         // UserCard 생성
