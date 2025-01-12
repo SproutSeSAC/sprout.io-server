@@ -2,6 +2,7 @@ package io.sprout.api.post.service
 
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.post.dto.PostDto
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
@@ -131,7 +132,6 @@ class PostService(
         }
     }
 
-
     /**
      * 게시글 수정
      * 입력 id에 맞게 dto를 완전히 덮어씌웁니다.
@@ -204,4 +204,12 @@ class PostService(
     fun getPostsByClientId(clientId: Long): List<PostEntity> {
         return postRepository.findAllByClientId(clientId)
     }
+
+    /**
+     * 찜한 글 가져오기
+     */
+//    @Transactional()
+//    fun getscraplist(clientId: Long): PostDto.ScrapList {
+//
+//    }
 }

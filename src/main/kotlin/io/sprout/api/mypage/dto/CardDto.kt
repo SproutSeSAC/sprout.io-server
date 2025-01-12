@@ -1,11 +1,6 @@
 package io.sprout.api.mypage.dto
 
-import io.sprout.api.campus.model.entities.CampusEntity
-import io.sprout.api.course.model.entities.CourseEntity
-import io.sprout.api.user.model.entities.UserCampusEntity
-import io.sprout.api.user.model.entities.UserCourseEntity
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
 
 class CardDto {
 
