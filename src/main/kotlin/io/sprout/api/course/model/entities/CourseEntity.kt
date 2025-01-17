@@ -2,6 +2,7 @@ package io.sprout.api.course.model.entities
 
 import io.sprout.api.campus.model.entities.CampusEntity
 import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.course.model.dto.CourseRequestDto
 import io.sprout.api.user.model.entities.UserCourseEntity
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -27,6 +28,12 @@ class CourseEntity(
     var calendarId: String, // 코스 별 구글 캘린더 ID
 
 ): BaseEntity() {
+    fun update(updateRequest: CourseRequestDto) {
+        title = updateRequest.title
+        startDate = updateRequest.startDate
+        endDate = updateRequest.endDate
+        campus = CampusEntity(updateRequest.campusId)
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
