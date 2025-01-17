@@ -6,4 +6,5 @@ import java.util.Optional
 
 interface UserCampusRepository : JpaRepository<UserCampusEntity, Long> {
     fun findByUser_Id(userId: Long): Optional<UserCampusEntity>
+    fun findByCampusId(campusId: Long): List<UserCampusEntity>
 }

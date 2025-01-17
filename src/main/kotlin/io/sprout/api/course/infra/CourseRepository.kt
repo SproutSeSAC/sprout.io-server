@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
 @Repository
-interface CourseRepository: JpaRepository<CourseEntity, Long> {
+interface CourseRepository: JpaRepository<CourseEntity, Long>, CourseRepositoryCustom {
 
     fun findCourseById(id: Long): CourseEntity?
 

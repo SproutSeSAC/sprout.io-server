@@ -1,5 +1,6 @@
 package io.sprout.api.user.repository
 
+import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
@@ -14,5 +15,6 @@ interface UserRepository: JpaRepository<UserEntity, Long> , UserRepositoryCustom
     @EntityGraph(attributePaths = ["userJobList", "userDomainList", "userTechStackList"])
     fun findUserById(userId: Long): UserEntity?
     fun findByNickname(nickname: String): UserEntity?
+    fun findByRole(admin: RoleType): List<UserEntity>
 
 }
