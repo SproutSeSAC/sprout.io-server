@@ -3,6 +3,7 @@ package io.sprout.api.campus.model.entities
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.store.model.entities.StoreEntity
 import jakarta.persistence.*
+import java.time.LocalDate
 
 @Entity
 @Table(name = "campus")
@@ -23,4 +24,7 @@ class CampusEntity(
     @OneToMany(mappedBy = "campus", fetch = FetchType.LAZY)
     var storeList: MutableSet<StoreEntity> = LinkedHashSet()
 
+    constructor(id: Long) : this("", "") {
+        this.id = id
+    }
 }
