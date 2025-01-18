@@ -1,6 +1,7 @@
 package io.sprout.api.mypage.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.Optional
 
 class CardDto {
 
@@ -46,7 +47,7 @@ class CardDto {
             val campus: List<CampusInfo>,
 
             @Schema(description = "과정")
-            val course: List<CourseInfo>,
+            val course: Optional<CourseInfo>,
             )
 
     @Schema(description = "카드 정보 (프로필 + 교육)")
