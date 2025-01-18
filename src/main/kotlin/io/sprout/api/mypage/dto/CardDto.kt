@@ -1,12 +1,28 @@
 package io.sprout.api.mypage.dto
 
-import io.sprout.api.campus.model.entities.CampusEntity
-import io.sprout.api.course.model.entities.CourseEntity
-import io.sprout.api.user.model.entities.UserCampusEntity
-import io.sprout.api.user.model.entities.UserCourseEntity
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.Optional
 
 class CardDto {
+
+    @Schema(description = "캠퍼스 단일")
+    data class CampusInfo(
+        @Schema(description = "캠퍼스 id", nullable = false)
+        val id: Long,
+
+        @Schema(description = "이름", nullable = false)
+        val campusName: String,
+    )
+
+    @Schema(description = "코스 리스트")
+    data class CourseInfo(
+        @Schema(description = "코스 ID", nullable = false)
+        val id: Long,
+
+        @Schema(description = "코스 명", nullable = false)
+        val courseName: String,
+    )
+
     @Schema(description = "프로필 카드")
     data class ProfileCard(
 
@@ -21,24 +37,6 @@ class CardDto {
 
             )
 
-    @Schema(description = "반환되는 교육과정 데이터 목록")
-    data class CourseMini(
-            @Schema(description = "교육과정 ID")
-            val id: Long,
-
-            @Schema(description = "교육과정 이름")
-            val name: String,
-            )
-
-    @Schema(description = "반환되는 캠퍼스 데이터 목록")
-    data class CampusMini(
-            @Schema(description = "캠퍼스 ID")
-            val id: Long,
-
-            @Schema(description = "캠퍼스 이름")
-            val name: String,
-    )
-
     @Schema(description = "교육 카드")
     data class StudyCard(
 
@@ -46,11 +44,10 @@ class CardDto {
             val email: String,
 
             @Schema(description = "캠퍼스")
-            val campus: CampusMini,
+            val campus: List<CampusInfo>,
 
             @Schema(description = "과정")
-            val course: CourseMini,
-
+            val course: Optional<CourseInfo>,
             )
 
     @Schema(description = "카드 정보 (프로필 + 교육)")
