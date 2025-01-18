@@ -66,7 +66,7 @@ class UserService(
                 nickname = NicknameGenerator.generate(),
                 role = RoleType.PRE_TRAINEE,
                 status = UserStatus.INACTIVE,
-                profileImageUrl = "https://aaa.com",
+                profileImageUrl = "",
                 isEssential = false
             )
             savedUser = userRepository.save(newUser)
