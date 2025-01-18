@@ -3,6 +3,7 @@ package io.sprout.api.user.service
 import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
+import io.sprout.api.campus.infra.CampusRepository
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.common.exeption.custom.CustomSystemException
@@ -36,6 +37,7 @@ private const val i = 9999
 class UserService(
     private val userRepository: UserRepository,
     private val courseRepository: CourseRepository,
+    private val campusRepository: CampusRepository,
     private val jobRepository: JobRepository,
     private val domainRepository: DomainRepository,
     private val techStackRepository: TechStackRepository,
@@ -110,6 +112,7 @@ class UserService(
             userEntity.register(
                 request,
                 courseRepository.findAllById(request.courseIdList),
+                campusRepository.findAllById(request.campusIdList),
                 jobRepository.findAllById(request.jobIdList),
                 domainRepository.findAllById(request.domainIdList),
                 techStackRepository.findAllById(request.techStackIdList)
@@ -141,8 +144,9 @@ class UserService(
         """
 
         val deleteTable = listOf(
-            "user_course", "user_domain", "user_job",
-            "user_tech_stack", "notice_participant", "project_post_participant"
+            "user_course", "user_domain", "user_job", "user_campus",
+            "user_tech_stack", "notice_participant", "project_post_participant",
+            "scraped_notice", "scraped_project", "scraped_store"
         )
 
         jdbcTemplate.queryForList(findTablesSql).forEach { row ->

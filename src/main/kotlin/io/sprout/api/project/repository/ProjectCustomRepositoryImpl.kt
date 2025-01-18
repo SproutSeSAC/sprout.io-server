@@ -263,7 +263,13 @@ class ProjectCustomRepositoryImpl(
                         projectEntity.recruitmentEnd,
                         projectEntity.pType.stringValue(),
                         GroupBy.list(projectPositionEntity.position.name),
-                        GroupBy.list(projectTechStackEntity.techStack.name),
+                        GroupBy.list(
+                            Projections.constructor(
+                                ProjectResponseDto.TechStacks::class.java,
+                                projectTechStackEntity.techStack.name,
+                                projectTechStackEntity.techStack.path
+                            )
+                        ),
                         scrapedProjectEntity.id.isNotNull,
                         projectEntity.viewCount
                     )

@@ -1,5 +1,6 @@
 package io.sprout.api.user.model.entities
 
+import io.sprout.api.campus.model.entities.CampusEntity
 import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.course.model.entities.CourseEntity
 import io.sprout.api.specification.model.entities.DomainEntity
@@ -52,19 +53,19 @@ class UserEntity(
     @Column(name = "marketing_consent")
     var marketingConsent: Boolean = false // 마케팅 약관 동의여부
 
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var userJobList: MutableSet<UserJobEntity> = LinkedHashSet()
 
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL],orphanRemoval = true, fetch = FetchType.LAZY)
     var userDomainList: MutableSet<UserDomainEntity> = LinkedHashSet()
 
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true,fetch = FetchType.LAZY)
     var userTechStackList: MutableSet<UserTechStackEntity> = LinkedHashSet()
 
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true,fetch = FetchType.LAZY)
     var userCourseList: MutableSet<UserCourseEntity> = LinkedHashSet()
 
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true,fetch = FetchType.LAZY)
     var userCampusList: MutableSet<UserCampusEntity> = LinkedHashSet()
 //    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
 //    var googleCalendar: GoogleCalendarEntity? = null
@@ -87,11 +88,13 @@ class UserEntity(
     fun register(
         request: CreateUserRequest,
         courseList: MutableList<CourseEntity>,
+        campusList: MutableList<CampusEntity>,
         jobList: MutableList<JobEntity>,
         domainList: MutableList<DomainEntity>,
         techStackList: MutableList<TechStackEntity>){
 
         userCourseList.clear()
+        userCampusList.clear()
         userJobList.clear()
         userDomainList.clear()
         userTechStackList.clear()
@@ -103,18 +106,22 @@ class UserEntity(
         marketingConsent = request.marketingConsent
         isEssential = true
 
-        userCourseList = courseList.map {
+
+        courseList.map {
             UserCourseEntity(it, this)
-        }.toMutableSet()
-        userJobList = jobList.map {
+        }.forEach {userCourseList.add(it)}
+        campusList.map {
+            UserCampusEntity(it, this)
+        }.forEach {userCampusList.add(it)}
+        jobList.map {
             UserJobEntity(it, this)
-        }.toMutableSet()
-        userDomainList = domainList.map {
+        }.forEach {userJobList.add(it)}
+         domainList.map {
             UserDomainEntity(it, this)
-        }.toMutableSet()
-        userTechStackList = techStackList.map {
+        }.forEach {userDomainList.add(it)}
+        techStackList.map {
             UserTechStackEntity(it, this)
-        } .toMutableSet()
+        } .forEach {userTechStackList.add(it)}
     }
 
 }
