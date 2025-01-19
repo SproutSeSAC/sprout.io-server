@@ -3,7 +3,6 @@ package io.sprout.api.mypage.service
 import io.sprout.api.comment.service.CommentService
 import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.mypage.dto.*
-import io.sprout.api.mypage.entity.DummyPostParticipant
 import io.sprout.api.mypage.repository.*
 import io.sprout.api.notice.service.NoticeService
 import io.sprout.api.post.entities.PostEntity
@@ -20,7 +19,6 @@ class MypageService(
         private val userRepository: UserRepository,
         private val userCourseRepository: UserCourseRepository,
         private val courseRepository: CourseRepository,
-        private val dummyPostParticipantRepository: DummyPostParticipantRepository,
         private val postService: PostService,
         private val noticeService: NoticeService,
         private val projectService: ProjectService,
@@ -160,11 +158,6 @@ class MypageService(
     fun getPostParticipantListByUserId(userId: Long): List<PostEntity> {
         val participant: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
         return participant
-    }
-
-    // 참여글 삭제
-    fun deletePostParticipant(postparticipantId: Int, userId: Long) {
-        dummyPostParticipantRepository.deleteByPostparticipantidAndUserId(postparticipantId, userId)
     }
     // endregion
 }

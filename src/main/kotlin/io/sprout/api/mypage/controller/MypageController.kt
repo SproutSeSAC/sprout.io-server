@@ -65,8 +65,8 @@ class MypageController(
         return ResponseEntity.ok(mypageService.getPostScrapListByUserId(userId))
     }
 
-    @Operation(summary = "신청한 글 조회", description = "신청한 글들의 ID를 반환합니다.")
-    @GetMapping("/getParticipant")
+    @Operation(summary = "신청한 글 조회 (ID)", description = "신청한 글들의 ID를 반환합니다.")
+    @GetMapping("/getParticipantIDs")
     fun getPostParticipantIDList(): ResponseEntity<List<Long>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
@@ -81,14 +81,5 @@ class MypageController(
             ?: return ResponseEntity.status(401).body(null)
 
         return ResponseEntity.ok(mypageService.getPostParticipantListByUserId(userId))
-    }
-
-    @Operation(summary = "신청한 글 취소", description = "특정 글의 신청을 철회합니다.")
-    @DeleteMapping("/deleteParticipant/{participantid}")
-    fun deletePostParticipant(@PathVariable postparticipantId: Int): ResponseEntity<String> {
-        val userId = securityManager.getAuthenticatedUserName()
-                ?: return ResponseEntity.status(401).body("로그인이 필요합니다.")
-        mypageService.deletePostParticipant(postparticipantId, userId)
-        return ResponseEntity.ok("신청이 취소되었습니다.")
     }
 }
