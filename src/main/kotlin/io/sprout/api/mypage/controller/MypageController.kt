@@ -3,6 +3,7 @@ package io.sprout.api.mypage.controller
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.service.MypageService
+import io.sprout.api.post.entities.PostEntity
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -64,20 +65,21 @@ class MypageController(
         return ResponseEntity.ok(mypageService.getPostScrapListByUserId(userId))
     }
 
-    @Operation(summary = "신청한 글 조회", description = "신청한 글들의 ID를 반환합니다.")
-    @GetMapping("/getParticipant")
-    fun getPostParticipantList(): ResponseEntity<List<PostParticipantDto>> {
+    @Operation(summary = "신청한 글 조회 (ID)", description = "신청한 글들의 ID를 반환합니다.")
+    @GetMapping("/getParticipantIDs")
+    fun getPostParticipantIDList(): ResponseEntity<List<Long>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
-        return ResponseEntity.ok(mypageService.getPostParticipantListByUserId(userId))
+
+        return ResponseEntity.ok(mypageService.getPostParticipantIdsListByUserId(userId))
     }
 
-    @Operation(summary = "신청한 글 취소", description = "특정 글의 신청을 철회합니다.")
-    @DeleteMapping("/deleteParticipant/{participantid}")
-    fun deletePostParticipant(@PathVariable postparticipantId: Int): ResponseEntity<String> {
+    @Operation(summary = "신청한 글 상세정보", description = "신청한 글들의 정보를 반환합니다.")
+    @GetMapping("/getParticipant")
+    fun getPostParticipantList(): ResponseEntity<List<PostEntity>> {
         val userId = securityManager.getAuthenticatedUserName()
-                ?: return ResponseEntity.status(401).body("로그인이 필요합니다.")
-        mypageService.deletePostParticipant(postparticipantId, userId)
-        return ResponseEntity.ok("신청이 취소되었습니다.")
+            ?: return ResponseEntity.status(401).body(null)
+
+        return ResponseEntity.ok(mypageService.getPostParticipantListByUserId(userId))
     }
 }

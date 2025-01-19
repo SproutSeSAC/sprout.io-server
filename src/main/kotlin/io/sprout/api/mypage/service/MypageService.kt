@@ -3,9 +3,9 @@ package io.sprout.api.mypage.service
 import io.sprout.api.comment.service.CommentService
 import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.mypage.dto.*
-import io.sprout.api.mypage.entity.DummyPostParticipant
 import io.sprout.api.mypage.repository.*
 import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.service.ProjectService
@@ -19,7 +19,6 @@ class MypageService(
         private val userRepository: UserRepository,
         private val userCourseRepository: UserCourseRepository,
         private val courseRepository: CourseRepository,
-        private val dummyPostParticipantRepository: DummyPostParticipantRepository,
         private val postService: PostService,
         private val noticeService: NoticeService,
         private val projectService: ProjectService,
@@ -149,22 +148,16 @@ class MypageService(
         }
     }
 
-    // 참여 글 목록 조회
-    fun getPostParticipantListByUserId(userId: Long): List<PostParticipantDto> {
-        val particis: List<DummyPostParticipant> = dummyPostParticipantRepository.findAllByUserId(userId)
-
-        // DTO 변환
-        return particis.map {
-            PostParticipantDto(
-                    postParticipantid = it.postparticipantid,
-                    userId = it.userId
-            )
-        }
+    // 참여 글 목록 조회 (ID만)
+    fun getPostParticipantIdsListByUserId(userId: Long): List<Long> {
+        val participantsIds: List<Long> = postService.getNoticeIdsByUserIdFromParticipant(userId);
+        return participantsIds
     }
 
-    // 참여글 삭제
-    fun deletePostParticipant(postparticipantId: Int, userId: Long) {
-        dummyPostParticipantRepository.deleteByPostparticipantidAndUserId(postparticipantId, userId)
+    // 참여 글 데이터 전체 조회 (전체)
+    fun getPostParticipantListByUserId(userId: Long): List<PostEntity> {
+        val participant: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
+        return participant
     }
     // endregion
 }
