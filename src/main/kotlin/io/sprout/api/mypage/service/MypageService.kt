@@ -6,6 +6,7 @@ import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.entity.DummyPostParticipant
 import io.sprout.api.mypage.repository.*
 import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.service.ProjectService
@@ -149,17 +150,16 @@ class MypageService(
         }
     }
 
-    // 참여 글 목록 조회
-    fun getPostParticipantListByUserId(userId: Long): List<PostParticipantDto> {
-        val particis: List<DummyPostParticipant> = dummyPostParticipantRepository.findAllByUserId(userId)
+    // 참여 글 목록 조회 (ID만)
+    fun getPostParticipantIdsListByUserId(userId: Long): List<Long> {
+        val participantsIds: List<Long> = postService.getNoticeIdsByUserIdFromParticipant(userId);
+        return participantsIds
+    }
 
-        // DTO 변환
-        return particis.map {
-            PostParticipantDto(
-                    postParticipantid = it.postparticipantid,
-                    userId = it.userId
-            )
-        }
+    // 참여 글 데이터 전체 조회 (전체)
+    fun getPostParticipantListByUserId(userId: Long): List<PostEntity> {
+        val participant: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
+        return participant
     }
 
     // 참여글 삭제

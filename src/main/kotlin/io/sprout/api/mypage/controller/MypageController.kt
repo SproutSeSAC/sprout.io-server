@@ -3,6 +3,7 @@ package io.sprout.api.mypage.controller
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.service.MypageService
+import io.sprout.api.post.entities.PostEntity
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -66,9 +67,19 @@ class MypageController(
 
     @Operation(summary = "신청한 글 조회", description = "신청한 글들의 ID를 반환합니다.")
     @GetMapping("/getParticipant")
-    fun getPostParticipantList(): ResponseEntity<List<PostParticipantDto>> {
+    fun getPostParticipantIDList(): ResponseEntity<List<Long>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
+
+        return ResponseEntity.ok(mypageService.getPostParticipantIdsListByUserId(userId))
+    }
+
+    @Operation(summary = "신청한 글 상세정보", description = "신청한 글들의 정보를 반환합니다.")
+    @GetMapping("/getParticipant")
+    fun getPostParticipantList(): ResponseEntity<List<PostEntity>> {
+        val userId = securityManager.getAuthenticatedUserName()
+            ?: return ResponseEntity.status(401).body(null)
+
         return ResponseEntity.ok(mypageService.getPostParticipantListByUserId(userId))
     }
 
