@@ -206,6 +206,21 @@ class PostService(
     }
 
     /**
+     * 참여 글 목록 읽기 (ID만)
+     */
+    fun getNoticeIdsByUserIdFromParticipant(userId: Long): List<Long> {
+        return postRepository.findNoticeIdsByUserIdFromParticipant(userId)
+    }
+
+    /**
+     * 참여 글 목록 읽기 (전체)
+     */
+    fun getNoticesByUserIdFromParticipant(userId: Long): List<PostEntity> {
+        return postRepository.findNoticesByUserIdFromParticipant(userId)
+    }
+
+
+    /**
      * 찜한 글 가져오기
      */
 //    @Transactional()

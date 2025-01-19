@@ -12,6 +12,9 @@ class NotificationEntity(
         @Column(name = "user_id", nullable = false)
         val userId: Long,
 
+        @Column(name = "from_id", nullable = false)
+        val fromId: Long,
+
         @Column(name = "content_type", nullable = false)
         var type: Long,
 
