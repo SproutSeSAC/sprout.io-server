@@ -31,4 +31,11 @@ class SseService (
         notificationService.saveNotification(clientID, message)
         subscribers[clientID]?.sink?.tryEmitNext(message)?.orThrow()
     }
+
+    @Scheduled(fixedRate = 30000) // 30초
+    fun sendKeepAliveMessages() {
+        subscribers.forEach { (it, subscriber) ->
+            subscriber.sink.tryEmitNext("check").orThrow()
+        }
+    }
 }
