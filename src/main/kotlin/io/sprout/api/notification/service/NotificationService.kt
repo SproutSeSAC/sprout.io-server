@@ -21,15 +21,17 @@ class NotificationService(
     }
 
     @Transactional
-    fun saveNotification(userId: Long, content: String): NotificationEntity {
+    fun saveNotification(userId: Long, fromId: Long, content: String): NotificationEntity {
         val notification = NotificationEntity(
                 userId = userId,
+                fromId = fromId,
                 type = content.split(',')[0].toLong(),
                 content = content.split(',')[1]
         )
 
         val notification_log = NotificationLogEntity(
             userId = notification.userId,
+            fromId = notification.fromId,
             type = notification.type,
             content = notification.content
         )

@@ -28,7 +28,7 @@ class SseService (
 
     // 메시지 발행 메서드
     fun publish(publishID: Long, clientID: Long, message: String) {
-        notificationService.saveNotification(clientID, message)
+        notificationService.saveNotification(clientID, publishID, message)
         subscribers[clientID]?.sink?.tryEmitNext(message)?.orThrow()
     }
 
