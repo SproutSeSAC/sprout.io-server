@@ -48,9 +48,11 @@ server:
 
 cors:
   allowed-origins:
-    - http://localhost:8080/api
-    - http://localhost:3000/api
-    - http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api
+    - http://localhost:8080
+    - http://localhost:3000
+    - http://dev-sprout.duckdns.org
+    - http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com
+    - https://dev-sprout.duckdns.org
 
 url:
   redirect-url:  http://localhost:8080/api/login/success
