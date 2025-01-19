@@ -12,56 +12,23 @@ import java.util.concurrent.ConcurrentHashMap
 class SseService (
         private val notificationService: NotificationService
 ) {
-    private val subscribers = ConcurrentHashMap<String, ConcurrentHashMap<Long, SubscriberDto>>()
+    private val subscribers = ConcurrentHashMap<Long, SubscriberDto>()
 
-    fun subscribe(topic: String, userId: Long): Sinks.Many<String> {
+    // 구독 추가
+    fun subscribe(clientID: Long): Sinks.Many<String> {
         val sink = Sinks.many().multicast().onBackpressureBuffer<String>()
-        subscribers.computeIfAbsent(topic) { ConcurrentHashMap() }[userId] = SubscriberDto(sink, true)
+        subscribers[clientID] = SubscriberDto(sink, true)
         return sink
     }
 
-    fun unsubscribe(topic: String, userId: Long) {
-        subscribers[topic]?.let { topicSubscribers ->
-            topicSubscribers.remove(userId)
-            if (topicSubscribers.isEmpty()) {
-                subscribers.remove(topic)
-            }
-        }
+    // 구독 해제
+    fun unsubscribe(clientID: Long) {
+        subscribers.remove(clientID)
     }
 
-    fun publish(topic: String, message: String) {
-        // `topic`을 userId로 간주합니다.
-        val userId = topic.toLongOrNull()
-                ?: throw IllegalArgumentException("토픽 미입력")
-
-        notificationService.saveNotification(
-                userId = userId,
-                content = message,
-        )
-        subscribers[topic]?.values?.forEach { subscriber ->
-            subscriber.sink.tryEmitNext(message).orThrow()
-        }
-    }
-
-    fun healthCheck(topic: String, userId: Long) {
-        subscribers[topic]?.get(userId)?.let {
-            it.isAlive = true
-        }
-    }
-
-    @Scheduled(fixedRate = 10000)
-    fun removeExpiredSubscribers() {
-        subscribers.entries.removeIf { (topic, topicSubscribers) ->
-            topicSubscribers.entries.removeIf { (userId, subscriber) ->
-                if (!subscriber.isAlive) {
-                    println("만료 : $topic - $userId")
-                    true
-                } else {
-                    subscriber.isAlive = false
-                    false
-                }
-            }
-            topicSubscribers.isEmpty()
-        }
+    // 메시지 발행 메서드
+    fun publish(publishID: Long, clientID: Long, message: String) {
+        notificationService.saveNotification(clientID, message)
+        subscribers[clientID]?.sink?.tryEmitNext(message)?.orThrow()
     }
 }
