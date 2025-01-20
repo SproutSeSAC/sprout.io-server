@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ScrapedStoreRepository: JpaRepository<ScrapedStoreEntity, Long> {
     fun findByUserAndStore(user: UserEntity, store: StoreEntity): ScrapedStoreEntity?
+    fun findByUserIdAndStoreId(userId: Long, storeId: Long): ScrapedStoreEntity?
 }

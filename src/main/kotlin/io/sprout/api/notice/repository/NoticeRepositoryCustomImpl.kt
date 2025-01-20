@@ -1,161 +1,214 @@
 package io.sprout.api.notice.repository
 
-import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy.groupBy
 import com.querydsl.core.group.GroupBy.list
+import com.querydsl.core.types.Order
+import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.Projections
+import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
-import io.sprout.api.notice.model.dto.NoticeFilterRequest
-import io.sprout.api.notice.model.dto.NoticeResponseDto
-import io.sprout.api.notice.model.dto.NoticeUrlInfo
-import io.sprout.api.notice.model.entities.QNoticeEntity
-import io.sprout.api.notice.model.entities.QNoticeEntity.noticeEntity
-import io.sprout.api.notice.model.entities.QScrapedNoticeEntity.scrapedNoticeEntity
-import io.sprout.api.user.model.entities.QUserEntity.userEntity
-import org.springframework.data.domain.PageRequest
+import io.sprout.api.course.model.entities.QCourseEntity
+import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
+import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
+import io.sprout.api.notice.model.dto.NoticeSearchDto
+import io.sprout.api.notice.model.entities.*
+import io.sprout.api.user.model.entities.QUserCourseEntity
+import io.sprout.api.user.model.entities.QUserEntity
+import io.sprout.api.user.model.entities.RoleType
 
 class NoticeRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory
 ) : NoticeRepositoryCustom {
+    val notice = QNoticeEntity.noticeEntity
+    val noticeSession = QNoticeSessionEntity.noticeSessionEntity
+    val noticeParticipant = QNoticeParticipantEntity.noticeParticipantEntity
+    val targetCourse = QNoticeTargetCourseEntity.noticeTargetCourseEntity
+    val scrapedNotice = QScrapedNoticeEntity.scrapedNoticeEntity
+    val userCourse = QUserCourseEntity.userCourseEntity
+    val course = QCourseEntity.courseEntity
+    val user = QUserEntity.userEntity
 
-    override fun filterNotices(filterRequest: NoticeFilterRequest, userId: Long): Pair<List<NoticeResponseDto>, Long> {
-        // BooleanBuilder로 필터 조건 생성
-        val builder = createFilterBuilder(filterRequest, userId)
-
-        // 정렬 조건 설정
-        val orderSpecifier = getOrderSpecifier(filterRequest.sort, noticeEntity)
-
-        // 1. 부모 공지사항만 페이징하여 조회 (부모 ID가 null인 것들)
-        val pageable = PageRequest.of(filterRequest.page - 1, filterRequest.size)
-        val parentNotices = queryFactory
-            .from(noticeEntity)
-            .leftJoin(noticeEntity.writer, userEntity)
-            .leftJoin(scrapedNoticeEntity)
-            .on(
-                scrapedNoticeEntity.notice.id.eq(noticeEntity.id)
-                    .and(scrapedNoticeEntity.user.id.eq(userId))
-            )
-            .where(builder.and(noticeEntity.parentId.isNull)) // 부모 ID가 null인 공지사항만 필터링
-            .orderBy(orderSpecifier)
-            .offset(pageable.offset)
-            .limit(pageable.pageSize.toLong())
-            .transform(
-                groupBy(noticeEntity.id).list(
-                    Projections.constructor(
-                        NoticeResponseDto::class.java,
-                        noticeEntity.id,
-                        noticeEntity.title,
-                        noticeEntity.content,
-                        userEntity.nickname, // 작성자 이름
-                        userEntity.profileImageUrl, // 작성자 프로필 이미지 URL
-                        noticeEntity.startDate,
-                        noticeEntity.endDate,
-                        noticeEntity.status,
-                        noticeEntity.noticeType,
-                        noticeEntity.createdAt,
-                        noticeEntity.updatedAt,
-                        noticeEntity.participantCapacity,
-                        noticeEntity.viewCount,
-                        scrapedNoticeEntity.id.isNotNull, // 스크랩 여부를 Boolean 타입으로 변환
-                        noticeEntity.parentId, // parentId 포함
-                        list(
-                            Projections.constructor(
-                                NoticeUrlInfo::class.java,
-                                noticeEntity.url,
-                                noticeEntity.startDate,
-                                noticeEntity.endDate,
-                                noticeEntity.subtitle,
-                                noticeEntity.parentId
-                            )
+    /**
+     * 공지사항 ID에 해당하는 세션 정보, 세션 참가자수, 자신의 참가정보를 반환한다.
+     *
+     * @param noticeId 공지사항 ID
+     * @param userId 회원 ID
+     */
+    override fun findByIdWithSession(noticeId: Long, userId: Long): List<NoticeDetailResponseDto.Session> {
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    NoticeDetailResponseDto.Session::class.java,
+                    noticeSession.id,
+                    noticeSession.eventStartDateTime,
+                    noticeSession.eventEndDateTime,
+                    JPAExpressions
+                        .select(noticeParticipant.id.count())
+                        .from(noticeParticipant)
+                        .where(
+                            noticeParticipant.noticeSession.id.eq(noticeSession.id),
+                            noticeParticipant.status.eq(ParticipantStatus.PARTICIPANT)
+                        ),
+                    JPAExpressions
+                        .select(noticeParticipant.status)
+                        .from(noticeParticipant)
+                        .where(
+                            noticeParticipant.noticeSession.id.eq(noticeSession.id),
+                            noticeParticipant.user.id.eq(userId)
                         )
+                    )
+            )
+            .from(noticeSession)
+            .leftJoin(noticeSession.noticeParticipants, noticeParticipant)
+                .on(noticeParticipant.noticeSession.id.eq(noticeSession.id))
+            .where(noticeSession.notice.id.eq(noticeId))
+            .groupBy(noticeSession.id)
+            .fetch()
+    }
+
+    /**
+     * 공지사항 검색
+     *
+     * @param searchRequest 공지사항 검색 파라미터
+     */
+    override fun search(searchRequest: NoticeSearchRequestDto, userId: Long): MutableList<NoticeSearchDto> {
+        val myCourseIds: List<Long> = queryFactory
+            .select(userCourse.course.id)
+            .from(userCourse)
+            .where(userCourse.user.id.eq(userId))
+            .fetch()
+
+        val ids = getSearchedIds(userId, myCourseIds, searchRequest)
+
+        val result = getNoticeDetail(userId, ids)
+
+        return result
+    }
+
+    private fun getNoticeDetail(
+        userId: Long,
+        ids: MutableList<Long>?
+    ): MutableList<NoticeSearchDto> {
+        val result = queryFactory
+            .select(notice.id)
+            .from(notice)
+            .leftJoin(notice.user, user)
+            .leftJoin(notice.targetCourses, targetCourse)
+            .leftJoin(targetCourse.course, course)
+            .leftJoin(scrapedNotice)
+            .on(
+                scrapedNotice.notice.id.eq(notice.id)
+                    .and(scrapedNotice.user.id.eq(userId))
+            )
+            .where(notice.id.`in`(ids))
+            .orderBy(OrderSpecifier(Order.DESC, notice.createdAt))
+            .transform(
+                groupBy(notice.id).list(
+                    Projections.constructor(
+                        NoticeSearchDto::class.java,
+                        notice.id,
+                        user.id,
+                        user.name,
+                        user.role,
+                        notice.title,
+                        notice.content.substring(0, 150),
+                        notice.content.length().gt(150),
+                        notice.viewCount,
+                        notice.noticeType,
+                        notice.createdAt,
+                        notice.updatedAt,
+                        JPAExpressions
+                            .selectOne()
+                            .from(scrapedNotice)
+                            .where(
+                                scrapedNotice.notice.id.eq(notice.id),
+                                scrapedNotice.user.id.eq(userId)
+                            ).exists(),
+                        list(course.title)
                     )
                 )
             )
-        val parentIds = parentNotices.map { it.id }
-        val children = queryFactory
-            .select(
-                Projections.constructor(
-                    NoticeUrlInfo::class.java,
-                    noticeEntity.url,
-                    noticeEntity.startDate,
-                    noticeEntity.endDate,
-                    noticeEntity.subtitle,
-                    noticeEntity.parentId
-                )
-            )
-            .from(noticeEntity)
-            .where(noticeEntity.parentId.`in`(parentIds))
-            .orderBy(noticeEntity.id.asc())
-            .fetch()
 
-        parentNotices.forEach { parent ->
-            val matchingChildren = children.filter { it.parentId == parent.id }
-            parent.children.addAll(matchingChildren)
-        }
-
-
-
-
-        // 3. 전체 공지사항 수 계산 (필터링된 부모 공지사항의 총 개수)
-        val totalCount = fetchTotalCount(builder, userId, filterRequest)
-
-        // 결과를 Pair로 반환 (부모 공지사항 리스트, 전체 카운트)
-        return Pair(parentNotices, totalCount)
+        return result
     }
 
-    // 필터 조건을 생성하는 메서드
-    private fun createFilterBuilder(
-        filterRequest: NoticeFilterRequest,
-        userId: Long
-    ): BooleanBuilder {
-        val builder = BooleanBuilder()
-
-        // 키워드 필터링 조건 추가
-        filterRequest.keyword?.let {
-            builder.and(noticeEntity.title.containsIgnoreCase(it).or(noticeEntity.content.containsIgnoreCase(it)))
-        }
-
-        // 공지 유형 필터링 조건 추가
-        filterRequest.noticeType?.let {
-            builder.and(noticeEntity.noticeType.eq(it))
-        }
-
-        // 스크랩 여부 필터링 조건 추가
-        if (filterRequest.onlyScraped) {
-            builder.and(scrapedNoticeEntity.user.id.eq(userId))
-        }
-
-        return builder
-    }
-
-    // 정렬 조건을 설정하는 메서드
-    private fun getOrderSpecifier(sort: String, notice: QNoticeEntity) =
-        when (sort) {
-            "popular" -> notice.viewCount.desc() // 인기순 정렬
-            else -> notice.createdAt.desc() // 최신순 정렬 (기본값)
-        }
-
-    // 전체 공지사항 수를 계산하는 메서드
-    private fun fetchTotalCount(
-        builder: BooleanBuilder,
+    private fun getSearchedIds(
         userId: Long,
-        filterRequest: NoticeFilterRequest
-    ): Long {
-        val noticeEntity = noticeEntity
-        val scrapedNoticeEntity = scrapedNoticeEntity
+        myCourseIds: List<Long>,
+        searchRequest: NoticeSearchRequestDto
+    ): MutableList<Long>? {
+        val ids = queryFactory
+            .select(notice.id)
+            .from(notice)
+            .leftJoin(notice.user, user)
+            .leftJoin(notice.targetCourses, targetCourse)
+            .leftJoin(targetCourse.course, course)
+            .leftJoin(scrapedNotice)
+            .on(
+                scrapedNotice.notice.id.eq(notice.id)
+                    .and(scrapedNotice.user.id.eq(userId))
+            )
+            .where(
+                isInCourse(myCourseIds),
+                containKeyword(searchRequest.keyword),
+                isWriterRoleType(searchRequest.roleType),
+                isNoticeType(searchRequest.noticeType),
+                isOnlyScraped(searchRequest.onlyScraped, userId)
+            )
+            .groupBy(notice.id)
+            .orderBy(OrderSpecifier(Order.DESC, notice.createdAt))
+            .limit(searchRequest.size.toLong() + 1)
+            .offset(searchRequest.offset.toLong())
+            .fetch()
+        return ids
+    }
 
-        // 기본 쿼리: 필터링된 공지사항의 개수 조회
-        val query = queryFactory
-            .select(noticeEntity.count())
-            .from(noticeEntity)
+    private fun isInCourse(myCoursesIds: List<Long>): BooleanExpression? {
+        return course.id.`in`(myCoursesIds)
+    }
 
-        // 스크랩 필터링이 있는 경우에만 스크랩 테이블과 조인
-        if (filterRequest.onlyScraped) {
-            query.leftJoin(scrapedNoticeEntity).on(scrapedNoticeEntity.notice.id.eq(noticeEntity.id))
+    private fun containKeyword(keyword: String?): BooleanExpression? {
+        if (keyword == null) {
+            return null
         }
 
-        return query
-            .where(builder)
-            .fetchOne() ?: 0L // 결과가 null인 경우 0으로 반환
+        return notice.title.contains(keyword)
+            .or(notice.content.contains(keyword))
     }
+
+
+    private fun isWriterRoleType(roleType: RoleType?): BooleanExpression? {
+        if (roleType == null) {
+            return null
+        }
+
+        return user.role.eq(roleType)
+    }
+
+    private fun isOnlyScraped(onlyScraped: Boolean?, memberId: Long): BooleanExpression? {
+        if (onlyScraped== null || ! onlyScraped) {
+            return null
+        }
+
+        return scrapedNotice.user.id.`in`(memberId)
+    }
+
+    private fun isNoticeType(noticeType: NoticeType?): BooleanExpression? {
+        if (noticeType == null) {
+            return null
+        }
+
+        return notice.noticeType.eq(noticeType)
+    }
+
+
+
 }
+
+
+
+
+
+
+

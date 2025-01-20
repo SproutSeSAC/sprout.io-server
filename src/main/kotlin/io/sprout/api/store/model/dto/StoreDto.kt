@@ -142,6 +142,9 @@ class StoreDto {
         @Schema(description = "5인 이상 가능 여부")
         val isOverPerson: Boolean,
 
+        @Schema(description = "자신이 좋아요 했는지 여부")
+        val isScraped: Boolean,
+
         @Schema(description = "메뉴 리스트")
         val storeMenuList: MutableSet<StoreMenuDetail> = LinkedHashSet(),
 

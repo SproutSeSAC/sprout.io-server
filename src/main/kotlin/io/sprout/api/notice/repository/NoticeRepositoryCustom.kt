@@ -1,8 +1,11 @@
 package io.sprout.api.notice.repository
 
-import io.sprout.api.notice.model.dto.NoticeFilterRequest
-import io.sprout.api.notice.model.dto.NoticeResponseDto
+import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
+import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
+import io.sprout.api.notice.model.dto.NoticeSearchDto
 
 interface NoticeRepositoryCustom {
-    fun filterNotices(filterRequest: NoticeFilterRequest, userId: Long): Pair<List<NoticeResponseDto>, Long>
+
+    fun findByIdWithSession(noticeId: Long, userId: Long): List<NoticeDetailResponseDto.Session>
+    fun search(searchRequest: NoticeSearchRequestDto, userId: Long): MutableList<NoticeSearchDto>
 }

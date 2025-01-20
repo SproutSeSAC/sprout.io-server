@@ -4,20 +4,33 @@ import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
 
+/**
+ * 공지사항 세션 참여자
+ * (참가 / 대기) 상태 존재
+ */
 @Entity
 @Table(name = "notice_participant")
 class NoticeParticipantEntity (
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    val id : Long ,
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
+
+    @Enumerated(EnumType.STRING)
+    var status: ParticipantStatus,
+
+    var phoneNumber: String?,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    val user : UserEntity ,
+    val user : UserEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "notice_id", nullable = false)
-    val notice : NoticeEntity
+    @JoinColumn(name = "notice_session_id", nullable = false)
+    val noticeSession : NoticeSessionEntity
 ):BaseEntity()
 
+enum class ParticipantStatus{
+    WAIT,
+    PARTICIPANT,
+    REJECT
+}
 

@@ -70,10 +70,18 @@ dependencies {
 	// swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
+	// AWS
+	implementation(platform("software.amazon.awssdk:bom:2.20.158"))
+	implementation("software.amazon.awssdk:s3")
+	implementation("software.amazon.awssdk:auth")
+
 	// queryDsl
 	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")  // QueryDSL JPA 지원
 	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")  // Annotation Processor
 	kapt("jakarta.persistence:jakarta.persistence-api")  // JPA API
+
+	// jsoup
+	implementation("org.jsoup:jsoup:1.14.3")
 
 	// test code 관련
 	testImplementation("org.springframework.boot:spring-boot-starter-test")

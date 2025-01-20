@@ -8,8 +8,10 @@ import io.sprout.api.position.model.entities.PositionEntity
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
 import io.sprout.api.project.repository.*
+import io.sprout.api.specification.model.entities.jobEntityOf
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
@@ -137,17 +139,20 @@ class ProjectServiceImpl(
             val projectEntity = projectRepository.findById(projectId)
                 .orElseThrow { IllegalArgumentException("Project not found") }
             projectEntity.updateFromDto(projectRecruitmentRequestDTO)
-            val savedProjectEntity = projectRepository.save(projectEntity)
 
-            projectRecruitmentRequestDTO.positions.forEach {
-                projectPositionRepository.deleteById(it)
+            projectEntity.positions.forEach {
+                projectPositionRepository.delete(it)
             }
+            projectEntity.positions = mutableSetOf()
 
-            projectRecruitmentRequestDTO.requiredStacks.forEach {
-                projectTechStackRepository.deleteById(it)
+            projectEntity.techStacks.forEach {
+                projectTechStackRepository.deleteById(it.id)
             }
-            saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
-            saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
+            projectEntity.techStacks = mutableSetOf()
+
+
+            saveProjectPositions(projectEntity, projectRecruitmentRequestDTO.positions)
+            saveProjectTechStacks(projectEntity, projectRecruitmentRequestDTO.requiredStacks)
             true
         }
     }
@@ -159,8 +164,7 @@ class ProjectServiceImpl(
 
     private fun saveProjectPositions(savedProjectEntity: ProjectEntity, positions: List<Long>) {
         positions.forEach {
-            val selectedPosition = PositionEntity(it)
-            val projectPositionEntity = ProjectPositionEntity(savedProjectEntity, selectedPosition)
+            val projectPositionEntity = ProjectPositionEntity(savedProjectEntity, jobEntityOf(it))
             projectPositionRepository.save(projectPositionEntity)
         }
     }
@@ -173,5 +177,18 @@ class ProjectServiceImpl(
         }
     }
 
+    @Transactional
+    override fun postProjectAndGetId(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Long {
+        val projectEntity = projectRecruitmentRequestDTO.toEntity(securityManager.getAuthenticatedUserName())
+        val savedProjectEntity = projectRepository.save(projectEntity)
+        saveProjectPositions(savedProjectEntity, projectRecruitmentRequestDTO.positions)
+        saveProjectTechStacks(savedProjectEntity, projectRecruitmentRequestDTO.requiredStacks)
+        return savedProjectEntity.id
+    }
 
+    override fun getProjectTitleById(linkedId: Long): String {
+        val project = projectRepository.findById(linkedId)
+                .orElseThrow { EntityNotFoundException("프로젝트를 찾을 수 없습니다. ID: $linkedId") }
+        return project.title ?: "No Title"
+    }
 }

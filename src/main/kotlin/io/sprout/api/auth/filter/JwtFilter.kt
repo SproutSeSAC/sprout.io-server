@@ -1,12 +1,16 @@
 package io.sprout.api.auth.filter
 
+import com.nimbusds.common.contenttype.ContentType
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.service.TokenValidatorService
+import io.sprout.api.config.exception.ExceptionCode
+import io.sprout.api.config.exception.ExceptionCode.*
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.aspectj.weaver.tools.cache.SimpleCacheFactory.path
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
@@ -49,14 +53,16 @@ class JwtFilter(
 //            "/api/store/list",
 //            "/api/store/**",
 //            "/api/user/check",
+            "/api/user/nickname/duplicate", // 닉네임 중복 확인 - 필수회원이 아니면 304 에러 발생
+
             "/api/store/filterCount",
             "/api/course/list/**",
             "/api/campus/list",
             "/api/specifications/**",
             "/api/user/register",
             "/api/user/verification/**",
-            "/api/sse/**",
-            "/api/notifications/admin"
+            "/api/notifications/admin",
+            "/api/aws/**",
         )
         val path = request.requestURI
         logger.info ( "Request Path: $path" )
@@ -81,20 +87,33 @@ class JwtFilter(
         val refreshJws = request.getAttribute("refreshJws") as String?
         logger.info("accessJws: $accessJws")
         logger.info("refreshJws: $refreshJws")
+
         /**
          *  토큰 header 없을시 404
          */
-        if (tokenValidatorService.isNotExistToken(accessJws, refreshJws, response)) return
+        if (tokenValidatorService.isNotExistToken(accessJws, refreshJws, response)) {
+            writeBody(NOT_EXIST_TOKEN, response)
+            return
+        }
         logger.debug { "accessToken: $accessJws" }
+
         /**
          ** 토큰 만료시 401 refresh 로 다시 요망
          */
-        if (tokenValidatorService.isInvalidAccessToken(accessJws, response)) return
+        if (tokenValidatorService.isInvalidAccessToken(accessJws, response)) {
+            writeBody(INVALID_TOKEN, response)
+            return
+        }
+
         /**
          *  필수정부 입력회원 아닐시 304호출
          *  필수정보 입력하는 경우에는 해당 필터 적용 안된도록 수정하겠음 ()
          */
-        if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) return
+        if (tokenValidatorService.isNotEssentialUserToken(accessJws!!, response)) {
+            writeBody(NOT_ESSENTIAL_USER, response)
+            return
+        }
+
         securityManager.setUpSecurityContext(accessJws, request)
         filterChain.doFilter(request, response)
     }
@@ -116,5 +135,12 @@ class JwtFilter(
 
         request.setAttribute("accessJws", accessJws)
         request.setAttribute("refreshJws", refreshJws)
+    }
+
+    private fun writeBody(exceptionCode: ExceptionCode, response: HttpServletResponse) {
+        response.status = exceptionCode.httpStatus.value()
+        response.contentType = ContentType.APPLICATION_JSON.toString()
+
+        response.writer.write("{\"message\": \"${exceptionCode.message}\"}")
     }
 }

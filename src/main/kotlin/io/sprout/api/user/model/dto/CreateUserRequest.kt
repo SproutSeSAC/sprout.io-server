@@ -9,6 +9,9 @@ data class CreateUserRequest(
     @Schema(description = "코스 ID 리스트")
     val courseIdList: MutableSet<Long> = mutableSetOf(),
 
+    @Schema(description = "캠퍼스 ID 리스트")
+    val campusIdList: MutableSet<Long> = mutableSetOf(),
+
     @Schema(description = "유저 명", nullable = false)
     @field:NotNull val name: String,
 
