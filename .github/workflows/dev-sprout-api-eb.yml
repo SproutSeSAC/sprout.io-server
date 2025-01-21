@@ -1,6 +1,6 @@
 # This is a basic workflow that is manually triggered
 
-name: Java CI with Gradle
+name: Deploy 🚀
 
 on:
   push:
@@ -23,10 +23,7 @@ jobs:
           distribution: 'temurin'
 
       # 3. Gradle 빌드
-      - name: chmod to make gradlew ex
-        run: chmod +x ./gradlew
-
-      - name: Build Gradle
+      - name: Build Project with Gradle
         run: ./gradlew clean build
 
       # 4. 도커파일 생성... 차후 레포 내 파일로 변경
@@ -35,18 +32,46 @@ jobs:
           echo "FROM amazoncorretto:17-alpine" > Dockerfile
           echo "COPY build/libs/api-0.0.1-SNAPSHOT.jar /app.jar" >> Dockerfile
           echo "ENTRYPOINT [\"java\", \"-jar\", \"/app.jar\"]" >> Dockerfile
-          cat Dockerfile
 
-      # 5. ECR 로그인
-      - name: Login ECR
+      # 5. AWS CLI 설치
+      - name: Install AWS CLI and Fetch EC2 IP
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          
+          INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Dev-sprout-api-env" "Name=instance-state-name,Values=running" \
+            --query "Reservations[0].Instances[0].PublicIpAddress" \
+            --output text)
+          echo "EC2_PUBLIC_IP=${INSTANCE_PUBLIC_IP}" >> $GITHUB_ENV
 
-      # 6. 도커 이미지 빌드 및 push
-      - name: Build Docker image
+      # 6. EC2
+      - name: Deploy 🚀🚀🚀
+        env:
+          EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          docker build -t 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest .
-          docker push 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+          ssh -o StrictHostKeyChecking=no -i /path/to/ssh_key.pem ec2-user@${EC2_PUBLIC_IP} << 'EOF'
+          
+          if docker ps | grep -q "spring-boot-container"; then
+            echo "Stopping existing container..."
+            docker stop spring-boot-container
+            docker rm spring-boot-container
+          fi
+         
+          if docker images | grep -q "spring-boot-app"; then
+            echo "Removing existing image..."
+            docker rmi spring-boot-app:latest
+          fi
+
+          echo "Building new Docker image..."
+          docker build -t spring-boot-app:latest /home/ec2-user/
+          
+          echo "Running new container..."
+          docker run -d --name spring-boot-container -p 8080:8080 spring-boot-app:latest
+          EOF
