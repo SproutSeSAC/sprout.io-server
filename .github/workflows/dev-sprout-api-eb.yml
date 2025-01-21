@@ -3,62 +3,47 @@
 name: Java CI with Gradle
 
 on:
-    push:
-        branches:
-            - dev
+  push:
+    branches:
+      - dev
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: git clone
-              uses: actions/checkout@v2
-              with:
-                  ref: 'dev'
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Git Clone
+      - name: Checkout
+        uses: actions/checkout@v2
 
-            - name: Set up JDK 17
-              uses: actions/setup-java@v2
-              with:
-                  java-version: '17'
-                  distribution: 'temurin'
+      # 2. Set up JDK 17
+      - name: Setup JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-            - name: Run chmod to make gradlew executable
-              run: chmod +x ./gradlew
+      # 3. Gradle 빌드
+      - name: chmod to make gradlew ex
+        run: chmod +x ./gradlew
 
-            - name: Build with Gradle
-              run: ./gradlew clean :build
-              shell: bash
+      - name: Build Gradle
+        run: ./gradlew clean build
 
-            - name: Get current time
-              uses: 1466587594/get-current-time@v2
-              id: current-time
-              with:
-                  format: YYYY-MM-DDTHH-mm-ss # 다른 포맷으로 변경 가능(MomentJS format syntax)
-                  utcOffset: "+09:00" # 한국 시간에 맞추기 위함
+      # 4. 도커파일 생성... 차후 레포 내 파일로 변경
+      - name: Create Dockerfile
+        run: |
+          echo "FROM amazoncorretto:17-alpine" > Dockerfile
+          echo "COPY build/libs/api-0.0.1-SNAPSHOT.jar /app.jar" >> Dockerfile
+          echo "ENTRYPOINT [\"java\", \"-jar\", \"/app.jar\"]" >> Dockerfile
+          cat Dockerfile
 
-            - name: dir list
-              run: ls -la build/libs
+      # 5. ECR 로그인
+      - name: Login ECR
+        run: |
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com
 
-            # grandle build를 통해 만들어진 jar를 beanstalk에 배포하기 위한 zip 파일로 만드는 것
-            - name: Generate deployment package
-              run: |
-                  mkdir -p deploy
-                  ls -la
-                  cp build/libs/api-0.0.1-SNAPSHOT.jar deploy/application.jar # 빌드 완료 시 jar 파일명을 application.jar로 변경
-                  cp Procfile deploy/Procfile
-                  cp -r .ebextensions deploy/.ebextensions
-                  cp -r .platform deploy/.platform
-                  cd deploy && zip -r deploy.zip . # Procfile, .ebextensions, .platform 포함하여 zip 생성
-                  ls -la
-
-            - name: Beanstalk Deploy
-              uses: einaregilsson/beanstalk-deploy@v20
-              with:
-                  aws_access_key: ${{ secrets.AWS_EB_ACCESS_KEY_ID }} # github secrets로 등록한 값 사용
-                  aws_secret_key: ${{ secrets.AWS_EB_SECRET_ACCESS_KEY }} # github secrets로 등록한 값 사용
-                  application_name: sprout-api # Elastic Beanstalk application 이름
-                  environment_name: Dev-sprout-api-env # Elastic Beanstalk environment 이름
-                  version_label: Github Action-${{steps.current-time.outputs.formattedTime}} # 배포 버전은 타임스탬프를 이용하여 구분
-                  region: ap-northeast-2
-                  deployment_package: deploy/deploy.zip
-                  wait_for_environment_recovery: 300
+      # 6. 도커 이미지 빌드 및 push
+      - name: Build Docker image
+        run: |
+          docker build -t 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest .
+          docker push 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
