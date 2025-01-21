@@ -34,17 +34,17 @@ jobs:
           echo "ENTRYPOINT [\"java\", \"-jar\", \"/app.jar\"]" >> Dockerfile
 
       # 5. AWS CLI 설치
-      - name: Install AWS CLI and Fetch EC2 IP
+      - name: Install or Update AWS CLI
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
-          sudo ./aws/install
+          sudo ./aws/install --update
           
           INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=Dev-sprout-api-env" "Name=instance-state-name,Values=running" \
+            --filters "Name=tag:Name,Values=Sprout-EC2" "Name=instance-state-name,Values=running" \
             --query "Reservations[0].Instances[0].PublicIpAddress" \
             --output text)
           echo "EC2_PUBLIC_IP=${INSTANCE_PUBLIC_IP}" >> $GITHUB_ENV
