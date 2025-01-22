@@ -30,7 +30,7 @@ jobs:
       - name: Create Dockerfile
         run: |
           echo "FROM amazoncorretto:17-alpine" > Dockerfile
-          echo "COPY build/libs/api-0.0.1-SNAPSHOT.jar /app.jar" >> Dockerfile
+          echo "COPY api-0.0.1-SNAPSHOT.jar /app.jar" >> Dockerfile
           echo "ENTRYPOINT [\"java\", \"-jar\", \"/app.jar\"]" >> Dockerfile
 
       # 5. AWS CLI 설치
@@ -62,8 +62,9 @@ jobs:
         env:
           EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
         run: |
-          scp -o StrictHostKeyChecking=no -i ssh_key.pem Dockerfile ubuntu@${EC2_PUBLIC_IP}:/home/ubuntu/
-          scp -o StrictHostKeyChecking=no -i ssh_key.pem build/libs/api-0.0.1-SNAPSHOT.jar ubuntu@${EC2_PUBLIC_IP}:/home/ubuntu/
+          scp -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${EC2_PUBLIC_IP} "mkdir -p /home/ubuntu/backend"
+          scp -o StrictHostKeyChecking=no -i ssh_key.pem Dockerfile ubuntu@${EC2_PUBLIC_IP}:/home/ubuntu/backend/
+          scp -o StrictHostKeyChecking=no -i ssh_key.pem build/libs/api-0.0.1-SNAPSHOT.jar ubuntu@${EC2_PUBLIC_IP}:/home/ubuntu/backend/
 
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${EC2_PUBLIC_IP} << 'EOF'
           if docker ps | grep -q "spring-boot-container"; then
@@ -78,7 +79,7 @@ jobs:
           fi
 
           echo "Building new Docker image..."
-          docker build -t spring-boot-app:latest /home/ubuntu/
+          docker build -t spring-boot-app:latest /home/ubuntu/backend/
           
           echo "Running new container..."
           docker run -d --name spring-boot-container -p 8080:8080 spring-boot-app:latest
