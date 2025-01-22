@@ -1,4 +1,4 @@
-# This is a basic workflow that is manually triggered
+  # This is a basic workflow that is manually triggered
 
 name: Deploy 🚀
 
@@ -77,6 +77,9 @@ jobs:
           echo "Stopping existing container if running..."
           docker stop sprout-backend || true
           docker rm sprout-backend || true
+
+          echo "ECR Login..."
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com
 
           echo "ECR PULL.."
           docker pull 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
