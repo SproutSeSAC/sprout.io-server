@@ -27,7 +27,7 @@ class OAuth2LoginConfig(private val properties: OAuth2ClientProperties) {
             .clientSecret(googleRegistration.clientSecret)
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .redirectUri("https://dev-sprout.duckdns.org/api/login/oauth2/code/google")
+            .redirectUri(googleRegistration.redirectUri)
             .scope(
                 "openid",
                 "profile",
