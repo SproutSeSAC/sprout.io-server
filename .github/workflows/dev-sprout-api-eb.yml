@@ -72,18 +72,34 @@ jobs:
           
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key.pem
           chmod 600 ssh_key.pem
-          
+
           ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${INSTANCE_PUBLIC_IP} << 'EOF'
-          echo "Stopping existing container if running..."
-          docker stop sprout-backend || true
-          docker rm sprout-backend || true
+            echo "Stopping existing container if running..."
+            docker stop sprout-backend || true
+            docker rm sprout-backend || true
 
-          echo "ECR Login..."
-          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com
+            echo "Installing AWS CLI..."
+            if ! command -v aws &> /dev/null
+            then
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+            fi
 
-          echo "ECR PULL.."
-          docker pull 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+            echo "Configuring AWS cert"
+            mkdir -p ~/.aws
+            echo "[default]" > ~/.aws/credentials
+            echo "aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
+            echo "aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
+            echo "[default]" > ~/.aws/config
+            echo "region = ap-northeast-2" >> ~/.aws/config
 
-          echo "Running new container..."
-          docker run -d --name sprout-backend -p 8080:8080 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+            echo "Login ECR"
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com
+
+            echo "pull ECR"
+            docker pull 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+
+            echo "Running new container..."
+            docker run -d --name sprout-backend -p 8080:8080 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
           EOF
