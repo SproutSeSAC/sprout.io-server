@@ -24,63 +24,54 @@ jobs:
 
       # 3. Gradle 빌드
       - name: Build Project with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew clean build --parallel
 
-      # 4. 도커파일 생성... 차후 레포 내 파일로 변경
-      - name: Create Dockerfile
+      # 4. AWS CLI 설치 (GitHub Hosted Runner에는 AWS CLI가 기본 설치됨, 필요 시 확인)
+      - name: Verify AWS CLI
+        run: aws --version
+
+      # 5. 로그인 ECR
+      - name: Login ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          echo "FROM amazoncorretto:17-alpine" > Dockerfile
-          echo "COPY api-0.0.1-SNAPSHOT.jar /app.jar" >> Dockerfile
-          echo "ENTRYPOINT [\"java\", \"-jar\", \"/app.jar\"]" >> Dockerfile
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com
 
-      # 5. AWS CLI 설치
-      - name: Install or Update AWS CLI
+      # 6. Docker 이미지 생성 및 ECR에 푸시
+      - name: Build and Push Docker Image to ECR
+        run: |
+          echo "Building Docker image"
+          docker build -t back-image:latest .
+          docker tag back-image:latest 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+          echo "Pushing Docker image to ECR"
+          docker push 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+
+      # 7. EC2에서 Docker 이미지 실행
+      - name: Deploy to EC2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
         run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
-          
           INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances \
             --filters "Name=tag:Name,Values=Sprout-EC2" "Name=instance-state-name,Values=running" \
             --query "Reservations[0].Instances[0].PublicIpAddress" \
             --output text \
             --region ap-northeast-2)
           echo "EC2_PUBLIC_IP=${INSTANCE_PUBLIC_IP}" >> $GITHUB_ENV
-
-      # 6. SSH 키 설정
-      - name: Configure SSH Key
-        run: |
+          
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key.pem
           chmod 600 ssh_key.pem
-
-      # 6. EC2
-      - name: Deploy 🚀🚀🚀
-        env:
-          EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${EC2_PUBLIC_IP} "mkdir -p /home/ubuntu/backend"
-          scp -o StrictHostKeyChecking=no -i ssh_key.pem Dockerfile ubuntu@${EC2_PUBLIC_IP}:/home/ubuntu/backend/
-          scp -o StrictHostKeyChecking=no -i ssh_key.pem build/libs/api-0.0.1-SNAPSHOT.jar ubuntu@${EC2_PUBLIC_IP}:/home/ubuntu/backend/
-
-          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${EC2_PUBLIC_IP} << 'EOF'
-          if docker ps | grep -q "spring-boot-container"; then
-            echo "Stopping existing container..."
-            docker stop spring-boot-container
-            docker rm spring-boot-container
-          fi
-
-          if docker images | grep -q "spring-boot-app"; then
-            echo "Removing existing image..."
-            docker rmi spring-boot-app:latest
-          fi
-
-          echo "Building new Docker image..."
-          docker build -t spring-boot-app:latest /home/ubuntu/backend/
           
+          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.EC2_PUBLIC_IP }} << 'EOF'
+          echo "Stopping existing container if running..."
+          docker stop sprout-backend || true
+          docker rm sprout-backend || true
+
+          echo "ECR PULL.."
+          docker pull 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+
           echo "Running new container..."
-          docker run -d --name spring-boot-container -p 8080:8080 spring-boot-app:latest
+          docker run -d --name sprout-backend -p 8080:8080 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
           EOF
