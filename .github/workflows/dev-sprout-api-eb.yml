@@ -73,7 +73,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key.pem
           chmod 600 ssh_key.pem
           
-          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.EC2_PUBLIC_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${INSTANCE_PUBLIC_IP} << 'EOF'
           echo "Stopping existing container if running..."
           docker stop sprout-backend || true
           docker rm sprout-backend || true
