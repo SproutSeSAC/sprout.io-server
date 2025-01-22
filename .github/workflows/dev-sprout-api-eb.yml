@@ -67,6 +67,7 @@ jobs:
             --query "Reservations[0].Instances[0].PublicIpAddress" \
             --output text \
             --region ap-northeast-2)
+          echo "Get Public IP: ${INSTANCE_PUBLIC_IP}"
           echo "EC2_PUBLIC_IP=${INSTANCE_PUBLIC_IP}" >> $GITHUB_ENV
           
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key.pem
