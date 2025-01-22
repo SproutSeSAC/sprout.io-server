@@ -25,6 +25,7 @@ class CustomAuthenticationFailureHandler(
         response: HttpServletResponse,
         exception: AuthenticationException
     ) {
+        log.error("{}", exception)
         log.error("Authentication failed: {}", exception.message)
 
         // 실패 후 리다이렉트할 URL 설정
