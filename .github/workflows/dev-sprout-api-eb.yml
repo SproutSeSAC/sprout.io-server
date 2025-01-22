@@ -32,7 +32,7 @@ jobs:
           echo "FROM amazoncorretto:17-alpine" > Dockerfile
           echo "WORKDIR /app" >> Dockerfile
           echo "COPY build/libs/*.jar app.jar" >> Dockerfile
-          echo "ENTRYPOINT [\"java\", \"-jar\", \"/app/app.jar\"]" >> Dockerfile
+          echo "ENTRYPOINT [\"java\", \"-jar\", \"/app/app.jar\", \"--spring.profiles.active=dev\"]" >> Dockerfile
 
       # 4. AWS CLI 설치 (GitHub Hosted Runner에는 AWS CLI가 기본 설치됨, 필요 시 확인)
       - name: Verify AWS CLI
