@@ -26,7 +26,7 @@ class SecurityConfig(
     fun filterChain(http: HttpSecurity, jwtFilter: JwtFilter): SecurityFilterChain {
 
         http.csrf { it.disable() }
-        http.cors { it.disable() }
+        http.cors()
         http.formLogin { it.disable() }
         http.authorizeHttpRequests {
             it.requestMatchers(*whiteList).permitAll()
