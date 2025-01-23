@@ -39,6 +39,10 @@ server:
       charset: UTF-8
     session:
       timeout: 1800
+      cookie:
+        path: /
+        same-site: none
+        secure: true
   port: 8080
 
 cors:
