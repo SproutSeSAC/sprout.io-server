@@ -1,64 +1,105 @@
-# This is a basic workflow that is manually triggered
+  # This is a basic workflow that is manually triggered
 
-name: Java CI with Gradle
+name: Deploy 🚀
 
 on:
-    push:
-        branches:
-            - dev
+  push:
+    branches:
+      - dev
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: git clone
-              uses: actions/checkout@v2
-              with:
-                  ref: 'dev'
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Git Clone
+      - name: Checkout
+        uses: actions/checkout@v2
 
-            - name: Set up JDK 17
-              uses: actions/setup-java@v2
-              with:
-                  java-version: '17'
-                  distribution: 'temurin'
+      # 2. Set up JDK 17
+      - name: Setup JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-            - name: Run chmod to make gradlew executable
-              run: chmod +x ./gradlew
+      # 3. 빌드
+      - name: Build Project with Gradle
+        run: ./gradlew clean build --parallel
 
-            - name: Build with Gradle
-              run: ./gradlew clean :build
-              shell: bash
+      # 도커파일 생성
+      - name: Create Dockerfile
+        run: |
+          echo "FROM amazoncorretto:17-alpine" > Dockerfile
+          echo "WORKDIR /app" >> Dockerfile
+          echo "COPY build/libs/*.jar app.jar" >> Dockerfile
+          echo "ENTRYPOINT [\"java\", \"-jar\", \"/app/app.jar\", \"--spring.profiles.active=dev\"]" >> Dockerfile
 
-            - name: Get current time
-              uses: 1466587594/get-current-time@v2
-              id: current-time
-              with:
-                  format: YYYY-MM-DDTHH-mm-ss # 다른 포맷으로 변경 가능(MomentJS format syntax)
-                  utcOffset: "+09:00" # 한국 시간에 맞추기 위함
+      # 4. AWS CLI 설치 (GitHub Hosted Runner에는 AWS CLI가 기본 설치됨, 필요 시 확인)
+      - name: Verify AWS CLI
+        run: aws --version
 
-            - name: dir list
-              run: ls -la build/libs
+      # 5. 로그인 ECR
+      - name: Login ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com
 
-            # grandle build를 통해 만들어진 jar를 beanstalk에 배포하기 위한 zip 파일로 만드는 것
-            - name: Generate deployment package
-              run: |
-                  mkdir -p deploy
-                  ls -la
-                  cp build/libs/api-0.0.1-SNAPSHOT.jar deploy/application.jar # 빌드 완료 시 jar 파일명을 application.jar로 변경
-                  cp Procfile deploy/Procfile
-                  cp -r .ebextensions deploy/.ebextensions
-                  cp -r .platform deploy/.platform
-                  cd deploy && zip -r deploy.zip . # Procfile, .ebextensions, .platform 포함하여 zip 생성
-                  ls -la
+      # 6. Docker 이미지 생성 및 ECR에 푸시
+      - name: Build and Push Docker Image to ECR
+        run: |
+          echo "Building Docker image"
+          docker build -t back-image:latest .
+          docker tag back-image:latest 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+          echo "Pushing Docker image to ECR"
+          docker push 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
 
-            - name: Beanstalk Deploy
-              uses: einaregilsson/beanstalk-deploy@v20
-              with:
-                  aws_access_key: ${{ secrets.AWS_EB_ACCESS_KEY_ID }} # github secrets로 등록한 값 사용
-                  aws_secret_key: ${{ secrets.AWS_EB_SECRET_ACCESS_KEY }} # github secrets로 등록한 값 사용
-                  application_name: sprout-api # Elastic Beanstalk application 이름
-                  environment_name: Dev-sprout-api-env # Elastic Beanstalk environment 이름
-                  version_label: Github Action-${{steps.current-time.outputs.formattedTime}} # 배포 버전은 타임스탬프를 이용하여 구분
-                  region: ap-northeast-2
-                  deployment_package: deploy/deploy.zip
-                  wait_for_environment_recovery: 300
+      # 7. EC2에서 Docker 이미지 실행
+      - name: Deploy to EC2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
+        run: |
+          INSTANCE_PUBLIC_IP=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Sprout-EC2" "Name=instance-state-name,Values=running" \
+            --query "Reservations[0].Instances[0].PublicIpAddress" \
+            --output text \
+            --region ap-northeast-2)
+          echo "Get Public IP: ${INSTANCE_PUBLIC_IP}"
+          echo "EC2_PUBLIC_IP=${INSTANCE_PUBLIC_IP}" >> $GITHUB_ENV
+          
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key.pem
+          chmod 600 ssh_key.pem
+
+          ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${INSTANCE_PUBLIC_IP} << 'EOF'
+            echo "Stopping existing container if running..."
+            docker stop sprout-backend || true
+            docker rm sprout-backend || true
+
+            echo "Installing AWS CLI..."
+            if ! command -v aws &> /dev/null
+            then
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+            fi
+
+            echo "Configuring AWS cert"
+            mkdir -p ~/.aws
+            echo "[default]" > ~/.aws/credentials
+            echo "aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
+            echo "aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
+            echo "[default]" > ~/.aws/config
+            echo "region = ap-northeast-2" >> ~/.aws/config
+
+            echo "Login ECR"
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com
+
+            echo "pull ECR"
+            docker pull 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+
+            echo "Running new container..."
+            docker run -d --name sprout-backend -p 8080:8080 248189947715.dkr.ecr.ap-northeast-2.amazonaws.com/back-image:latest
+          EOF

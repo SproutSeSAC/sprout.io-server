@@ -25,24 +25,25 @@ class SecurityConfig(
     @Bean
     fun filterChain(http: HttpSecurity, jwtFilter: JwtFilter): SecurityFilterChain {
 
-        http.csrf { it.disable() }
-        http.cors { it.disable() }
-        http.formLogin { it.disable() }
-        http.authorizeHttpRequests {
-            it.requestMatchers(*whiteList).permitAll()
-            it.anyRequest().permitAll()
-        }
-        http.sessionManagement {
-            it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        }
-        http.oauth2Login { it ->
-            it.authorizationEndpoint {
-                it.authorizationRequestResolver(customAuthorizationRequestResolver)
+        http
+            .csrf { it.disable() }
+            .cors { }
+            .formLogin { it.disable() }
+            .authorizeHttpRequests {
+                it.requestMatchers(*whiteList).permitAll()
+                it.anyRequest().permitAll()
             }
-            it.successHandler(customAuthenticationSuccessHandler)
-            it.failureHandler(customAuthenticationFailureHandler)
-        }
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .sessionManagement {
+                it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            }
+            .oauth2Login { config ->
+                config.authorizationEndpoint {
+                    it.authorizationRequestResolver(customAuthorizationRequestResolver)
+                }
+                config.successHandler(customAuthenticationSuccessHandler)
+                config.failureHandler(customAuthenticationFailureHandler)
+            }
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }

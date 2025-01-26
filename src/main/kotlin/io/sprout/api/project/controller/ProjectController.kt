@@ -34,7 +34,7 @@ class ProjectController(
         @RequestParam(defaultValue = "false") onlyScraped: Boolean,
         @RequestParam(required = false) pType: PType?,
         @RequestParam(defaultValue = "latest") sort: String,
-        @RequestParam(required = false) keyWord: String?,
+        @RequestParam(required = false) keyword: String?,
     ): ResponseEntity<Map<String, Any?>> {
         val filterRequest = ProjectFilterRequest(
             techStack = techStack,
@@ -45,7 +45,7 @@ class ProjectController(
             onlyScraped = onlyScraped,
             pType = pType,
             sort = sort,
-            keyWord = keyWord
+            keyWord = keyword
         )
 
         val (filteredProjects, totalCount) = projectService.getFilteredProjects(filterRequest)

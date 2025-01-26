@@ -26,7 +26,7 @@ spring:
           google:
             client-id: 652860783083-6h8femuq1q8825j6hlve003lg1rrndb8.apps.googleusercontent.com
             client-secret: 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
-            redirect-uri: http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api/login/oauth2/code/google
+            redirect-uri: https://prod-sprout.duckdns.org/back/api/login/oauth2/code/google
             scope:
               - profile
               - email
@@ -39,6 +39,10 @@ server:
       charset: UTF-8
     session:
       timeout: 1800
+      cookie:
+        path: /
+        same-site: none
+        secure: true
   port: 8080
 
 cors:
@@ -46,11 +50,13 @@ cors:
     - http://localhost:8080
     - http://localhost:3000
     - http://dev-sprout.duckdns.org
+    - http://prod-sprout.duckdns.org
     - http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com
     - https://dev-sprout.duckdns.org
+    - https://prod-sprout.duckdns.org
 
 url:
-  redirect-url: http://dev-sprout-api-env.eba-v2trvj6g.ap-northeast-2.elasticbeanstalk.com/api/login/success
+  redirect-url: https://prod-sprout.duckdns.org/back/api/login/success
 
 jwt:
   access-token:

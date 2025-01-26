@@ -7,6 +7,7 @@ import io.sprout.api.notice.model.entities.ParticipantStatus
  * 세션 참가자 조회
  */
 data class NoticeParticipantResponseDto(
+    val noticeParticipantId: Long,
     val userId: Long,
     val status: ParticipantStatus,
     val phoneNumber: String?,
@@ -15,6 +16,7 @@ data class NoticeParticipantResponseDto(
     val profileImageUrl: String?
 ) {
     constructor(participant: NoticeParticipantEntity) : this(
+        participant.id,
         participant.user.id,
         participant.status,
         participant.phoneNumber,
