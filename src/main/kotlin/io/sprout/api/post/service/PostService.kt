@@ -32,6 +32,7 @@ class PostService(
             )
 
             val projectId = noticeService.createNotice(noticeRequestDto)
+            post.postType = PostType.NOTICE
             post.linkedId = projectId
 
             postRepository.save(post)
@@ -57,6 +58,7 @@ class PostService(
             )
 
             val projectId = projectService.postProjectAndGetId(projectDto)
+            post.postType = PostType.PROJECT
             post.linkedId = projectId
 
             postRepository.save(post)
