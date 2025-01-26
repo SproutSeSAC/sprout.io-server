@@ -146,7 +146,7 @@ class ProjectCustomRepositoryImpl(
         }
 
         filterRequest.position?.let {
-            builder.and(projectEntity.positions.any().id.`in`(it))
+            builder.and(projectEntity.positions.any().position.id.`in`(it))
         }
 
         filterRequest.meetingType?.let {
