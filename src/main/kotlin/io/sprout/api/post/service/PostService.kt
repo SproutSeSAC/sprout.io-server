@@ -26,14 +26,14 @@ class PostService(
     @Transactional
     fun createNoticePost(noticeRequestDto: NoticeRequestDto, clientId: Long): Boolean {
         return try {
+            val noticeId = noticeService.createNotice(noticeRequestDto)
             val post = PostEntity(
                 clientId = clientId,
-                postType = PostType.NOTICE
+                postType = PostType.NOTICE,
+                linkedId = noticeId
             )
 
-            val projectId = noticeService.createNotice(noticeRequestDto)
             post.postType = PostType.NOTICE
-            post.linkedId = projectId
 
             postRepository.save(post)
 
@@ -52,14 +52,14 @@ class PostService(
     @Transactional
     fun createProjectPost(projectDto: ProjectRecruitmentRequestDto, clientId: Long): Boolean {
         return try {
+            val projectId = projectService.postProjectAndGetId(projectDto)
             val post = PostEntity(
                 clientId = clientId,
-                postType = PostType.PROJECT
+                postType = PostType.PROJECT,
+                linkedId = projectId
             )
 
-            val projectId = projectService.postProjectAndGetId(projectDto)
             post.postType = PostType.PROJECT
-            post.linkedId = projectId
 
             postRepository.save(post)
 
