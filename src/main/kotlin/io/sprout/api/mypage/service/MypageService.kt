@@ -13,6 +13,7 @@ import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
+import java.awt.dnd.DropTarget
 
 @Service
 class MypageService(
@@ -99,18 +100,17 @@ class MypageService(
             val title = when (post.postType) {
                 PostType.NOTICE -> {
                     val linkedId = post.linkedId
-                            ?: throw IllegalArgumentException("테이블 매핑 오류")
                     noticeService.getNoticeTitleById(linkedId)
                 }
                 PostType.PROJECT -> {
                     val linkedId = post.linkedId
-                            ?: throw IllegalArgumentException("테이블 매핑 오류")
                     projectService.getProjectTitleById(linkedId)
                 }
             }
 
             PostDto(
                     postId = post.id,
+                    linkedId = post.linkedId,
                     clientId = post.clientId,
                     postType = post.postType.name,
                     title = title,
@@ -148,15 +148,52 @@ class MypageService(
         }
     }
 
-    // 참여 글 목록 조회 (ID만)
-    fun getPostParticipantIdsListByUserId(userId: Long): List<Long> {
-        val participantsIds: List<Long> = postService.getNoticeIdsByUserIdFromParticipant(userId);
-        return participantsIds
+    // 참여 글 목록 조회 (제목만)
+    fun getPostParticipantListTitleByUserId(userId: Long): List<String> {
+        val DetailPost: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
+
+        val participantsNames: List<String> = DetailPost.map { postEntity ->
+            when (postEntity.postType) {
+                PostType.NOTICE -> {
+                    val linkedId = postEntity.linkedId
+                    noticeService.getNoticeTitleById(linkedId)
+                }
+                PostType.PROJECT -> {
+                    val linkedId = postEntity.linkedId
+                    projectService.getProjectTitleById(linkedId)
+                }
+            }
+        }
+
+        return participantsNames
     }
 
     // 참여 글 데이터 전체 조회 (전체)
-    fun getPostParticipantListByUserId(userId: Long): List<PostEntity> {
-        val participant: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
+    fun getPostParticipantListByUserId(userId: Long): List<PostDto> {
+        val DetailPost: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
+        val participant: List<PostDto> = DetailPost.map { PostEntity ->
+            val title = when (PostEntity.postType) {
+                PostType.NOTICE -> {
+                    val linkedId = PostEntity.linkedId
+                    noticeService.getNoticeTitleById(linkedId)
+                }
+                PostType.PROJECT -> {
+                    val linkedId = PostEntity.linkedId
+                    projectService.getProjectTitleById(linkedId)
+                }
+            }
+
+            PostDto(
+                postId = PostEntity.id,
+                linkedId = PostEntity.linkedId,
+                clientId = PostEntity.clientId,
+                postType = PostEntity.postType.name,
+                title = title,
+                createdAt = PostEntity.createdAt,
+                updatedAt = PostEntity.updatedAt
+            )
+        }
+
         return participant
     }
     // endregion

@@ -91,3 +91,6 @@ aws:
   access-key: AKIATTSKGB5BWJISFCU6
   secret-key: 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
   region: ap-northeast-2
+
+user:
+  email: "flqld86851@gmail.com"
