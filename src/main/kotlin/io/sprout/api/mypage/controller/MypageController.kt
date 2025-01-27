@@ -65,18 +65,18 @@ class MypageController(
         return ResponseEntity.ok(mypageService.getPostScrapListByUserId(userId))
     }
 
-    @Operation(summary = "신청한 글 조회 (ID)", description = "신청한 글들의 ID를 반환합니다.")
-    @GetMapping("/getParticipantIDs")
-    fun getPostParticipantIDList(): ResponseEntity<List<Long>> {
+    @Operation(summary = "신청한 글 조회 (제목만)", description = "신청한 글의 제목들을 반환합니다.")
+    @GetMapping("/getParticipantTitle")
+    fun getPostParticipantIDList(): ResponseEntity<List<String>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
 
-        return ResponseEntity.ok(mypageService.getPostParticipantIdsListByUserId(userId))
+        return ResponseEntity.ok(mypageService.getPostParticipantListTitleByUserId(userId))
     }
 
     @Operation(summary = "신청한 글 상세정보", description = "신청한 글들의 정보를 반환합니다.")
     @GetMapping("/getParticipant")
-    fun getPostParticipantList(): ResponseEntity<List<PostEntity>> {
+    fun getPostParticipantList(): ResponseEntity<List<PostDto>> {
         val userId = securityManager.getAuthenticatedUserName()
             ?: return ResponseEntity.status(401).body(null)
 

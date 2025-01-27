@@ -48,6 +48,7 @@ class JwtFilter(
             "/h2-console",
             "/favicon.ico",
             "/api/oauth2/authorization/google",// Corrected path,
+            "/api/test/**",
 
             // 테스트를 위한 임시 url
 //            "/api/store/list",

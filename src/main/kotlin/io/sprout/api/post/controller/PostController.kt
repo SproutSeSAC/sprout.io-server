@@ -1,9 +1,11 @@
 package io.sprout.api.post.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.comment.dto.CommentResponseDto
 import io.sprout.api.comment.service.CommentService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
+import io.sprout.api.post.dto.PostRequestDto
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
@@ -16,23 +18,34 @@ import org.springframework.web.bind.annotation.*
 class PostController(
     private val postService: PostService,
     private val commentService: CommentService,
-    private val securityManager: SecurityManager
+    private val securityManager: SecurityManager,
+    private val objectMapper: ObjectMapper,
 ) {
     @PostMapping
     @Operation(
             summary = "게시글 등록 API",
             description = "공지사항 또는 프로젝트를 생성하는 API입니다. 입력 DTO의 타입에 따라 저장 데이터가 바뀝니다."
     )
-    fun createPost(@RequestBody dto: Any): ResponseEntity<Boolean> {
+    fun createPost(@RequestBody requestMap: Map<String, Any>): ResponseEntity<Boolean> {
         val clientID = securityManager.getAuthenticatedUserName()
-                ?: return ResponseEntity.status(401).build()
+            ?: return ResponseEntity.status(401).build()
 
-        val result = when (dto) {
-            is NoticeRequestDto -> postService.createNoticePost(dto, clientID)
-            is ProjectRecruitmentRequestDto -> postService.createProjectPost(dto, clientID)
-            else -> throw IllegalArgumentException("DTO 구성을 확인 해 주세요.")
+        return try {
+            if (requestMap.containsKey("projectTitle")) {
+                val dto = objectMapper.convertValue(requestMap, ProjectRecruitmentRequestDto::class.java)
+                val result = postService.createProjectPost(dto, clientID)
+                ResponseEntity.ok(result)
+            } else if (requestMap.containsKey("noticeTitle")) {
+                val dto = objectMapper.convertValue(requestMap, NoticeRequestDto::class.java)
+                val result = postService.createNoticePost(dto, clientID)
+                ResponseEntity.ok(result)
+            } else {
+                throw IllegalArgumentException("DTO 구성을 확인 해 주세요.")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ResponseEntity.badRequest().build()
         }
-        return ResponseEntity.ok(result)
     }
 
     @GetMapping("/{postId}")

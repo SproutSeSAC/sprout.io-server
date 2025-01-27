@@ -25,8 +25,8 @@ class PostEntity(
     @Column(nullable = false)
     var postType: PostType,
 
-    @Column(name = "linked_id", nullable = true)
-    var linkedId: Long? = null,
+    @Column(name = "linked_id", nullable = false)
+    var linkedId: Long,
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
