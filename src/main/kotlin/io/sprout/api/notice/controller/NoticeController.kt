@@ -144,10 +144,8 @@ class NoticeController(
      */
     @Operation(summary = "공지사항 세션에 참가 신청합니다.", description = "참가 대기 상태로 신청하게 됩니다.")
     @PostMapping("/sessions/{sessionId}/application")
-    fun applyForNoticeSession(
-        @PathVariable sessionId: Long,
-        @RequestBody participantRequest: NoticeSessionParticipantRequestDto): ResponseEntity<Any> {
-        noticeService.applyForNoticeSession(sessionId, participantRequest)
+    fun applyForNoticeSession(@PathVariable sessionId: Long): ResponseEntity<Any> {
+        noticeService.applyForNoticeSession(sessionId)
 
         return ResponseEntity.ok().build()
     }

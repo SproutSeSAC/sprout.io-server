@@ -185,7 +185,7 @@ class NoticeServiceImpl(
      * @param sessionId 공지사항 강의 세션 ID
      */
     @Transactional
-    override fun applyForNoticeSession(sessionId: Long, participantRequest: NoticeSessionParticipantRequestDto) {
+    override fun applyForNoticeSession(sessionId: Long) {
         val user = getUser()
         val session = noticeSessionRepository.findById(sessionId)
             .orElseThrow { throw CustomBadRequestException("세션이 존재하지 않습니다.") }
@@ -198,7 +198,6 @@ class NoticeServiceImpl(
         noticeParticipantRepository.save(
             NoticeParticipantEntity(
                 status = ParticipantStatus.WAIT,
-                phoneNumber = participantRequest.phoneNumber,
                 user = UserEntity(user.id),
                 noticeSession = NoticeSessionEntity(sessionId)
             )

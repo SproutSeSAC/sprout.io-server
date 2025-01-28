@@ -44,6 +44,9 @@ class UserEntity(
     @Column(length = 20)
     var name: String? = null // 유저명
 
+    @Column(length = 20)
+    var phoneNumber: String? = null // 전화번호
+
     @Column(name = "refresh_token", length = 700)
     var refreshToken: String? = null // 리프레시 토큰
 
@@ -101,6 +104,7 @@ class UserEntity(
 
         name = request.name
         nickname = request.nickname
+        phoneNumber = request.phoneNumber
         role = request.role
         status = UserStatus.ACTIVE
         marketingConsent = request.marketingConsent

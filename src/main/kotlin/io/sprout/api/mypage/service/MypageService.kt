@@ -38,6 +38,7 @@ class MypageService(
         val profileCard = CardDto.ProfileCard(
                 name = user.name,
                 nickname = user.nickname,
+                phoneNumber = user.phoneNumber,
                 profileUrl = user.profileImageUrl
         )
 
