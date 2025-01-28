@@ -32,6 +32,9 @@ class CardDto {
             @Schema(description = "닉네임")
             val nickname: String,
 
+            @Schema(description = "전화번호")
+            val phoneNumber: String?,
+
             @Schema(description = "프로필 사진 URL")
             val profileUrl: String?,
 

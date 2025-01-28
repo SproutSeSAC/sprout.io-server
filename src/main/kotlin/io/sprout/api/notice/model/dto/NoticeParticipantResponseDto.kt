@@ -19,7 +19,7 @@ data class NoticeParticipantResponseDto(
         participant.id,
         participant.user.id,
         participant.status,
-        participant.phoneNumber,
+        participant.user.phoneNumber,
         participant.user.name,
         participant.user.nickname,
         participant.user.profileImageUrl
