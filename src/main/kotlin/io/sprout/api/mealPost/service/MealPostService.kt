@@ -12,6 +12,7 @@ import io.sprout.api.mealPost.model.entities.MealPostParticipationEntity
 import io.sprout.api.mealPost.model.entities.MealPostStatus
 import io.sprout.api.mealPost.repository.MealPostParticipationRepository
 import io.sprout.api.mealPost.repository.MealPostRepository
+import io.sprout.api.sse.service.SseService
 import io.sprout.api.store.repository.StoreRepository
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
@@ -28,7 +29,8 @@ class MealPostService(
     private val mealPostParticipationRepository: MealPostParticipationRepository,
     private val userRepository: UserRepository,
     private val storeRepository: StoreRepository,
-    private val securityManager: SecurityManager
+    private val securityManager: SecurityManager,
+    private val sseService: SseService
 ) {
 
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
@@ -120,6 +122,7 @@ class MealPostService(
 
         try {
             mealPostRepository.save(mealPost)
+            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "0" + mealPost.title + "에 새로운 스프가 참여했습니다.")
             log.debug("JoinParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
