@@ -1,5 +1,7 @@
 package io.sprout.api.post.service
 
+import io.sprout.api.mealPost.model.dto.MealPostDto
+import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.service.NoticeService
 import io.sprout.api.post.dto.PostDto
@@ -16,7 +18,8 @@ import org.springframework.stereotype.Service
 class PostService(
     private val postRepository: PostRepository,
     private val projectService: ProjectService,
-    private val noticeService: NoticeService
+    private val noticeService: NoticeService,
+    private val mealPostService: MealPostService
 ) {
 
     /**
@@ -32,8 +35,6 @@ class PostService(
                 postType = PostType.NOTICE,
                 linkedId = noticeId
             )
-
-            post.postType = PostType.NOTICE
 
             postRepository.save(post)
 
@@ -59,7 +60,27 @@ class PostService(
                 linkedId = projectId
             )
 
-            post.postType = PostType.PROJECT
+            postRepository.save(post)
+
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * 한끼팟 추가
+     * meealService의 createNotice를 호출합니다.
+     */
+    @Transactional
+    fun createMealPost(dto: MealPostDto.MealPostCreateRequest, clientId: Long): Boolean {
+        return try {
+            val mealId = mealPostService.createMealPost(dto)
+            val post = PostEntity(
+                clientId = clientId,
+                postType = PostType.MEAL,
+                linkedId = mealId
+            )
 
             postRepository.save(post)
 
@@ -68,6 +89,7 @@ class PostService(
             false
         }
     }
+
 
     /**
      * 게시글 읽기
@@ -80,13 +102,17 @@ class PostService(
 
         return when (post.postType) {
             PostType.NOTICE -> {
-                val noticeId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+                val noticeId = post.linkedId
                 noticeService.getNoticeById(noticeId)
             }
             PostType.PROJECT -> {
-                val projectId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+                val projectId = post.linkedId
                 projectService.findProjectDetailById(projectId)
                         ?: throw EntityNotFoundException("프로젝트를 찾을 수 없습니다. -> 공지는 원본 안 건드림")
+            }
+            PostType.MEAL -> {
+                val mealId = post.linkedId
+                mealPostService.getMealPostDetail(mealId)
             }
         }
     }
@@ -130,6 +156,12 @@ class PostService(
                         project
                     }
                 }
+                PostType.MEAL -> {
+                    val mealId = post.linkedId
+                    val meal = mealPostService.getMealPostDetail(mealId)
+
+                    meal
+                }
             }
         }
     }
@@ -160,6 +192,17 @@ class PostService(
                         throw IllegalArgumentException("Project DTO를 확인 해 주세요.")
                     }
                     projectService.updateProject(linkedId, dto)
+                    true
+                }
+
+                PostType.MEAL -> {
+                    if (dto !is MealPostDto.MealPostCreateRequest) {
+                        throw IllegalArgumentException("Meal DTO를 확인 해 주세요.")
+                    }
+
+                    // 내용 할지 말지 차후 이야기..
+
+                    true
                 }
             }
         } catch (e: Exception) {
@@ -211,6 +254,9 @@ class PostService(
             }
             PostType.PROJECT -> {
                 return projectService.findProjectDetailById(post.linkedId)?.title ?: ""
+            }
+            PostType.MEAL -> {
+                return mealPostService.getMealPostDetail(post.linkedId).title
             }
         }
     }

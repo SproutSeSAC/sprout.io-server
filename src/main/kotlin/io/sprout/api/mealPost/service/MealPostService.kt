@@ -39,7 +39,7 @@ class MealPostService(
         return mealPostRepository.findMealPostList(pageable, getUserInfo().id)
     }
 
-    fun createMealPost(request: MealPostDto.MealPostCreateRequest) {
+    fun createMealPost(request: MealPostDto.MealPostCreateRequest): Long {
 
         val user = getUserInfo()
         val mealPostEntity = MealPostEntity(
@@ -62,6 +62,7 @@ class MealPostService(
         try {
             val mealPost = mealPostRepository.save(mealPostEntity)
             log.debug("createMealPost, mealPostId is: {}", mealPost.id )
+            return mealPost.id
 
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
