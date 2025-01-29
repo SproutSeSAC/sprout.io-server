@@ -199,6 +199,22 @@ class PostService(
         return post.linkedId ?: throw IllegalArgumentException("테이블 매핑 오류")
     }
 
+
+    @Transactional
+    fun getPostTitle(postId: Long): String {
+        val post = postRepository.findById(postId)
+            .orElseThrow { EntityNotFoundException("존재하지 않는 게시글 ID: $postId") }
+
+        when (post.postType) {
+            PostType.NOTICE -> {
+                return noticeService.getNoticeById(post.linkedId).title
+            }
+            PostType.PROJECT -> {
+                return projectService.findProjectDetailById(post.linkedId)?.title ?: ""
+            }
+        }
+    }
+
     /**
      * 내가 작성한 글 목록 읽기
      */
