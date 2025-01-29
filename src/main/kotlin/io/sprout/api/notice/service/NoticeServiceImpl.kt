@@ -284,6 +284,8 @@ class NoticeServiceImpl(
             throw CustomBadRequestException("세션 참가 삭제에 대한 권한이 없습니다.")
         }
 
+        sseService.publish(userId, participant.noticeSession.notice.user.id, "5," + participant.noticeSession.notice.title + "에 참여 취소가 있습니다.")
+
         noticeParticipantRepository.deleteById(participantId)
     }
 
