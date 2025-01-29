@@ -259,6 +259,8 @@ class NoticeServiceImpl(
         validateUserIsManagerRole(user)
         validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
 
+        sseService.publish(user.id, participant.user.id, "7," + noticeSession.notice.title + " 신청이 반려되었습니다.")
+
         participant.status = ParticipantStatus.REJECT
         noticeParticipantRepository.save(participant)
     }
