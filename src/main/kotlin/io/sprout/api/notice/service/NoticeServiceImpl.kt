@@ -234,6 +234,8 @@ class NoticeServiceImpl(
             throw CustomBadRequestException("참가 정원이 다 찼습니다.")
         }
 
+        sseService.publish(user.id, participant.user.id, "6," + noticeSession.notice.title + " 신청이 승인되었습니다.")
+
         participant.status = ParticipantStatus.PARTICIPANT
         noticeParticipantRepository.save(participant)
     }
