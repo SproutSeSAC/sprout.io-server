@@ -6,6 +6,7 @@ import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationExceptio
 import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.notice.repository.*
+import io.sprout.api.sse.service.SseService
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
@@ -27,7 +28,8 @@ class NoticeServiceImpl(
     private val securityManager: SecurityManager,
     private val noticeSessionRepository: NoticeSessionRepository,
     private val eventPublisher: ApplicationEventPublisher,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sseService: SseService
 ) : NoticeService {
 
     /**
@@ -194,6 +196,8 @@ class NoticeServiceImpl(
         if (noticeParticipantRepository.findByNoticeSessionIdAndUserId(sessionId, user.id) != null) {
             throw CustomDataIntegrityViolationException("중복된 요청입니다.")
         }
+
+        sseService.publish(user.id, session.notice.user.id, "4," + session.notice.title + "에 새로운 스프의 참여 신청이 있습니다.")
 
         noticeParticipantRepository.save(
             NoticeParticipantEntity(
