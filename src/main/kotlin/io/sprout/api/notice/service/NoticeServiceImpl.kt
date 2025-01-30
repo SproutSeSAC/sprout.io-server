@@ -197,7 +197,7 @@ class NoticeServiceImpl(
             throw CustomDataIntegrityViolationException("중복된 요청입니다.")
         }
 
-        sseService.publish(user.id, session.notice.user.id, "4," + session.notice.title + "에 새로운 스프의 참여 신청이 있습니다.")
+        sseService.publish(user.id, session.notice.user.id, "4::" + session.notice.title + "에 새로운 스프의 참여 신청이 있습니다.")
 
         noticeParticipantRepository.save(
             NoticeParticipantEntity(
@@ -234,7 +234,7 @@ class NoticeServiceImpl(
             throw CustomBadRequestException("참가 정원이 다 찼습니다.")
         }
 
-        sseService.publish(user.id, participant.user.id, "6," + noticeSession.notice.title + " 신청이 승인되었습니다.")
+        sseService.publish(user.id, participant.user.id, "6::" + noticeSession.notice.title + " 신청이 승인되었습니다.")
 
         participant.status = ParticipantStatus.PARTICIPANT
         noticeParticipantRepository.save(participant)
@@ -259,7 +259,7 @@ class NoticeServiceImpl(
         validateUserIsManagerRole(user)
         validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
 
-        sseService.publish(user.id, participant.user.id, "7," + noticeSession.notice.title + " 신청이 반려되었습니다.")
+        sseService.publish(user.id, participant.user.id, "7::" + noticeSession.notice.title + " 신청이 반려되었습니다.")
 
         participant.status = ParticipantStatus.REJECT
         noticeParticipantRepository.save(participant)
@@ -284,7 +284,7 @@ class NoticeServiceImpl(
             throw CustomBadRequestException("세션 참가 삭제에 대한 권한이 없습니다.")
         }
 
-        sseService.publish(userId, participant.noticeSession.notice.user.id, "5," + participant.noticeSession.notice.title + "에 참여 취소가 있습니다.")
+        sseService.publish(userId, participant.noticeSession.notice.user.id, "5::" + participant.noticeSession.notice.title + "에 참여 취소가 있습니다.")
 
         noticeParticipantRepository.deleteById(participantId)
     }

@@ -34,7 +34,7 @@ class CommentService(
                 post = post
         )
         val savedComment = commentRepository.save(comment)
-        sseService.publish(clientID, post.clientId, "3," + postService.getPostTitle(post.linkedId) + "에 댓글이 등록되었습니다.")
+        sseService.publish(clientID, post.clientId, "3::" + postService.getPostTitle(post.linkedId) + "에 댓글이 등록되었습니다.")
         return convertToResponseDto(savedComment)
     }
 

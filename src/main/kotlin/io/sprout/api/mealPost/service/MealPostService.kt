@@ -156,7 +156,7 @@ class MealPostService(
 
         try {
             mealPostRepository.save(mealPost)
-            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "0," + mealPost.title + "에 새로운 스프가 참여했습니다.")
+            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "0::" + mealPost.title + "에 새로운 스프가 참여했습니다.")
             log.debug("JoinParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
@@ -182,7 +182,7 @@ class MealPostService(
 
         try {
             mealPostRepository.save(mealPost)
-            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "1," + mealPost.title + "에 신청한 스프가 취소했습니다.")
+            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "1::" + mealPost.title + "에 신청한 스프가 취소했습니다.")
             log.debug("LeaveParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
