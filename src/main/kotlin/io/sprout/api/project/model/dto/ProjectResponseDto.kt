@@ -17,7 +17,8 @@ data class ProjectResponseDto @QueryProjection constructor(
 //    val techStackNames: List<String>,
     val techStacks: List<TechStacks>,
     val isScraped: Boolean,
-    val viewCount: Int
+    val viewCount: Int,
+    var postId: Long? = null
 ){
    fun toDistinct(): ProjectResponseDto{
        return ProjectResponseDto(

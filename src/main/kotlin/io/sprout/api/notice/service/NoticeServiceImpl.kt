@@ -6,6 +6,8 @@ import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationExceptio
 import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.notice.repository.*
+import io.sprout.api.post.entities.PostType
+import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.sse.service.SseService
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
@@ -29,7 +31,8 @@ class NoticeServiceImpl(
     private val noticeSessionRepository: NoticeSessionRepository,
     private val eventPublisher: ApplicationEventPublisher,
     private val userRepository: UserRepository,
-    private val sseService: SseService
+    private val sseService: SseService,
+    private val postRepository: PostRepository,
 ) : NoticeService {
 
     /**
@@ -96,6 +99,10 @@ class NoticeServiceImpl(
         val isScraped: ScrapedNoticeEntity? = scrapedNoticeRepository.findByNoticeIdAndUserId(noticeId, user.id)
         responseDto.isScraped = (isScraped != null)
 
+        val post = postRepository.findByLinkedIdAndPostType(noticeId, PostType.NOTICE)
+            ?: throw CustomBadRequestException("게시글(Post)이 없습니다.")
+        responseDto.postId = post.id
+
         return responseDto
     }
 
@@ -153,6 +160,11 @@ class NoticeServiceImpl(
         val userId = getUserId()
 
         val searchResult = noticeRepository.search(searchRequest, userId)
+        searchResult.forEach { dto ->
+            val post = postRepository.findByLinkedIdAndPostType(dto.noticeId, PostType.NOTICE)
+            dto.postId = post?.id
+        }
+
         val searchResponse = NoticeSearchResponseDto(searchResult)
         searchResponse.addPageResult(searchRequest)
         searchResponse.removeHtmlTags()

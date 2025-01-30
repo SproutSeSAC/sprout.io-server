@@ -12,6 +12,8 @@ import io.sprout.api.mealPost.model.entities.MealPostParticipationEntity
 import io.sprout.api.mealPost.model.entities.MealPostStatus
 import io.sprout.api.mealPost.repository.MealPostParticipationRepository
 import io.sprout.api.mealPost.repository.MealPostRepository
+import io.sprout.api.post.entities.PostType
+import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.sse.service.SseService
 import io.sprout.api.store.repository.StoreRepository
 import io.sprout.api.user.model.entities.UserEntity
@@ -30,13 +32,20 @@ class MealPostService(
     private val userRepository: UserRepository,
     private val storeRepository: StoreRepository,
     private val securityManager: SecurityManager,
-    private val sseService: SseService
+    private val sseService: SseService,
+    private val postRepository: PostRepository,
 ) {
 
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
     fun getMealPostList(pageable: Pageable): List<MealPostProjection> {
-        return mealPostRepository.findMealPostList(pageable, getUserInfo().id)
+        val userId = getUserInfo().id
+        val result = mealPostRepository.findMealPostList(pageable, userId)
+
+        return result.map { projection ->
+            val post = postRepository.findByLinkedIdAndPostType(projection.id, PostType.MEAL)
+            projection.copy(postId = post?.id)
+        }
     }
 
     fun createMealPost(request: MealPostDto.MealPostCreateRequest) {
