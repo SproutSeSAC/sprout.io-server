@@ -11,6 +11,7 @@ import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class CommentService(
@@ -31,7 +32,9 @@ class CommentService(
         val comment = CommentEntity(
                 content = dto.content,
                 user = user,
-                post = post
+                post = post,
+                imgurl = dto.imgUrl,
+                createdAt = LocalDateTime.now()
         )
         val savedComment = commentRepository.save(comment)
         sseService.publish(clientID, post.clientId, "3::" + postService.getPostTitle(post.linkedId) + "에 댓글이 등록되었습니다.")
@@ -93,10 +96,12 @@ class CommentService(
         val comments = commentRepository.findByPostId(postId)
         return comments.map { comment ->
             CommentResponseDto(
-                    id = comment.id,
-                    content = comment.content,
-                    userId = comment.user.id,
-                    postId = comment.post.id
+                id = comment.id,
+                content = comment.content,
+                userNickname = comment.user.nickname,
+                postId = comment.post.id,
+                imgUrl = comment.imgurl,
+                createAt = comment.createdAt
             )
         }
     }
@@ -113,10 +118,12 @@ class CommentService(
 
     private fun convertToResponseDto(comment: CommentEntity): CommentResponseDto {
         return CommentResponseDto(
-                id = comment.id,
-                content = comment.content,
-                userId = comment.user.id,
-                postId = comment.post.id
+            id = comment.id,
+            content = comment.content,
+            userNickname = comment.user.nickname,
+            postId = comment.post.id,
+            imgUrl = comment.imgurl,
+            createAt = comment.createdAt
         )
     }
 }
