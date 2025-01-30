@@ -1,14 +1,13 @@
 package io.sprout.api.sse.service
 
 import io.sprout.api.infra.sse.model.SubscriberDto
-import io.sprout.api.notice.model.entities.NoticeSessionEntity
 import io.sprout.api.notice.repository.NoticeSessionRepository
 import io.sprout.api.notification.service.NotificationService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Sinks
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
@@ -54,7 +53,7 @@ class SseService (
                 publish(
                     session.notice.user.id,
                     participant.user.id,
-                    "8,곧 ${session.notice.title}이 시작됩니다! 장소를 확인해주세요."
+                    "8::곧 ${session.notice.title}이 시작됩니다! 장소를 확인해주세요."
                 )
             }
         }
@@ -66,7 +65,7 @@ class SseService (
                 publish(
                     session.notice.user.id,
                     participant.user.id,
-                    "9,${session.notice.title}은 어떠셨나요? 만족도 조사에 참여해 주세요!"
+                    "9::z${session.notice.title}은 어떠셨나요? 만족도 조사에 참여해 주세요!"
                 )
             }
         }
