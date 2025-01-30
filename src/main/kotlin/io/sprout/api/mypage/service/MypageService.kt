@@ -94,7 +94,7 @@ class MypageService(
     // region [게시글 관련 API]
 
     // 작성 글 목록 조회
-    fun getPostListByUserId(clientId: Long): List<PostDto> {
+    fun getPostListByUserId(clientId: Long): List<PostAndNickNameDto> {
         val posts = postService.getPostsByClientId(clientId)
 
         // DTO 변환
@@ -114,14 +114,18 @@ class MypageService(
                 }
             }
 
-            PostDto(
-                    postId = post.id,
-                    linkedId = post.linkedId,
-                    clientId = post.clientId,
-                    postType = post.postType.name,
-                    title = title.toString(),
-                    createdAt = post.createdAt,
-                    updatedAt = post.updatedAt
+            val user = userRepository.findById(post.clientId)
+                .orElseThrow { EntityNotFoundException("유저 Id를 찾을 수 없음") }
+
+            PostAndNickNameDto(
+                postId = post.id,
+                linkedId = post.linkedId,
+                clientId = post.clientId,
+                postType = post.postType.name,
+                title = title.toString(),
+                createdAt = post.createdAt,
+                updatedAt = post.updatedAt,
+                createdNickName = user.nickname
             )
         }
     }
@@ -132,10 +136,10 @@ class MypageService(
 
         return comments.map {
             PostCommentDto(
-                    commentId = it.id,
-                    userId = it.userId,
-                    postId = it.postId,
-                    content = it.content
+                commentId = it.id,
+                userNickname = it.userNickname,
+                postId = it.postId,
+                content = it.content,
             )
         }
     }
