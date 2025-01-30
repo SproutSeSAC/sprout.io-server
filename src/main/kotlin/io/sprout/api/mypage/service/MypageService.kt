@@ -179,9 +179,9 @@ class MypageService(
     }
 
     // 참여 글 데이터 전체 조회 (전체)
-    fun getPostParticipantListByUserId(userId: Long): List<PostDto> {
+    fun getPostParticipantListByUserId(userId: Long): List<ParticipantDto> {
         val DetailPost: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
-        val participant: List<PostDto> = DetailPost.map { PostEntity ->
+        val participant: List<ParticipantDto> = DetailPost.map { PostEntity ->
             val title = when (PostEntity.postType) {
                 PostType.NOTICE -> {
                     val linkedId = PostEntity.linkedId
@@ -197,14 +197,9 @@ class MypageService(
                 }
             }
 
-            PostDto(
-                postId = PostEntity.id,
-                linkedId = PostEntity.linkedId,
-                clientId = PostEntity.clientId,
-                postType = PostEntity.postType.name,
+            ParticipantDto(
                 title = title,
-                createdAt = PostEntity.createdAt,
-                updatedAt = PostEntity.updatedAt
+                id = PostEntity.linkedId
             )
         }
 

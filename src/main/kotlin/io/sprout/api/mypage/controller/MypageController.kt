@@ -76,7 +76,7 @@ class MypageController(
 
     @Operation(summary = "신청한 글 상세정보", description = "신청한 글들의 정보를 반환합니다.")
     @GetMapping("/getParticipant")
-    fun getPostParticipantList(): ResponseEntity<List<PostDto>> {
+    fun getPostParticipantList(): ResponseEntity<List<ParticipantDto>> {
         val userId = securityManager.getAuthenticatedUserName()
             ?: return ResponseEntity.status(401).body(null)
 
