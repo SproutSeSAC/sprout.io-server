@@ -86,7 +86,7 @@ class PostService(
 
             true
         } catch (e: Exception) {
-            false
+            throw RuntimeException("MealPost 생성 중 오류 발생", e)
         }
     }
 
