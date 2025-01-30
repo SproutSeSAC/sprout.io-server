@@ -39,7 +39,40 @@ class MealPostService(
         return mealPostRepository.findMealPostList(pageable, getUserInfo().id)
     }
 
-    fun createMealPost(request: MealPostDto.MealPostCreateRequest): Long {
+    fun createMealPost(request: MealPostDto.MealPostCreateRequest) {
+
+        val user = getUserInfo()
+        val mealPostEntity = MealPostEntity(
+            title = request.title?: "",
+            appointmentTime = request.appointmentTime,
+            memberCount = request.memberCount,
+            meetingPlace = request.meetingPlace,
+            mealPostStatus = MealPostStatus.ACTIVE,
+            storeName = request.storeName
+        )
+
+        mealPostEntity.mealPostParticipationList.plusAssign(
+            MealPostParticipationEntity(
+                user = user,
+                mealPost = mealPostEntity,
+                ordinalNumber = 1
+            )
+        )
+
+        try {
+            val mealPost = mealPostRepository.save(mealPostEntity)
+            log.debug("createMealPost, mealPostId is: {}", mealPost.id )
+
+        } catch (e: DataIntegrityViolationException) {
+            // 데이터 무결성 예외 처리
+            throw CustomDataIntegrityViolationException("User data integrity violation: ${e.message}")
+        } catch (e: JpaSystemException) {
+            // 시스템 오류 처리
+            throw CustomSystemException("System error occurred while saving meal post: ${e.message}")
+        }
+    }
+
+    fun createMealPostReturnId(request: MealPostDto.MealPostCreateRequest): Long {
 
         val user = getUserInfo()
         val mealPostEntity = MealPostEntity(

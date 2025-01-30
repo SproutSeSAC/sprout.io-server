@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.Optional
 
 interface UserCourseRepository : JpaRepository<UserCourseEntity, Long> {
-    fun findByUser_Id(userId: Long): Optional<UserCourseEntity>
+    fun findByUserId(userId: Long): List<UserCourseEntity>
     fun deleteByCourseIdAndUserId(courseId: Long, id: Long)
 }

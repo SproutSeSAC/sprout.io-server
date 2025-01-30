@@ -2,6 +2,7 @@ package io.sprout.api.mypage.service
 
 import io.sprout.api.comment.service.CommentService
 import io.sprout.api.course.infra.CourseRepository
+import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.repository.*
 import io.sprout.api.notice.service.NoticeService
@@ -23,6 +24,7 @@ class MypageService(
         private val postService: PostService,
         private val noticeService: NoticeService,
         private val projectService: ProjectService,
+        private val mealPostService: MealPostService,
         private val commentService: CommentService,
         private val scrapService: ScrapService
 ) {
@@ -48,7 +50,7 @@ class MypageService(
             )
         }
 
-        val CourseCard = userCourseRepository.findByUser_Id(userId).map {
+        val CourseCard = userCourseRepository.findByUserId(userId).map {
             CardDto.CourseInfo(
                 id = it.course.id,
                 courseName = it.course.title
@@ -106,6 +108,10 @@ class MypageService(
                     val linkedId = post.linkedId
                     projectService.getProjectTitleById(linkedId)
                 }
+                PostType.MEAL -> {
+                    val linkedId = post.linkedId
+                    mealPostService.getMealPostDetail(linkedId)
+                }
             }
 
             PostDto(
@@ -113,7 +119,7 @@ class MypageService(
                     linkedId = post.linkedId,
                     clientId = post.clientId,
                     postType = post.postType.name,
-                    title = title,
+                    title = title.toString(),
                     createdAt = post.createdAt,
                     updatedAt = post.updatedAt
             )
@@ -162,6 +168,10 @@ class MypageService(
                     val linkedId = postEntity.linkedId
                     projectService.getProjectTitleById(linkedId)
                 }
+                PostType.MEAL -> {
+                    val linkedId = postEntity.linkedId
+                    mealPostService.getMealPostDetail(linkedId).title
+                }
             }
         }
 
@@ -180,6 +190,10 @@ class MypageService(
                 PostType.PROJECT -> {
                     val linkedId = PostEntity.linkedId
                     projectService.getProjectTitleById(linkedId)
+                }
+                PostType.MEAL -> {
+                    val linkedId = PostEntity.linkedId
+                    mealPostService.getMealPostDetail(linkedId).title
                 }
             }
 

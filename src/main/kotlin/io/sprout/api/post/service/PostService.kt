@@ -75,7 +75,7 @@ class PostService(
     @Transactional
     fun createMealPost(dto: MealPostDto.MealPostCreateRequest, clientId: Long): Boolean {
         return try {
-            val mealId = mealPostService.createMealPost(dto)
+            val mealId = mealPostService.createMealPostReturnId(dto)
             val post = PostEntity(
                 clientId = clientId,
                 postType = PostType.MEAL,
