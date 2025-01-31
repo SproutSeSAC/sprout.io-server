@@ -44,7 +44,8 @@ class MealPostService(
 
         return result.map { projection ->
             val post = postRepository.findByLinkedIdAndPostType(projection.id, PostType.MEAL)
-            projection.copy(postId = post?.id)
+            projection.postId = post?.id
+            projection
         }
     }
 
