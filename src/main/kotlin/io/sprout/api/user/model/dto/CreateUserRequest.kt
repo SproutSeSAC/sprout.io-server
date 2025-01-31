@@ -18,6 +18,9 @@ data class CreateUserRequest(
     @Schema(description = "닉네임", nullable = false)
     @field:NotNull val nickname: String,
 
+    @Schema(description = "전화번호", nullable = false)
+    @field:NotNull val phoneNumber: String,
+
     @Schema(description = "유저 타입", nullable = false, example = "ADMIN, TRAINEE, PRE_TRAINEE, CAMPUS_MANAGER, EDU_MANAGER, JOB_COORDINATOR")
     @field:NotNull val role: RoleType,
 

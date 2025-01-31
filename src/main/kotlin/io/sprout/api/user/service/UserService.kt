@@ -91,6 +91,7 @@ class UserService(
 
     /**
      * User의 필수정보를 입력하는 과정
+     * OPERATION_MANAGER & CAMPUS_LEADER 는 추가적인 CAMPUS_ID LIST 필요
      *
      * @param request User 필수정보 파라미터
      * @param accessToken Access Token String

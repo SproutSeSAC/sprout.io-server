@@ -15,6 +15,9 @@ data class UserDetailResponse(
     @Schema(description = "이메일", nullable = false)
     val email: String,
 
+    @Schema(description = "전화번호")
+    val phoneNumber: String?,
+
     @Schema(description = "유저 명", nullable = true)
     val name: String?,
 
@@ -57,6 +60,7 @@ data class UserDetailResponse(
         userId = user.id,
         name = user.name,
         email = user.email,
+        phoneNumber = user.phoneNumber,
         campusList = campusEntities.map {
             SpecificationsDto.CampusInfoDto(
                 it.id,
