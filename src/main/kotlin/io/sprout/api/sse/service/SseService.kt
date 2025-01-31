@@ -21,6 +21,9 @@ class SseService (
     fun subscribe(clientID: Long): Sinks.Many<String> {
         val sink = Sinks.many().multicast().onBackpressureBuffer<String>()
         subscribers[clientID] = SubscriberDto(sink, true)
+
+        sink.tryEmitNext("data: welcome\n\n")
+
         return sink
     }
 
@@ -37,8 +40,13 @@ class SseService (
 
     @Scheduled(fixedRate = 30000) // 30초
     fun sendKeepAliveMessages() {
-        subscribers.forEach { (it, subscriber) ->
-            subscriber.sink.tryEmitNext("check").orThrow()
+        subscribers.forEach { (clientId, subscriber) ->
+            val result = subscriber.sink.tryEmitNext("data: check\n\n")
+            if (result.isFailure) {
+                println("⚠️ [SSE ERROR] KeepAlive 메시지 전송 실패 (clientID: $clientId, result: $result)")
+            } else {
+                println("✅ [SSE] KeepAlive 메시지 전송 성공 (clientID: $clientId)")
+            }
         }
     }
 

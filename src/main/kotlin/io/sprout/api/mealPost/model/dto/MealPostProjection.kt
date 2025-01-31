@@ -14,6 +14,7 @@ data class MealPostProjection (
     val ownerNickname: String,
     val ownerProfileImageUrl: String,
 
-    val isParticipant: Boolean?,
-    val postId: Long? = null
-)
+    val isParticipant: Boolean?
+) {
+    var postId: Long? = null
+}
