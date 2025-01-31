@@ -22,7 +22,7 @@ class UserRepositoryCustomImpl(
             .where(
                 userCourseEntity.course.id.eq(courseId)
                     .and(
-                        userEntity.role.eq(RoleType.CAMPUS_MANAGER)
+                        userEntity.role.eq(RoleType.CAMPUS_LEADER)
                             .or(userEntity.role.eq(RoleType.JOB_COORDINATOR))
                     )
             )
