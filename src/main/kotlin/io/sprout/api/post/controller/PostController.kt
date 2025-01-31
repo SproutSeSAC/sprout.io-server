@@ -1,9 +1,11 @@
 package io.sprout.api.post.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.convertValue
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.comment.dto.CommentResponseDto
 import io.sprout.api.comment.service.CommentService
+import io.sprout.api.mealPost.model.dto.MealPostDto
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.post.dto.PostRequestDto
 import io.sprout.api.post.entities.PostType
@@ -38,6 +40,10 @@ class PostController(
             } else if (requestMap.containsKey("noticeTitle")) {
                 val dto = objectMapper.convertValue(requestMap, NoticeRequestDto::class.java)
                 val result = postService.createNoticePost(dto, clientID)
+                ResponseEntity.ok(result)
+            } else if (requestMap.containsKey("storeName")) {
+                val dto = objectMapper.convertValue(requestMap, MealPostDto.MealPostCreateRequest::class.java)
+                val result = postService.createMealPost(dto, clientID)
                 ResponseEntity.ok(result)
             } else {
                 throw IllegalArgumentException("DTO 구성을 확인 해 주세요.")

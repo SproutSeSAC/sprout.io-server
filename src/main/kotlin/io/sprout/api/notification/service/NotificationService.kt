@@ -25,8 +25,8 @@ class NotificationService(
         val notification = NotificationEntity(
                 userId = userId,
                 fromId = fromId,
-                type = content.split(',')[0].toLong(),
-                content = content.split(',')[1]
+                type = content.split("::")[0].toLong(),
+                content = content.split("::")[1]
         )
 
         val notification_log = NotificationLogEntity(

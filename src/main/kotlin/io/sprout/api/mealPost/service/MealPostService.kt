@@ -12,6 +12,9 @@ import io.sprout.api.mealPost.model.entities.MealPostParticipationEntity
 import io.sprout.api.mealPost.model.entities.MealPostStatus
 import io.sprout.api.mealPost.repository.MealPostParticipationRepository
 import io.sprout.api.mealPost.repository.MealPostRepository
+import io.sprout.api.post.entities.PostType
+import io.sprout.api.post.repository.PostRepository
+import io.sprout.api.sse.service.SseService
 import io.sprout.api.store.repository.StoreRepository
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
@@ -28,13 +31,21 @@ class MealPostService(
     private val mealPostParticipationRepository: MealPostParticipationRepository,
     private val userRepository: UserRepository,
     private val storeRepository: StoreRepository,
-    private val securityManager: SecurityManager
+    private val securityManager: SecurityManager,
+    private val sseService: SseService,
+    private val postRepository: PostRepository,
 ) {
 
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
     fun getMealPostList(pageable: Pageable): List<MealPostProjection> {
-        return mealPostRepository.findMealPostList(pageable, getUserInfo().id)
+        val userId = getUserInfo().id
+        val result = mealPostRepository.findMealPostList(pageable, userId)
+
+        return result.map { projection ->
+            val post = postRepository.findByLinkedIdAndPostType(projection.id, PostType.MEAL)
+            projection.copy(postId = post?.id)
+        }
     }
 
     fun createMealPost(request: MealPostDto.MealPostCreateRequest) {
@@ -60,6 +71,40 @@ class MealPostService(
         try {
             val mealPost = mealPostRepository.save(mealPostEntity)
             log.debug("createMealPost, mealPostId is: {}", mealPost.id )
+
+        } catch (e: DataIntegrityViolationException) {
+            // 데이터 무결성 예외 처리
+            throw CustomDataIntegrityViolationException("User data integrity violation: ${e.message}")
+        } catch (e: JpaSystemException) {
+            // 시스템 오류 처리
+            throw CustomSystemException("System error occurred while saving meal post: ${e.message}")
+        }
+    }
+
+    fun createMealPostReturnId(request: MealPostDto.MealPostCreateRequest): Long {
+
+        val user = getUserInfo()
+        val mealPostEntity = MealPostEntity(
+            title = request.title?: "",
+            appointmentTime = request.appointmentTime,
+            memberCount = request.memberCount,
+            meetingPlace = request.meetingPlace,
+            mealPostStatus = MealPostStatus.ACTIVE,
+            storeName = request.storeName
+        )
+
+        mealPostEntity.mealPostParticipationList.plusAssign(
+            MealPostParticipationEntity(
+                user = user,
+                mealPost = mealPostEntity,
+                ordinalNumber = 1
+            )
+        )
+
+        try {
+            val mealPost = mealPostRepository.save(mealPostEntity)
+            log.debug("createMealPost, mealPostId is: {}", mealPost.id )
+            return mealPost.id
 
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
@@ -120,6 +165,7 @@ class MealPostService(
 
         try {
             mealPostRepository.save(mealPost)
+            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "0::" + mealPost.title + "에 새로운 스프가 참여했습니다.")
             log.debug("JoinParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
@@ -145,6 +191,7 @@ class MealPostService(
 
         try {
             mealPostRepository.save(mealPost)
+            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "1::" + mealPost.title + "에 신청한 스프가 취소했습니다.")
             log.debug("LeaveParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리

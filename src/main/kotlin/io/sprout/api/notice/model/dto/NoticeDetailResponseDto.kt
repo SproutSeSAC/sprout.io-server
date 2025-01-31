@@ -25,6 +25,7 @@ data class NoticeDetailResponseDto(
     // 교육과정 대상
     var targetCourses: List<TargetCourse> = mutableListOf(),
     // 특강 세션
+    var postId: Long? = null
 ){
 
     var isScraped: Boolean = false

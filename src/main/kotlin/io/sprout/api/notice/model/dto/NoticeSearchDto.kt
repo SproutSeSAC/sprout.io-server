@@ -25,7 +25,9 @@ data class NoticeSearchDto(
     val modifiedDateTime: LocalDateTime,
 
     var isScraped: Boolean,
-    val targetCourse: List<String>
+    val targetCourse: List<String>,
+
+    var postId: Long? = null
 )
 
 data class NoticeSearchResponseDto(
