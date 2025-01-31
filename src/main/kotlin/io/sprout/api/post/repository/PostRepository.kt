@@ -1,5 +1,7 @@
 package io.sprout.api.post.repository
 
+import io.sprout.api.notice.model.entities.NoticeParticipantEntity
+import io.sprout.api.notice.model.entities.NoticeSessionEntity
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import jakarta.persistence.Id
@@ -22,14 +24,13 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     fun findNoticeIdsByUserIdFromParticipant(@Param("userId") userId: Long): List<Long>
 
     @Query("""
-        SELECT p
-        FROM PostEntity p
-        JOIN NoticeEntity n ON n.id = p.linkedId
-        JOIN NoticeSessionEntity ns ON ns.notice.id = n.id
-        JOIN NoticeParticipantEntity np ON np.noticeSession.id = ns.id
-        WHERE p.postType = 'NOTICE' AND np.user.id = :userId
+        SELECT np
+        FROM NoticeParticipantEntity np
+        JOIN np.noticeSession ns
+        JOIN ns.notice n
+        WHERE np.user.id = :userId
     """)
-    fun findNoticesByUserIdFromParticipant(@Param("userId") userId: Long): List<PostEntity>
+    fun findNoticesByUserIdFromParticipant(@Param("userId") userId: Long): List<NoticeParticipantEntity>
 
     fun findByLinkedIdAndPostType(linkedId: Long, postType: PostType): PostEntity?
 }

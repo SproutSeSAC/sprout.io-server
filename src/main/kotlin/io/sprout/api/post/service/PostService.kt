@@ -3,6 +3,7 @@ package io.sprout.api.post.service
 import io.sprout.api.mealPost.model.dto.MealPostDto
 import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
+import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
 import io.sprout.api.post.dto.PostDto
 import io.sprout.api.post.entities.PostEntity
@@ -279,7 +280,7 @@ class PostService(
     /**
      * 참여 글 목록 읽기 (전체)
      */
-    fun getNoticesByUserIdFromParticipant(userId: Long): List<PostEntity> {
+    fun getNoticesByUserIdFromParticipant(userId: Long): List<NoticeParticipantEntity> {
         return postRepository.findNoticesByUserIdFromParticipant(userId)
     }
 

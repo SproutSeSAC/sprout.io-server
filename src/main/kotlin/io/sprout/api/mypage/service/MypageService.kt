@@ -5,6 +5,7 @@ import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.repository.*
+import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
@@ -160,23 +161,10 @@ class MypageService(
 
     // 참여 글 목록 조회 (제목만)
     fun getPostParticipantListTitleByUserId(userId: Long): List<String> {
-        val DetailPost: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
+        val DetailPost: List<NoticeParticipantEntity> = postService.getNoticesByUserIdFromParticipant(userId)
 
-        val participantsNames: List<String> = DetailPost.map { postEntity ->
-            when (postEntity.postType) {
-                PostType.NOTICE -> {
-                    val linkedId = postEntity.linkedId
-                    noticeService.getNoticeTitleById(linkedId)
-                }
-                PostType.PROJECT -> {
-                    val linkedId = postEntity.linkedId
-                    projectService.getProjectTitleById(linkedId)
-                }
-                PostType.MEAL -> {
-                    val linkedId = postEntity.linkedId
-                    mealPostService.getMealPostDetail(linkedId).title
-                }
-            }
+        val participantsNames: List<String> = DetailPost.map { data ->
+            data.noticeSession.notice.title
         }
 
         return participantsNames
@@ -184,26 +172,12 @@ class MypageService(
 
     // 참여 글 데이터 전체 조회 (전체)
     fun getPostParticipantListByUserId(userId: Long): List<ParticipantDto> {
-        val DetailPost: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
-        val participant: List<ParticipantDto> = DetailPost.map { PostEntity ->
-            val title = when (PostEntity.postType) {
-                PostType.NOTICE -> {
-                    val linkedId = PostEntity.linkedId
-                    noticeService.getNoticeTitleById(linkedId)
-                }
-                PostType.PROJECT -> {
-                    val linkedId = PostEntity.linkedId
-                    projectService.getProjectTitleById(linkedId)
-                }
-                PostType.MEAL -> {
-                    val linkedId = PostEntity.linkedId
-                    mealPostService.getMealPostDetail(linkedId).title
-                }
-            }
-
+        val DetailPost: List<NoticeParticipantEntity> = postService.getNoticesByUserIdFromParticipant(userId)
+        val participant: List<ParticipantDto> = DetailPost.map { data ->
             ParticipantDto(
-                title = title,
-                id = PostEntity.linkedId
+                title = data.noticeSession.notice.title,
+                id = data.noticeSession.notice.id,
+                participantId = data.noticeSession.id
             )
         }
 
