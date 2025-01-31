@@ -13,6 +13,7 @@ import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserCourseEntity
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
+import io.sprout.api.utils.AuthorizationUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -47,7 +48,7 @@ class CourseService(
     fun searchCourse(searchRequest: CourseSearchRequestDto): CourseSearchResponseDto {
         // 관리자 권한 확인
         val user = getUser()
-        validateUserIsManagerRole(user)
+        AuthorizationUtil.validateUserIsManagerRole(user)
 
         return courseRepository.searchCourse(searchRequest, user)
     }
@@ -55,19 +56,19 @@ class CourseService(
     /**
      * 관리자용
      * 교육과정 추가
-     * 해당 campaus의 CAMPUS_MANAGER와 ADMIN에 교육과정 추가
+     * 해당 campaus의 CAMPUS_LEADER, OPERATION_MANAGER, SUPER_ADMIN에 교육과정 추가
      */
     fun createCourse(createRequest: CourseRequestDto) {
         val user = getUser()
-        validateUserIsUpCampusManagerRole(user)
+        AuthorizationUtil.validateUserIsAdminRole(user)
         val savedCourse = courseRepository.save(createRequest.toEntity())
 
-        val campusManagers = userCampusRepository.findByCampusId(createRequest.campusId)
+        val sessacManagers = userCampusRepository.findByCampusId(createRequest.campusId)
         userCourseRepository.saveAll(
-            campusManagers.map { UserCourseEntity(savedCourse, it.user) }
+            sessacManagers.map { UserCourseEntity(savedCourse, it.user) }
         )
 
-        val admins = userRepository.findByRole(RoleType.ADMIN)
+        val admins = userRepository.findByRole(RoleType.SUPER_ADMIN)
         userCourseRepository.saveAll(
             admins.map { UserCourseEntity(savedCourse, it) }
         )
@@ -81,7 +82,7 @@ class CourseService(
     @Transactional
     fun updateCourse(updateRequest: CourseRequestDto, courseId: Long) {
         val user = getUser()
-        validateUserIsManagerRole(user)
+        AuthorizationUtil.validateUserIsManagerRole(user)
 
         val course = courseRepository.findById(courseId)
             .orElseThrow {throw CustomBadRequestException("not found course")}
@@ -112,31 +113,5 @@ class CourseService(
 
     private fun getUser(): UserEntity {
         return userRepository.findById(getUserId()).orElseThrow { throw CustomBadRequestException("Not found user") }
-    }
-
-    private fun validateUserIsManagerRole(user: UserEntity) {
-        val isManagerRole = listOf(
-            RoleType.ADMIN,
-            RoleType.CAMPUS_MANAGER,
-            RoleType.EDU_MANAGER,
-            RoleType.JOB_COORDINATOR
-        )
-            .contains(user.role)
-
-        if (isManagerRole.not()) {
-            throw CustomBadRequestException("user role ${user.role} is not authorization")
-        }
-    }
-
-    private fun validateUserIsUpCampusManagerRole(user: UserEntity) {
-        val isManagerRole = listOf(
-            RoleType.ADMIN,
-            RoleType.CAMPUS_MANAGER
-        )
-            .contains(user.role)
-
-        if (isManagerRole.not()) {
-            throw CustomBadRequestException("user role ${user.role} is not authorization")
-        }
     }
 }
