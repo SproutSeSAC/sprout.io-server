@@ -47,7 +47,7 @@ class CardDto {
             val campus: List<CampusInfo>,
 
             @Schema(description = "과정")
-            val course: Optional<CourseInfo>,
+            val course: List<CourseInfo>,
             )
 
     @Schema(description = "카드 정보 (프로필 + 교육)")

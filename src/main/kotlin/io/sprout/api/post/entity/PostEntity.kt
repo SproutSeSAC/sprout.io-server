@@ -1,6 +1,7 @@
 package io.sprout.api.post.entities
 
 import io.sprout.api.comment.entity.CommentEntity
+import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.notice.repository.NoticeRepository
 import io.sprout.api.project.repository.ProjectRepository
 import jakarta.persistence.*
@@ -47,12 +48,17 @@ class PostEntity(
     @Autowired
     private lateinit var noticeRepository: NoticeRepository
 
-    @PreRemove // 이건 차후 삭제하면서 서비스에 병합시키는게 좋아 보입니다.
+    @Transient
+    @Autowired
+    private lateinit var mealPostService: MealPostService
+
+    @PreRemove
     fun deleteLinkedEntity() {
         try {
             when (postType) {
                 PostType.PROJECT -> linkedId?.let { projectRepository.deleteById(it) }
                 PostType.NOTICE -> linkedId?.let { noticeRepository.deleteById(it) }
+                PostType.MEAL -> linkedId?.let { mealPostService.deleteMealPost(it) }
             }
         } catch (e: Exception) {
             println("삭제 실패 : ${e.message}")
@@ -62,5 +68,6 @@ class PostEntity(
 
 enum class PostType {
     NOTICE, // 공지사항
-    PROJECT // 모집글
+    PROJECT, // 모집글
+    MEAL // 한끼팟
 }

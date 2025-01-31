@@ -2,6 +2,7 @@ package io.sprout.api.mypage.service
 
 import io.sprout.api.comment.service.CommentService
 import io.sprout.api.course.infra.CourseRepository
+import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.repository.*
 import io.sprout.api.notice.service.NoticeService
@@ -23,6 +24,7 @@ class MypageService(
         private val postService: PostService,
         private val noticeService: NoticeService,
         private val projectService: ProjectService,
+        private val mealPostService: MealPostService,
         private val commentService: CommentService,
         private val scrapService: ScrapService
 ) {
@@ -48,7 +50,7 @@ class MypageService(
             )
         }
 
-        val CourseCard = userCourseRepository.findByUser_Id(userId).map {
+        val CourseCard = userCourseRepository.findByUserId(userId).map {
             CardDto.CourseInfo(
                 id = it.course.id,
                 courseName = it.course.title
@@ -92,7 +94,7 @@ class MypageService(
     // region [게시글 관련 API]
 
     // 작성 글 목록 조회
-    fun getPostListByUserId(clientId: Long): List<PostDto> {
+    fun getPostListByUserId(clientId: Long): List<PostAndNickNameDto> {
         val posts = postService.getPostsByClientId(clientId)
 
         // DTO 변환
@@ -106,16 +108,24 @@ class MypageService(
                     val linkedId = post.linkedId
                     projectService.getProjectTitleById(linkedId)
                 }
+                PostType.MEAL -> {
+                    val linkedId = post.linkedId
+                    mealPostService.getMealPostDetail(linkedId)
+                }
             }
 
-            PostDto(
-                    postId = post.id,
-                    linkedId = post.linkedId,
-                    clientId = post.clientId,
-                    postType = post.postType.name,
-                    title = title,
-                    createdAt = post.createdAt,
-                    updatedAt = post.updatedAt
+            val user = userRepository.findById(post.clientId)
+                .orElseThrow { EntityNotFoundException("유저 Id를 찾을 수 없음") }
+
+            PostAndNickNameDto(
+                postId = post.id,
+                linkedId = post.linkedId,
+                clientId = post.clientId,
+                postType = post.postType.name,
+                title = title.toString(),
+                createdAt = post.createdAt,
+                updatedAt = post.updatedAt,
+                createdNickName = user.nickname
             )
         }
     }
@@ -126,10 +136,10 @@ class MypageService(
 
         return comments.map {
             PostCommentDto(
-                    commentId = it.id,
-                    userId = it.userId,
-                    postId = it.postId,
-                    content = it.content
+                commentId = it.id,
+                userNickname = it.userNickname,
+                postId = it.postId,
+                content = it.content,
             )
         }
     }
@@ -162,6 +172,10 @@ class MypageService(
                     val linkedId = postEntity.linkedId
                     projectService.getProjectTitleById(linkedId)
                 }
+                PostType.MEAL -> {
+                    val linkedId = postEntity.linkedId
+                    mealPostService.getMealPostDetail(linkedId).title
+                }
             }
         }
 
@@ -169,9 +183,9 @@ class MypageService(
     }
 
     // 참여 글 데이터 전체 조회 (전체)
-    fun getPostParticipantListByUserId(userId: Long): List<PostDto> {
+    fun getPostParticipantListByUserId(userId: Long): List<ParticipantDto> {
         val DetailPost: List<PostEntity> = postService.getNoticesByUserIdFromParticipant(userId)
-        val participant: List<PostDto> = DetailPost.map { PostEntity ->
+        val participant: List<ParticipantDto> = DetailPost.map { PostEntity ->
             val title = when (PostEntity.postType) {
                 PostType.NOTICE -> {
                     val linkedId = PostEntity.linkedId
@@ -181,16 +195,15 @@ class MypageService(
                     val linkedId = PostEntity.linkedId
                     projectService.getProjectTitleById(linkedId)
                 }
+                PostType.MEAL -> {
+                    val linkedId = PostEntity.linkedId
+                    mealPostService.getMealPostDetail(linkedId).title
+                }
             }
 
-            PostDto(
-                postId = PostEntity.id,
-                linkedId = PostEntity.linkedId,
-                clientId = PostEntity.clientId,
-                postType = PostEntity.postType.name,
+            ParticipantDto(
                 title = title,
-                createdAt = PostEntity.createdAt,
-                updatedAt = PostEntity.updatedAt
+                id = PostEntity.linkedId
             )
         }
 

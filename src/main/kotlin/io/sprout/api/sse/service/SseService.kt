@@ -1,16 +1,19 @@
 package io.sprout.api.sse.service
 
 import io.sprout.api.infra.sse.model.SubscriberDto
+import io.sprout.api.notice.repository.NoticeSessionRepository
 import io.sprout.api.notification.service.NotificationService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Sinks
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class SseService (
-        private val notificationService: NotificationService
+    private val notificationService: NotificationService,
+    private val noticeSessionRepository: NoticeSessionRepository
 ) {
     private val subscribers = ConcurrentHashMap<Long, SubscriberDto>()
 
@@ -38,4 +41,34 @@ class SseService (
             subscriber.sink.tryEmitNext("check").orThrow()
         }
     }
+
+    @Scheduled(cron = "0 0,30 * * * *")
+    fun sendSessionNotifications() {
+        val now = LocalDateTime.now()
+
+        val future30 = now.plusMinutes(31)
+        val upcomingSessions = noticeSessionRepository.findSessionsAfter(now, future30)
+        upcomingSessions.forEach { session ->
+            session.noticeParticipants.forEach { participant ->
+                publish(
+                    session.notice.user.id,
+                    participant.user.id,
+                    "8::곧 ${session.notice.title}이 시작됩니다! 장소를 확인해주세요."
+                )
+            }
+        }
+
+        val past30 = now.minusMinutes(31)
+        val pastSessions = noticeSessionRepository.findSessionsBefore(past30)
+        pastSessions.forEach { session ->
+            session.noticeParticipants.forEach { participant ->
+                publish(
+                    session.notice.user.id,
+                    participant.user.id,
+                    "9::z${session.notice.title}은 어떠셨나요? 만족도 조사에 참여해 주세요!"
+                )
+            }
+        }
+    }
+
 }

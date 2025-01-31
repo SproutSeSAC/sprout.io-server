@@ -1,9 +1,9 @@
 package io.sprout.api.comment.entity
 
-import io.sprout.api.common.model.entities.BaseEntity
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.user.model.entities.UserEntity
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "comment")
@@ -22,4 +22,10 @@ class CommentEntity(
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "post_id", nullable = false)
         var post: PostEntity,
-) : BaseEntity()
+
+        @Column(name = "created_at", nullable = false)
+        var createdAt: LocalDateTime,
+
+        @Column(name = "img_url", nullable = false)
+        var imgurl: String,
+)

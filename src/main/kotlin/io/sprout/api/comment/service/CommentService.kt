@@ -5,16 +5,21 @@ import io.sprout.api.comment.dto.CommentRequestDto
 import io.sprout.api.comment.dto.CommentResponseDto
 import io.sprout.api.comment.repository.CommentRepository
 import io.sprout.api.post.repository.PostRepository
+import io.sprout.api.post.service.PostService
+import io.sprout.api.sse.service.SseService
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class CommentService(
         private val commentRepository: CommentRepository,
         private val userRepository: UserRepository,
-        private val postRepository: PostRepository
+        private val postRepository: PostRepository,
+        private val sseService: SseService,
+        private val postService: PostService
 ) {
     @Transactional
     fun createComment(clientID: Long, dto: CommentRequestDto): CommentResponseDto {
@@ -27,9 +32,12 @@ class CommentService(
         val comment = CommentEntity(
                 content = dto.content,
                 user = user,
-                post = post
+                post = post,
+                imgurl = dto.imgUrl,
+                createdAt = LocalDateTime.now()
         )
         val savedComment = commentRepository.save(comment)
+        sseService.publish(clientID, post.clientId, "3::" + postService.getPostTitle(post.linkedId) + "에 댓글이 등록되었습니다.")
         return convertToResponseDto(savedComment)
     }
 
@@ -88,10 +96,12 @@ class CommentService(
         val comments = commentRepository.findByPostId(postId)
         return comments.map { comment ->
             CommentResponseDto(
-                    id = comment.id,
-                    content = comment.content,
-                    userId = comment.user.id,
-                    postId = comment.post.id
+                id = comment.id,
+                content = comment.content,
+                userNickname = comment.user.nickname,
+                postId = comment.post.id,
+                imgUrl = comment.imgurl,
+                createAt = comment.createdAt
             )
         }
     }
@@ -108,10 +118,12 @@ class CommentService(
 
     private fun convertToResponseDto(comment: CommentEntity): CommentResponseDto {
         return CommentResponseDto(
-                id = comment.id,
-                content = comment.content,
-                userId = comment.user.id,
-                postId = comment.post.id
+            id = comment.id,
+            content = comment.content,
+            userNickname = comment.user.nickname,
+            postId = comment.post.id,
+            imgUrl = comment.imgurl,
+            createAt = comment.createdAt
         )
     }
 }

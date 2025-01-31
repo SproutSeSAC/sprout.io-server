@@ -5,6 +5,8 @@ import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationExceptio
 import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
 import io.sprout.api.position.model.entities.PositionEntity
+import io.sprout.api.post.entities.PostType
+import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
 import io.sprout.api.project.repository.*
@@ -25,7 +27,8 @@ class ProjectServiceImpl(
     private val projectPositionRepository: ProjectPositionRepository,
     private val projectTechStackRepository: ProjectTechStackRepository,
     private val scrapedProjectRepository: ScrapedProjectRepository,
-    private val projectCommentRepository: ProjectCommentRepository
+    private val projectCommentRepository: ProjectCommentRepository,
+    private val postRepository: PostRepository,
 ) : ProjectService {
 
     private fun <T> handleExceptions(action: () -> T): T {
@@ -59,7 +62,18 @@ class ProjectServiceImpl(
             val validPage = if (filterRequest.page < 1) 1 else filterRequest.page
             val validSize = if (filterRequest.size <= 0) 20 else filterRequest.size
             val updatedFilterRequest = filterRequest.copy(page = validPage, size = validSize)
-            projectRepository.filterProjects(updatedFilterRequest, securityManager.getAuthenticatedUserName()!!)
+
+            val (projectList, totalCount) = projectRepository.filterProjects(
+                updatedFilterRequest,
+                securityManager.getAuthenticatedUserName()!!
+            )
+
+            projectList.forEach { dto ->
+                val post = postRepository.findByLinkedIdAndPostType(dto.id, PostType.PROJECT)
+                dto.postId = post?.id
+            }
+
+            Pair(projectList, totalCount)
         }
     }
 

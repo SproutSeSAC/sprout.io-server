@@ -43,7 +43,7 @@ class MypageController(
 
     @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")
     @GetMapping("/getPost")
-    fun getPostList(): ResponseEntity<List<PostDto>> {
+    fun getPostList(): ResponseEntity<List<PostAndNickNameDto>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
         return ResponseEntity.ok(mypageService.getPostListByUserId(userId))
@@ -76,7 +76,7 @@ class MypageController(
 
     @Operation(summary = "신청한 글 상세정보", description = "신청한 글들의 정보를 반환합니다.")
     @GetMapping("/getParticipant")
-    fun getPostParticipantList(): ResponseEntity<List<PostDto>> {
+    fun getPostParticipantList(): ResponseEntity<List<ParticipantDto>> {
         val userId = securityManager.getAuthenticatedUserName()
             ?: return ResponseEntity.status(401).body(null)
 
