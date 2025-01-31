@@ -178,7 +178,7 @@ class MypageService(
             ParticipantDto(
                 title = data.noticeSession.notice.title,
                 id = data.noticeSession.notice.id,
-                participantId = data.noticeSession.id
+                participantId = data.id
             )
         }
 
