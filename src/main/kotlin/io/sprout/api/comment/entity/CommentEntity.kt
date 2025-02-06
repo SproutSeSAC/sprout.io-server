@@ -26,6 +26,6 @@ class CommentEntity(
         @Column(name = "created_at", nullable = false)
         var createdAt: LocalDateTime,
 
-        @Column(name = "img_url", nullable = false)
+        @Column(name = "img_url", nullable = true)
         var imgurl: String,
 )
