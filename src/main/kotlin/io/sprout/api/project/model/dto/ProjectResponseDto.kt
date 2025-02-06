@@ -16,7 +16,7 @@ data class ProjectResponseDto @QueryProjection constructor(
     val positionNames: List<String>,
 //    val techStackNames: List<String>,
     val techStacks: List<TechStacks>,
-    val isScraped: Boolean,
+    var isScraped: Boolean,
     val viewCount: Int,
 ){
     var postId: Long? = null

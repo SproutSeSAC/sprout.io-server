@@ -10,6 +10,7 @@ import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
 import io.sprout.api.project.repository.*
+import io.sprout.api.scrap.repository.ScrapRepository
 import io.sprout.api.specification.model.entities.jobEntityOf
 import io.sprout.api.specification.model.entities.TechStackEntity
 import io.sprout.api.user.model.entities.UserEntity
@@ -29,6 +30,7 @@ class ProjectServiceImpl(
     private val scrapedProjectRepository: ScrapedProjectRepository,
     private val projectCommentRepository: ProjectCommentRepository,
     private val postRepository: PostRepository,
+    private val scrapRepository: ScrapRepository
 ) : ProjectService {
 
     private fun <T> handleExceptions(action: () -> T): T {
@@ -62,6 +64,7 @@ class ProjectServiceImpl(
             val validPage = if (filterRequest.page < 1) 1 else filterRequest.page
             val validSize = if (filterRequest.size <= 0) 20 else filterRequest.size
             val updatedFilterRequest = filterRequest.copy(page = validPage, size = validSize)
+            val id = securityManager.getAuthenticatedUserId()
 
             val (projectList, totalCount) = projectRepository.filterProjects(
                 updatedFilterRequest,
@@ -71,6 +74,9 @@ class ProjectServiceImpl(
             projectList.forEach { dto ->
                 val post = postRepository.findByLinkedIdAndPostType(dto.id, PostType.PROJECT)
                 dto.postId = post?.id
+                if (dto.postId != null) {
+                    dto.isScraped = (scrapRepository.findByUserIdAndPostId(id, dto.postId!!)) !== null
+                }
             }
 
             Pair(projectList, totalCount)
