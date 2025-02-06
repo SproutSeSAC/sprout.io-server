@@ -8,6 +8,7 @@ import io.sprout.api.notice.model.entities.*
 import io.sprout.api.notice.repository.*
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
+import io.sprout.api.scrap.repository.ScrapRepository
 import io.sprout.api.sse.service.SseService
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
@@ -34,6 +35,7 @@ class NoticeServiceImpl(
     private val userRepository: UserRepository,
     private val sseService: SseService,
     private val postRepository: PostRepository,
+    private val scrapRepository: ScrapRepository
 ) : NoticeService {
 
     /**
@@ -97,12 +99,10 @@ class NoticeServiceImpl(
 
         responseDto.sessions = noticeRepository.findByIdWithSession(noticeId, user.id)
 
-        val isScraped: ScrapedNoticeEntity? = scrapedNoticeRepository.findByNoticeIdAndUserId(noticeId, user.id)
-        responseDto.isScraped = (isScraped != null)
-
         val post = postRepository.findByLinkedIdAndPostType(noticeId, PostType.NOTICE)
             ?: throw CustomBadRequestException("게시글(Post)이 없습니다.")
         responseDto.postId = post.id
+        responseDto.isScraped = ((scrapRepository.findByUserIdAndPostId(user.id, post.id)) != null)
 
         return responseDto
     }
