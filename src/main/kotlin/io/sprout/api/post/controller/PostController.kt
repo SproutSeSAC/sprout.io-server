@@ -88,9 +88,30 @@ class PostController(
             summary = "게시글 수정 API",
             description = "입력된 DTO 타입에 따라 공지사항 또는 프로젝트 게시글을 수정합니다."
     )
-    fun updatePost(@PathVariable postId: Long, @RequestBody dto: Any): ResponseEntity<Boolean> {
-        val result = postService.updatePost(postId, dto)
-        return ResponseEntity.ok(result)
+    fun updatePost(@PathVariable postId: Long, @RequestBody requestMap: Map<String, Any>): ResponseEntity<Boolean> {
+        val clientID = securityManager.getAuthenticatedUserName()
+            ?: return ResponseEntity.status(401).build()
+
+        return try {
+            if (requestMap.containsKey("projectTitle")) {
+                val dto = objectMapper.convertValue(requestMap, ProjectRecruitmentRequestDto::class.java)
+                val result = postService.updatePost(postId, dto)
+                ResponseEntity.ok(result)
+            } else if (requestMap.containsKey("noticeTitle")) {
+                val dto = objectMapper.convertValue(requestMap, NoticeRequestDto::class.java)
+                val result = postService.updatePost(postId, dto)
+                ResponseEntity.ok(result)
+            } else if (requestMap.containsKey("storeName")) {
+                val dto = objectMapper.convertValue(requestMap, MealPostDto.MealPostCreateRequest::class.java)
+                val result = postService.updatePost(postId, dto)
+                ResponseEntity.ok(result)
+            } else {
+                throw IllegalArgumentException("DTO 구성을 확인 해 주세요.")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ResponseEntity.badRequest().build()
+        }
     }
 
     @DeleteMapping("/{postId}")
