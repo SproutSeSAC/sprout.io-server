@@ -2,6 +2,7 @@ package io.sprout.api.user.controller
 
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
+import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.user.model.dto.*
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.service.GoogleUserService
@@ -69,7 +70,9 @@ class UserController(
     @Operation(summary = "계정 탈퇴", description = "계정 탈퇴 (상태값 변경, 실제 삭제는 30일 후 따로 진행)")
     fun deleteUser(
     ): ResponseEntity<String> {
-        userService.deleteUser()
+        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Check reissued access token")
+
+        userService.deleteUser(userId)
         return ResponseEntity.ok("success")
     }
 

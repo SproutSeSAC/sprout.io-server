@@ -4,7 +4,7 @@ import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 
-object AuthorizationUtil {
+object AuthorizationUtils {
     /**
      * SUPER_ADMIN, CAMPUS_LEADER, OPERATION_MANAGER, EDU_MANAGER, JOB_COORDINATOR, INSTRUCTOR
      */

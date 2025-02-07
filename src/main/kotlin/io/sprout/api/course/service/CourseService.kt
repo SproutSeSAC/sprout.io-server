@@ -13,7 +13,7 @@ import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserCourseEntity
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
-import io.sprout.api.utils.AuthorizationUtil
+import io.sprout.api.utils.AuthorizationUtils
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -48,7 +48,7 @@ class CourseService(
     fun searchCourse(searchRequest: CourseSearchRequestDto): CourseSearchResponseDto {
         // 관리자 권한 확인
         val user = getUser()
-        AuthorizationUtil.validateUserIsManagerRole(user)
+        AuthorizationUtils.validateUserIsManagerRole(user)
 
         return courseRepository.searchCourse(searchRequest, user)
     }
@@ -60,7 +60,7 @@ class CourseService(
      */
     fun createCourse(createRequest: CourseRequestDto) {
         val user = getUser()
-        AuthorizationUtil.validateUserIsAdminRole(user)
+        AuthorizationUtils.validateUserIsAdminRole(user)
         val savedCourse = courseRepository.save(createRequest.toEntity())
 
         val sessacManagers = userCampusRepository.findByCampusId(createRequest.campusId)
@@ -82,7 +82,7 @@ class CourseService(
     @Transactional
     fun updateCourse(updateRequest: CourseRequestDto, courseId: Long) {
         val user = getUser()
-        AuthorizationUtil.validateUserIsManagerRole(user)
+        AuthorizationUtils.validateUserIsManagerRole(user)
 
         val course = courseRepository.findById(courseId)
             .orElseThrow {throw CustomBadRequestException("not found course")}
