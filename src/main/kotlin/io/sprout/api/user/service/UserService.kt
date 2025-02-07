@@ -4,23 +4,27 @@ import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.auth.token.domain.JwtToken
 import io.sprout.api.campus.infra.CampusRepository
+import io.sprout.api.campus.model.entities.CampusEntity
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.common.exeption.custom.CustomSystemException
+import io.sprout.api.common.model.entities.PageResponse
 import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
+import io.sprout.api.course.model.entities.CourseEntity
+import io.sprout.api.mypage.dto.CardDto
+import io.sprout.api.mypage.service.MypageService
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
 import io.sprout.api.specification.repository.TechStackRepository
-import io.sprout.api.user.model.dto.CreateUserRequest
-import io.sprout.api.user.model.dto.UpdateUserRequest
-import io.sprout.api.user.model.dto.UserDetailResponse
+import io.sprout.api.user.model.dto.*
 import io.sprout.api.user.model.entities.*
 import io.sprout.api.user.repository.UserDomainRepository
 import io.sprout.api.user.repository.UserJobRepository
 import io.sprout.api.user.repository.UserRepository
 import io.sprout.api.user.repository.UserTechStackRepository
+import io.sprout.api.utils.AuthorizationUtils
 import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
 import io.sprout.api.verificationCode.repository.VerificationCodeRepository
@@ -29,7 +33,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.sql.ResultSet
 
 private const val i = 9999
 
@@ -47,7 +50,8 @@ class UserService(
     private val securityManager: SecurityManager,
     private val jwtToken: JwtToken,
     private val verificationCodeRepository: VerificationCodeRepository,
-    private val jdbcTemplate: JdbcTemplate
+    private val jdbcTemplate: JdbcTemplate,
+    private val mypageService: MypageService
 ) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
@@ -134,8 +138,7 @@ class UserService(
      * - user pk 를 유령회원 pk로 바꾸기
      */
     @Transactional
-    fun deleteUser() {
-        val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Check reissued access token")
+    fun deleteUser(userId: Long) {
         val anonymousUserId = 9999L
 
         val findTablesSql = """
@@ -260,6 +263,58 @@ class UserService(
         }
     }
 
+    /**
+     * 사용자 목록 조회 (관리자용)
+     * 자신의 캠퍼스 인원만 검색 가능
+     */
+    fun searchUsersByAdmin(searchRequest: UserSearchRequestDto): PageResponse<UserSearchResponseDto> {
+        val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsAdminRole(admin)
+
+        return userRepository.search(searchRequest, admin)
+    }
+
+
+    /**
+     * 사용자 권한 변경 (관리자용)
+     */
+    @Transactional
+    fun changeRoleByAdmin(updateRequest: RoleUpdateRequestDto, targetUserId: Long) {
+        val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsAdminRole(admin)
+        AuthorizationUtils.validateUserCourseContainAllTargetCourses(admin, updateRequest.courseIdList)
+
+        val targetUser = userRepository.findUserById(targetUserId) ?: throw CustomBadRequestException("Not found user")
+        targetUser.role = updateRequest.role
+        targetUser.userCourseList.clear()
+        targetUser.userCampusList.clear()
+
+        targetUser.userCourseList.addAll(
+            updateRequest.courseIdList
+                .map { UserCourseEntity(CourseEntity(it), targetUser) }
+        )
+        targetUser.userCampusList.addAll(
+            updateRequest.campusIdList
+                .map { UserCampusEntity(CampusEntity(it), targetUser) }
+        )
+    }
+
+
+    /**
+     * 사용자 조회 (관리자용)
+     */
+    fun getUserDetailByAdmin(userId: Long): CardDto.UserCard {
+        val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsAdminRole(admin)
+
+        return mypageService.getUserCard(userId)
+    }
 
     fun verifyCode(code: String) {
         val codeList = verificationCodeRepository.findAll()
