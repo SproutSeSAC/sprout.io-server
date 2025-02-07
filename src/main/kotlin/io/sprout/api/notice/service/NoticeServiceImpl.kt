@@ -9,10 +9,9 @@ import io.sprout.api.notice.repository.*
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.sse.service.SseService
-import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
-import io.sprout.api.utils.AuthorizationUtil
+import io.sprout.api.utils.AuthorizationUtils
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
@@ -45,8 +44,8 @@ class NoticeServiceImpl(
      */
     override fun createNotice(noticeRequest: NoticeRequestDto): Long {
         val user = getUser()
-        AuthorizationUtil.validateUserIsManagerRole(user)
-        AuthorizationUtil.validateUserCourseContainAllTargetCourses(user, noticeRequest.targetCourseIdList)
+        AuthorizationUtils.validateUserIsManagerRole(user)
+        AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeRequest.targetCourseIdList)
 
         val noticeEntity = if (noticeRequest.addIsSessionNotice()) {
             noticeRequest.toSessionEntity(user.id)
@@ -68,8 +67,8 @@ class NoticeServiceImpl(
         val noticeEntity = noticeRepository.findByIdAndCoursesAndUser(noticeId)
             ?: throw CustomBadRequestException("게시글이 존재하지 않습니다.")
 
-        AuthorizationUtil.validateUserIsManagerRole(user)
-        AuthorizationUtil.validateUserCourseContainAllTargetCourses(user, noticeEntity.targetCourses.map { it.course.id }.toSet())
+        AuthorizationUtils.validateUserIsManagerRole(user)
+        AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeEntity.targetCourses.map { it.course.id }.toSet())
 
         noticeEntity.update(noticeRequest)
 
@@ -91,7 +90,7 @@ class NoticeServiceImpl(
             ?: throw CustomBadRequestException("Not found notice")
         findNotice.increaseViewCount()
 
-        AuthorizationUtil.validateUserCourseContainAtLeastOneTargetCourses(user, findNotice.targetCourses.map { it.course.id }.toSet())
+        AuthorizationUtils.validateUserCourseContainAtLeastOneTargetCourses(user, findNotice.targetCourses.map { it.course.id }.toSet())
 
         val responseDto = NoticeDetailResponseDto(findNotice)
 
@@ -186,8 +185,8 @@ class NoticeServiceImpl(
         val noticeEntity = noticeRepository.findByIdAndCoursesAndUser(noticeId)
             ?: throw CustomBadRequestException("게시글이 존재하지 않습니다.")
 
-        AuthorizationUtil.validateUserIsManagerRole(user)
-        AuthorizationUtil.validateUserCourseContainAllTargetCourses(user, noticeEntity.targetCourses.map { it.course.id }.toSet())
+        AuthorizationUtils.validateUserIsManagerRole(user)
+        AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeEntity.targetCourses.map { it.course.id }.toSet())
 
         noticeCommentRepository.deleteByNoticeId(noticeId)
         scrapedNoticeRepository.deleteByNoticeId(noticeId)
@@ -204,7 +203,7 @@ class NoticeServiceImpl(
         val user = getUser()
         val session = noticeSessionRepository.findById(sessionId)
             .orElseThrow { throw CustomBadRequestException("세션이 존재하지 않습니다.") }
-        AuthorizationUtil.validateUserCourseContainAtLeastOneTargetCourses(user, session.notice.targetCourses.map { it.course.id }.toSet())
+        AuthorizationUtils.validateUserCourseContainAtLeastOneTargetCourses(user, session.notice.targetCourses.map { it.course.id }.toSet())
 
         if (noticeParticipantRepository.findByNoticeSessionIdAndUserId(sessionId, user.id) != null) {
             throw CustomDataIntegrityViolationException("중복된 요청입니다.")
@@ -236,8 +235,8 @@ class NoticeServiceImpl(
             ?: throw CustomBadRequestException("해당 세션이 없습니다.")
 
         val user = getUser()
-        AuthorizationUtil.validateUserIsManagerRole(user)
-        AuthorizationUtil.validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
+        AuthorizationUtils.validateUserIsManagerRole(user)
+        AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
 
         val currentParticipantCount = noticeParticipantRepository.countParticipantBySessionId(sessionId)
         val participantCapacity =
@@ -268,8 +267,8 @@ class NoticeServiceImpl(
             .orElseThrow { CustomBadRequestException("해당 세션이 없습니다.") }
 
         val user = getUser()
-        AuthorizationUtil.validateUserIsManagerRole(user)
-        AuthorizationUtil.validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
+        AuthorizationUtils.validateUserIsManagerRole(user)
+        AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
 
         sseService.publish(user.id, participant.user.id, "7::" + noticeSession.notice.title + " 신청이 반려되었습니다.")
 
@@ -318,8 +317,8 @@ class NoticeServiceImpl(
             .orElseThrow { CustomBadRequestException("해당 세션이 존재하지 않습니다.") }
 
         val user = getUser()
-        AuthorizationUtil.validateUserIsManagerRole(user)
-        AuthorizationUtil.validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
+        AuthorizationUtils.validateUserIsManagerRole(user)
+        AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
 
         return noticeParticipantRepository.findBySessionIdAndStatusList(sessionId, searchParticipantStatus, pageable)
             .map { NoticeParticipantResponseDto(it) }
