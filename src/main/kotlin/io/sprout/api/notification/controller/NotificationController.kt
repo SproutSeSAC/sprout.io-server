@@ -1,6 +1,7 @@
 package io.sprout.api.notification.controller
 
 import io.sprout.api.auth.security.manager.SecurityManager
+import io.sprout.api.notification.entity.NotificationRequestDto
 import io.sprout.api.notification.entity.NotificationEntity
 import io.sprout.api.notification.service.NotificationService
 import io.swagger.v3.oas.annotations.Operation
@@ -19,7 +20,7 @@ class NotificationController(
             summary = "알림 목록 조회 API",
             description = "현재 클라이언트의 ID를 기반으로 알림 데이터를 전부 가져옵니다."
     )
-    fun getNotification(): ResponseEntity<List<NotificationEntity>> {
+    fun getNotification(): ResponseEntity<List<NotificationRequestDto>> {
         val clientID = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).build()
 

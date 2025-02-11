@@ -4,6 +4,7 @@ import io.sprout.api.comment.entity.CommentEntity
 import io.sprout.api.comment.dto.CommentRequestDto
 import io.sprout.api.comment.dto.CommentResponseDto
 import io.sprout.api.comment.repository.CommentRepository
+import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.post.service.PostService
 import io.sprout.api.sse.service.SseService
@@ -37,7 +38,18 @@ class CommentService(
                 createdAt = LocalDateTime.now()
         )
         val savedComment = commentRepository.save(comment)
-        sseService.publish(clientID, post.clientId, "3::" + postService.getPostTitle(post.linkedId) + "에 댓글이 등록되었습니다.")
+
+        val dtodata = NotificationDto(
+            fromId = post.clientId,
+            userId = clientID,
+            type = 3,
+            url = "",
+            content = postService.getPostTitle(post.id),
+            NotiType = 5,
+            comment = dto.content,
+        )
+
+        sseService.publish(dtodata)
         return convertToResponseDto(savedComment)
     }
 

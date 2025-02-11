@@ -1,6 +1,7 @@
 package io.sprout.api.sse.controller
 
 import io.sprout.api.auth.security.manager.SecurityManager
+import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.sse.service.SseService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.HttpStatus
@@ -57,7 +58,17 @@ class SseController(
         val publisherID = securityManager.getAuthenticatedUserId()
             ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.")
 
-        sseService.publish(publisherID, clientID, message)
+        val dtodata = NotificationDto(
+            fromId = publisherID,
+            userId = clientID,
+            type = 15,
+            url = "",
+            content = message,
+            NotiType = 6,
+            comment = "",
+        )
+
+        sseService.publish(dtodata)
         return ResponseEntity.ok("메시지가 발행되었습니다.")
     }
 }
