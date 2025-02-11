@@ -40,30 +40,6 @@ class PostEntity(
     @OneToMany(mappedBy = "post", cascade = [CascadeType.REMOVE], orphanRemoval = true)
     val comments: MutableList<CommentEntity> = mutableListOf()
 ) {
-    @Transient
-    @Autowired
-    private lateinit var projectRepository: ProjectRepository
-
-    @Transient
-    @Autowired
-    private lateinit var noticeRepository: NoticeRepository
-
-    @Transient
-    @Autowired
-    private lateinit var mealPostService: MealPostService
-
-    @PreRemove
-    fun deleteLinkedEntity() {
-        try {
-            when (postType) {
-                PostType.PROJECT -> linkedId?.let { projectRepository.deleteById(it) }
-                PostType.NOTICE -> linkedId?.let { noticeRepository.deleteById(it) }
-                PostType.MEAL -> linkedId?.let { mealPostService.deleteMealPost(it) }
-            }
-        } catch (e: Exception) {
-            println("삭제 실패 : ${e.message}")
-        }
-    }
 }
 
 enum class PostType {
