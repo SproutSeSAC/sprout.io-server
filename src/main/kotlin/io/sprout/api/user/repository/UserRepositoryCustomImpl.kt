@@ -14,12 +14,14 @@ import io.sprout.api.project.model.dto.ProjectFilterRequest
 import io.sprout.api.specification.model.entities.QDomainEntity
 import io.sprout.api.specification.model.entities.QJobEntity
 import io.sprout.api.specification.model.entities.QTechStackEntity
+import io.sprout.api.user.model.dto.TraineeSearchResponseDto
 import io.sprout.api.user.model.dto.UserSearchRequestDto
 import io.sprout.api.user.model.dto.UserSearchResponseDto
 import io.sprout.api.user.model.entities.QUserCourseEntity
 import io.sprout.api.user.model.entities.QUserDomainEntity
 import io.sprout.api.user.model.entities.QUserEntity
 import io.sprout.api.user.model.entities.QUserJobEntity
+import io.sprout.api.user.model.entities.QUserMemo
 import io.sprout.api.user.model.entities.QUserTechStackEntity
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
@@ -32,6 +34,7 @@ class UserRepositoryCustomImpl(
     private val userCourseEntity = QUserCourseEntity.userCourseEntity
     private val courseEntity = QCourseEntity.courseEntity
     private val campusEntity = QCampusEntity.campusEntity
+    private val userMemoEntity = QUserMemo.userMemo
 
     override fun findManagerEmailSameCourse(courseId: Long): List<UserEntity> {
 
@@ -53,12 +56,7 @@ class UserRepositoryCustomImpl(
 
     override fun search(searchRequest: UserSearchRequestDto, user: UserEntity): PageResponse<UserSearchResponseDto> {
         // mycourse 찾기
-        val myCourseIds = jpaQueryFactory
-            .select(userCourseEntity.course.id)
-            .from(userEntity)
-            .leftJoin(userEntity.userCourseList, userCourseEntity)
-            .where(userEntity.id.eq(user.id))
-            .fetch()
+        val myCourseIds = getMyCourseIds(user)
 
         val totalCount = jpaQueryFactory.select(userEntity.id.count())
             .from(userEntity)
@@ -119,6 +117,88 @@ class UserRepositoryCustomImpl(
         return PageResponse(result, totalCount ?: 0)
     }
 
+    override fun searchTrainee(
+        searchRequest: UserSearchRequestDto,
+        manager: UserEntity
+    ): PageResponse<TraineeSearchResponseDto> {
+        val myCourseIds = getMyCourseIds(manager)
+
+        val totalCount = jpaQueryFactory.select(userEntity.id.count())
+            .from(userEntity)
+            .where(createFilterBuilder(searchRequest, myCourseIds))
+            .orderBy(userEntity.createdAt.desc())
+            .limit(searchRequest.size)
+            .offset(searchRequest.getOffset())
+            .fetchOne()
+
+        val resultIds = jpaQueryFactory
+            .selectFrom(userEntity)
+            .where(createFilterBuilder(searchRequest, myCourseIds))
+            .orderBy(userEntity.createdAt.desc())
+            .limit(searchRequest.size)
+            .offset(searchRequest.getOffset())
+            .transform(GroupBy.groupBy(userEntity.id).list(
+                userEntity.id
+            ))
+
+        val result = jpaQueryFactory
+            .selectFrom(userEntity)
+            .leftJoin(userEntity.userCourseList, userCourseEntity)
+            .leftJoin(userCourseEntity.course, courseEntity)
+            .leftJoin(courseEntity.campus, campusEntity)
+            .leftJoin(userMemoEntity)
+                .on(userEntity.id.eq(userMemoEntity.targetUser.id)
+                    .and(userMemoEntity.user.id.eq(manager.id))
+                )
+            .where(userEntity.id.`in`(resultIds))
+            .transform(
+                GroupBy.groupBy(userEntity.id).list(
+                    Projections.constructor(
+                        TraineeSearchResponseDto::class.java,
+                        userEntity.id,
+                        userEntity.name,
+                        userEntity.nickname,
+                        userEntity.email,
+                        userEntity.phoneNumber,
+                        GroupBy.list(
+                            Projections.constructor(
+                                TraineeSearchResponseDto.Campus::class.java,
+                                campusEntity.id,
+                                campusEntity.name
+                            )
+                        ),
+                        GroupBy.list(
+                            Projections.constructor(
+                                TraineeSearchResponseDto.Course::class.java,
+                                courseEntity.id,
+                                courseEntity.title
+                            )
+                        ),
+                        Projections.constructor(
+                            TraineeSearchResponseDto.Memo::class.java,
+                            userMemoEntity.id,
+                            userMemoEntity.content
+                        )
+                    )
+                )
+            )
+
+        result.forEach {
+            it.distinctCampus()
+        }
+
+        return PageResponse(result, totalCount ?: 0)
+    }
+
+
+    private fun getMyCourseIds(user: UserEntity): MutableList<Long> {
+        return jpaQueryFactory
+            .select(userCourseEntity.course.id)
+            .from(userEntity)
+            .leftJoin(userEntity.userCourseList, userCourseEntity)
+            .where(userEntity.id.eq(user.id))
+            .fetch()
+    }
 
     private fun createFilterBuilder(
         searchRequest: UserSearchRequestDto,
@@ -126,6 +206,9 @@ class UserRepositoryCustomImpl(
     ): BooleanBuilder {
         val builder = BooleanBuilder()
 
+        searchRequest.roles?.let {
+            builder.and(userEntity.role.`in`(it))
+        }
         searchRequest.keyword?.let {
             builder.and(userEntity.name.eq(it))
         }
@@ -140,5 +223,6 @@ class UserRepositoryCustomImpl(
         }
         return builder
     }
+
 
 }
