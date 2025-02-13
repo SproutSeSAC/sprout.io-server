@@ -11,7 +11,6 @@ interface NoticeRepository : JpaRepository<NoticeEntity, Long>, NoticeRepository
     @Query("SELECT n FROM NoticeEntity n JOIN FETCH n.user")
     fun findByIdAll(): List<NoticeEntity>?
 
-    @EntityGraph(attributePaths = ["noticeSessions", "targetCourses"])
     fun findByIdAndUserId(noticeId: Long, userId: Long): NoticeEntity?
 
     @Query("SELECT notice " +

@@ -32,12 +32,6 @@ class UserRepositoryCustomImpl(
     private val userCourseEntity = QUserCourseEntity.userCourseEntity
     private val courseEntity = QCourseEntity.courseEntity
     private val campusEntity = QCampusEntity.campusEntity
-    private val userTechStackEntity = QUserTechStackEntity.userTechStackEntity
-    private val techStackEntity = QTechStackEntity.techStackEntity
-    private val userDomainEntity = QUserDomainEntity.userDomainEntity
-    private val domainEntity = QDomainEntity.domainEntity
-    private val userJobEntity = QUserJobEntity.userJobEntity
-    private val jobEntity = QJobEntity.jobEntity
 
     override fun findManagerEmailSameCourse(courseId: Long): List<UserEntity> {
 
@@ -97,6 +91,7 @@ class UserRepositoryCustomImpl(
                         UserSearchResponseDto::class.java,
                         userEntity.id,
                         userEntity.name,
+                        userEntity.nickname,
                         userEntity.email,
                         userEntity.phoneNumber,
                         GroupBy.list(
@@ -117,65 +112,8 @@ class UserRepositoryCustomImpl(
                 )
             )
 
-        val techStacks = jpaQueryFactory
-            .selectFrom(userEntity)
-            .innerJoin(userEntity.userTechStackList, userTechStackEntity)
-            .innerJoin(userTechStackEntity.techStack, techStackEntity)
-            .where(userEntity.id.`in`(resultIds))
-            .transform(
-                GroupBy.groupBy(userEntity.id)
-                    .`as`(
-                        GroupBy.list(
-                            Projections.constructor(
-                                UserSearchResponseDto.TechStack::class.java,
-                                techStackEntity.id,
-                                techStackEntity.name
-                            )
-                        )
-                    )
-            )
-
-        val jobs = jpaQueryFactory
-            .selectFrom(userEntity)
-            .innerJoin(userEntity.userJobList, userJobEntity)
-            .innerJoin(userJobEntity.job, jobEntity)
-            .where(userEntity.id.`in`(resultIds))
-            .transform(
-                GroupBy.groupBy(userEntity.id)
-                    .`as`(
-                        GroupBy.list(
-                            Projections.constructor(
-                                UserSearchResponseDto.Job::class.java,
-                                jobEntity.id,
-                                jobEntity.name
-                            )
-                        )
-                    )
-            )
-
-        val domains = jpaQueryFactory
-            .selectFrom(userEntity)
-            .innerJoin(userEntity.userDomainList, userDomainEntity)
-            .innerJoin(userDomainEntity.domain, domainEntity)
-            .where(userEntity.id.`in`(resultIds))
-            .transform(
-                GroupBy.groupBy(userEntity.id)
-                    .`as`(
-                        GroupBy.list(
-                            Projections.constructor(
-                                UserSearchResponseDto.Domain::class.java,
-                                domainEntity.id,
-                                domainEntity.name
-                            )
-                        )
-                    )
-            )
-
         result.forEach {
             it.distinctCampus()
-            it.domains = domains[it.userId] ?: mutableListOf()
-            it.jobs = jobs[it.userId] ?: mutableListOf()
-            it.techStacks = techStacks[it.userId] ?: mutableListOf()
         }
 
         return PageResponse(result, totalCount ?: 0)

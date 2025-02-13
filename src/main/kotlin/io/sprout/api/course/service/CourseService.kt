@@ -87,10 +87,10 @@ class CourseService(
         val course = courseRepository.findById(courseId)
             .orElseThrow {throw CustomBadRequestException("not found course")}
 
-        if (updateRequest.campusId != course.campus?.id) {
+        if (updateRequest.campusId != course.campus.id) {
 
 
-            val prevManagers = userCampusRepository.findByCampusId(course.campus?.id ?: 0L)
+            val prevManagers = userCampusRepository.findByCampusId(course.campus.id)
             prevManagers.forEach {
                 userCourseRepository.deleteByCourseIdAndUserId(courseId, it.user.id)
             }
