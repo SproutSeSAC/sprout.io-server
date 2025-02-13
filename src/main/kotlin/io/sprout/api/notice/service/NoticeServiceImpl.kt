@@ -69,8 +69,7 @@ class NoticeServiceImpl(
         val noticeEntity = noticeRepository.findByIdAndCoursesAndUser(noticeId)
             ?: throw CustomBadRequestException("게시글이 존재하지 않습니다.")
 
-        AuthorizationUtils.validateUserIsManagerRole(user)
-        AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeEntity.targetCourses.map { it.course.id }.toSet())
+        noticeRepository.findByIdAndUserId(noticeId, user.id) ?: throw CustomBadRequestException("not authentication User")
 
         noticeEntity.update(noticeRequest)
 
