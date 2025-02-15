@@ -21,7 +21,10 @@ interface NoticeParticipantRepository : JpaRepository<NoticeParticipantEntity, L
 
     @Query("SELECT participant " +
             "FROM NoticeParticipantEntity participant " +
-            "LEFT JOIN FETCH participant.user " +
+            "LEFT JOIN FETCH participant.user user " +
+            "LEFT JOIN FETCH user.userCourseList ucl " +
+            "LEFT JOIN FETCH ucl.course course " +
+            "LEFT JOIN FETCH course.campus " +
             "WHERE participant.noticeSession.id = :sessionId " +
             "   AND participant.status IN :searchParticipantStatus ")
     fun findBySessionIdAndStatusList(
