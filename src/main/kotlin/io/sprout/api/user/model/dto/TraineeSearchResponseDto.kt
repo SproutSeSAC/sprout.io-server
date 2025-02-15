@@ -1,6 +1,6 @@
 package io.sprout.api.user.model.dto
 
-data class UserSearchResponseDto(
+data class TraineeSearchResponseDto(
     val userId: Long,
     val name: String,
     val nickname: String,
@@ -8,6 +8,7 @@ data class UserSearchResponseDto(
     val phoneNumber: String,
     val campus: MutableList<Campus> = mutableListOf(),
     val course: MutableList<Course> = mutableListOf(),
+    val memo: Memo?
 ){
     data class Campus(
         val campusId: Long,
@@ -18,6 +19,13 @@ data class UserSearchResponseDto(
         val courseId: Long,
         val name: String
     )
+
+    data class Memo(
+        val memoId: Long?,
+        val content: String?
+    )
+
+
 
     fun distinctCampus() {
         val distinctCampus = campus.distinct()

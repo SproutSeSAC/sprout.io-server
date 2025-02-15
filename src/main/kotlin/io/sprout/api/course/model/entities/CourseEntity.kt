@@ -22,7 +22,7 @@ class CourseEntity(
     var endDate: LocalDate, // 코스 수료일
 
     @ManyToOne(fetch = FetchType.LAZY)
-    var campus: CampusEntity?,
+    var campus: CampusEntity,
 
     @Column(name = "calendar_id", nullable = false, length = 100)
     var calendarId: String, // 코스 별 구글 캘린더 ID
@@ -42,7 +42,7 @@ class CourseEntity(
     @OneToMany(mappedBy = "course", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var userCourseList: MutableSet<UserCourseEntity> = LinkedHashSet()
 
-    constructor(id: Long) : this("", LocalDate.now(), LocalDate.now(), null, "") {
+    constructor(id: Long) : this("", LocalDate.now(), LocalDate.now(), CampusEntity(-1), "") {
         this.id = id
     }
 }

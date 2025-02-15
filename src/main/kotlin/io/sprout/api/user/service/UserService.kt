@@ -20,10 +20,7 @@ import io.sprout.api.specification.repository.JobRepository
 import io.sprout.api.specification.repository.TechStackRepository
 import io.sprout.api.user.model.dto.*
 import io.sprout.api.user.model.entities.*
-import io.sprout.api.user.repository.UserDomainRepository
-import io.sprout.api.user.repository.UserJobRepository
-import io.sprout.api.user.repository.UserRepository
-import io.sprout.api.user.repository.UserTechStackRepository
+import io.sprout.api.user.repository.*
 import io.sprout.api.utils.AuthorizationUtils
 import io.sprout.api.utils.CookieUtils
 import io.sprout.api.utils.NicknameGenerator
@@ -51,7 +48,8 @@ class UserService(
     private val jwtToken: JwtToken,
     private val verificationCodeRepository: VerificationCodeRepository,
     private val jdbcTemplate: JdbcTemplate,
-    private val mypageService: MypageService
+    private val mypageService: MypageService,
+    private val userMemoRepository: UserMemoRepository
 ) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
@@ -150,7 +148,8 @@ class UserService(
         val deleteTable = listOf(
             "user_course", "user_domain", "user_job", "user_campus",
             "user_tech_stack", "notice_participant", "project_post_participant",
-            "scraped_notice", "scraped_project", "scraped_store"
+            "scraped_notice", "scraped_project", "scraped_store",
+            "user_memo"
         )
 
         jdbcTemplate.queryForList(findTablesSql).forEach { row ->
@@ -267,7 +266,7 @@ class UserService(
      * 사용자 목록 조회 (관리자용)
      * 자신의 캠퍼스 인원만 검색 가능
      */
-    fun searchUsersByAdmin(searchRequest: UserSearchRequestDto): PageResponse<UserSearchResponseDto> {
+    fun searchUsers(searchRequest: UserSearchRequestDto): PageResponse<UserSearchResponseDto> {
         val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
         val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
 
@@ -316,6 +315,56 @@ class UserService(
         return mypageService.getUserCard(userId)
     }
 
+    /**
+     * 학생 목록 검색 (관지라용)
+     * 자신의 캠퍼스 인원만 검색 가능
+     */
+    fun searchTrainees(searchRequest: UserSearchRequestDto): PageResponse<TraineeSearchResponseDto> {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        searchRequest.roles = listOf(RoleType.TRAINEE)
+        return userRepository.searchTrainee(searchRequest, manager)
+    }
+
+    /**
+     * 학생에 대한 메모 작성및 수정(관리자용)
+     */
+    @Transactional
+    fun createUserMemo(createRequest: UserMemoCreateRequestDto, traineeId: Long) {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        val memo = (userMemoRepository.findByUserIdAndTargetUserId(managerId, traineeId)
+            ?: UserMemo(
+                manager,
+                UserEntity(traineeId),
+                createRequest.content
+            ))
+
+        memo.content = createRequest.content
+
+
+        userMemoRepository.save(memo)
+    }
+
+    /**
+     * 학생에 대한 메모 삭제 (관리자용)
+     */
+    fun deleteUserMemo(traineeId: Long) {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        userMemoRepository.deleteByUserIdAndTargetUserId(managerId, traineeId)
+    }
+
+
     fun verifyCode(code: String) {
         val codeList = verificationCodeRepository.findAll()
         val existentCode = codeList.firstOrNull { it.code == code }
@@ -343,5 +392,4 @@ class UserService(
         response.addCookie(refreshCookie)
         return refreshToken
     }
-
 }
