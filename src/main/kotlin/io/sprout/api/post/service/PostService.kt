@@ -26,9 +26,10 @@ class PostService(
     /**
      * 공지사항 추가
      * NoticeService의 createNotice를 호출합니다.
+     * @return Pair<생성 된 개체 ID, 생성 된 부모 게시글 ID>
      */
     @Transactional
-    fun createNoticePost(noticeRequestDto: NoticeRequestDto, clientId: Long): Boolean {
+    fun createNoticePost(noticeRequestDto: NoticeRequestDto, clientId: Long): Pair<Long, Long> {
         return try {
             val noticeId = noticeService.createNotice(noticeRequestDto)
             val post = PostEntity(
@@ -39,9 +40,9 @@ class PostService(
 
             postRepository.save(post)
 
-            true
+            Pair(noticeId, post.id)
         } catch (e: Exception) {
-            false
+            throw RuntimeException("공지사항 생성 중 오류 발생", e)
         }
     }
 
@@ -50,9 +51,10 @@ class PostService(
      * projectService의 createProjectAndGetId를 호출합니다.
      * createProjectAndGetId는 이번에 새로 만든 녀석입니다. ID 매핑을 위해...
      * 원본 entity를 건드리지 않기 위해 일단은 이렇게 설정했습니다.
+     * @return Pair<생성 된 개체 ID, 생성 된 부모 게시글 ID>
      */
     @Transactional
-    fun createProjectPost(projectDto: ProjectRecruitmentRequestDto, clientId: Long): Boolean {
+    fun createProjectPost(projectDto: ProjectRecruitmentRequestDto, clientId: Long): Pair<Long, Long> {
         return try {
             val projectId = projectService.postProjectAndGetId(projectDto)
             val post = PostEntity(
@@ -63,18 +65,19 @@ class PostService(
 
             postRepository.save(post)
 
-            true
+            Pair(projectId, post.id)
         } catch (e: Exception) {
-            false
+            throw RuntimeException("프로젝트 생성 중 오류 발생", e)
         }
     }
 
     /**
      * 한끼팟 추가
      * meealService의 createNotice를 호출합니다.
+     * @return Pair<생성 된 개체 ID, 생성 된 부모 게시글 ID>
      */
     @Transactional
-    fun createMealPost(dto: MealPostDto.MealPostCreateRequest, clientId: Long): Boolean {
+    fun createMealPost(dto: MealPostDto.MealPostCreateRequest, clientId: Long): Pair<Long, Long> {
         return try {
             val mealId = mealPostService.createMealPostReturnId(dto)
             val post = PostEntity(
@@ -85,7 +88,7 @@ class PostService(
 
             postRepository.save(post)
 
-            true
+            Pair(mealId, post.id)
         } catch (e: Exception) {
             throw RuntimeException("MealPost 생성 중 오류 발생", e)
         }
