@@ -41,8 +41,8 @@ class NotificationService(
         val notification = NotificationEntity(
                 userId = dto.userId,
                 fromId = dto.fromId,
-                type = dto.content.split("::")[0].toLong(),
-                content = dto.content.split("::")[1],
+                type = dto.type,
+                content = dto.content,
                 url = dto.url,
                 NotiType = dto.NotiType,
                 comment = dto.comment
