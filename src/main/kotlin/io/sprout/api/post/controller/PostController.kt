@@ -37,7 +37,7 @@ class PostController(
                 val dto = objectMapper.convertValue(requestMap, ProjectRecruitmentRequestDto::class.java)
                 val result = postService.createProjectPost(dto, clientID)
                 ResponseEntity.ok(result)
-            } else if (requestMap.containsKey("noticeTitle")) {
+            } else if (requestMap.containsKey("noticeType")) {
                 val dto = objectMapper.convertValue(requestMap, NoticeRequestDto::class.java)
                 val result = postService.createNoticePost(dto, clientID)
                 ResponseEntity.ok(result)
@@ -97,7 +97,7 @@ class PostController(
                 val dto = objectMapper.convertValue(requestMap, ProjectRecruitmentRequestDto::class.java)
                 val result = postService.updatePost(postId, dto)
                 ResponseEntity.ok(result)
-            } else if (requestMap.containsKey("noticeTitle")) {
+            } else if (requestMap.containsKey("noticeType")) {
                 val dto = objectMapper.convertValue(requestMap, NoticeRequestDto::class.java)
                 val result = postService.updatePost(postId, dto)
                 ResponseEntity.ok(result)
