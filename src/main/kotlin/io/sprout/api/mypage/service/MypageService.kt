@@ -17,6 +17,9 @@ import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.awt.dnd.DropTarget
 
@@ -142,7 +145,7 @@ class MypageService(
         return comments.map {
             PostCommentDto(
                 commentId = it.id,
-                userNickname = it.userNickname,
+                userNickname = it.userInfo.nickname,
                 postId = it.postId,
                 content = it.content,
             )
@@ -150,10 +153,10 @@ class MypageService(
     }
 
     // 찜한 글 목록 조회
-    fun getPostScrapListByUserId(clientId: Long): List<GetPostResponseDto> {
+    fun getPostScrapListByUserId(clientId: Long, pageable: Pageable?): Page<GetPostResponseDto> {
         val scraps = scrapService.getScrapsByUserId(clientId)
 
-        return scraps.mapNotNull {
+        val scrapPosts = scraps.mapNotNull {
             val user = userRepository.findUserById(it.userId)
             val post = postService.getPostById(it.postId)
 
@@ -177,12 +180,22 @@ class MypageService(
                     postId = it.postId,
                     title = postData.title,
                     postType = postData.postType,
-                    content = postData.content,
+                    content = postData.content
                 )
             } else {
                 null
             }
         }
+
+        if (pageable == null) {
+            return PageImpl(scrapPosts, Pageable.unpaged(), scrapPosts.size.toLong())
+        }
+
+        val start = pageable.offset.toInt()
+        val end = minOf(start + pageable.pageSize, scrapPosts.size)
+        val pagedList = scrapPosts.subList(start, end)
+
+        return PageImpl(pagedList, pageable, scrapPosts.size.toLong())
     }
 
     // 참여 글 목록 조회 (제목만)
