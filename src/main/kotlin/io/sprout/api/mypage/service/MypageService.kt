@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class MypageService(
@@ -208,31 +209,35 @@ class MypageService(
     }
 
     // 참여 글 데이터 전체 조회 (전체)
-    fun getPostParticipantListByUserId(userId: Long): List<ParticipantDto> {
+    fun getPostParticipantListByUserId(userId: Long): ParticipantListResponseDto {
         val detailPosts: List<NoticeParticipantEntity> = postService.getNoticesByUserIdFromParticipant(userId)
         val sortedPosts = detailPosts.sortedBy { it.noticeSession.eventStartDateTime }
 
-        return sortedPosts.mapIndexed { index, data ->
-            val near = sortedPosts.drop(index + 1)
-                .take(3)
-                .map { nearData ->
-                    nearParticipantDto(
-                        id = nearData.id,
-                        title = nearData.noticeSession.notice.title,
-                        startDateTime = nearData.noticeSession.eventStartDateTime,
-                        endDateTime = nearData.noticeSession.eventEndDateTime
-                    )
-                }
+        val now = LocalDateTime.now()
+        val nearList = sortedPosts
+            .filter { it.noticeSession.eventStartDateTime.isAfter(now) }
+            .take(3)
+            .map { data ->
+                ParticipantDto(
+                    title = data.noticeSession.notice.title,
+                    id = data.noticeSession.notice.id,
+                    participantId = data.id,
+                    startDateTime = data.noticeSession.eventStartDateTime,
+                    endDateTime = data.noticeSession.eventEndDateTime,
+                )
+            }
 
+        val participantDtoList = sortedPosts.mapIndexed { index, data ->
             ParticipantDto(
                 title = data.noticeSession.notice.title,
                 id = data.noticeSession.notice.id,
                 participantId = data.id,
                 startDateTime = data.noticeSession.eventStartDateTime,
                 endDateTime = data.noticeSession.eventEndDateTime,
-                nearParticipant = near.toMutableList()
             )
         }
+
+        return ParticipantListResponseDto(nearList, participantDtoList)
     }
     // endregion
 }
