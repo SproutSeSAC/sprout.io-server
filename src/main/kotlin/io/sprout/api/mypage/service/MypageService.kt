@@ -9,7 +9,6 @@ import io.sprout.api.mypage.repository.*
 import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
-import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectResponseDto
@@ -21,7 +20,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import java.awt.dnd.DropTarget
 
 @Service
 class MypageService(
@@ -211,16 +209,30 @@ class MypageService(
 
     // 참여 글 데이터 전체 조회 (전체)
     fun getPostParticipantListByUserId(userId: Long): List<ParticipantDto> {
-        val DetailPost: List<NoticeParticipantEntity> = postService.getNoticesByUserIdFromParticipant(userId)
-        val participant: List<ParticipantDto> = DetailPost.map { data ->
+        val detailPosts: List<NoticeParticipantEntity> = postService.getNoticesByUserIdFromParticipant(userId)
+        val sortedPosts = detailPosts.sortedBy { it.noticeSession.eventStartDateTime }
+
+        return sortedPosts.mapIndexed { index, data ->
+            val near = sortedPosts.drop(index + 1)
+                .take(3)
+                .map { nearData ->
+                    nearParticipantDto(
+                        id = nearData.id,
+                        title = nearData.noticeSession.notice.title,
+                        startDateTime = nearData.noticeSession.eventStartDateTime,
+                        endDateTime = nearData.noticeSession.eventEndDateTime
+                    )
+                }
+
             ParticipantDto(
                 title = data.noticeSession.notice.title,
                 id = data.noticeSession.notice.id,
-                participantId = data.id
+                participantId = data.id,
+                startDateTime = data.noticeSession.eventStartDateTime,
+                endDateTime = data.noticeSession.eventEndDateTime,
+                nearParticipant = near.toMutableList()
             )
         }
-
-        return participant
     }
     // endregion
 }
