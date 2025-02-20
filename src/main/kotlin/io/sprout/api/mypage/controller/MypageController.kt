@@ -59,7 +59,7 @@ class MypageController(
 
     @Operation(summary = "찜한 글 조회", description = "찜한 글들의 ID를 반환합니다.")
     @GetMapping("/getScrap")
-    fun getPostScrapList(): ResponseEntity<List<PostScrapDto>> {
+    fun getPostScrapList(): ResponseEntity<List<GetPostResponseDto>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
         return ResponseEntity.ok(mypageService.getPostScrapListByUserId(userId))

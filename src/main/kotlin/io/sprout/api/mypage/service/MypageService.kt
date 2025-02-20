@@ -2,14 +2,17 @@ package io.sprout.api.mypage.service
 
 import io.sprout.api.comment.service.CommentService
 import io.sprout.api.course.infra.CourseRepository
+import io.sprout.api.mealPost.model.dto.MealPostDto
 import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.repository.*
+import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
+import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.user.repository.UserRepository
@@ -147,16 +150,38 @@ class MypageService(
     }
 
     // 찜한 글 목록 조회
-    fun getPostScrapListByUserId(clientId: Long): List<PostScrapDto> {
+    fun getPostScrapListByUserId(clientId: Long): List<GetPostResponseDto> {
         val scraps = scrapService.getScrapsByUserId(clientId)
 
-        return scraps.map {
-            PostScrapDto(
-                    postScrapId = it.id,
-                    userId = it.userId,
+        return scraps.mapNotNull {
+            val user = userRepository.findUserById(it.userId)
+            val post = postService.getPostById(it.postId)
+
+            if (user != null && post != null) {
+                val writer = writerDto(
+                    name = user.name ?: "",
+                    nickname = user.nickname,
+                    profileImg = user.profileImageUrl ?: ""
+                )
+
+                val postData = when (post) {
+                    is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
+                    is ProjectResponseDto -> PostInfoDto(post.title, post.description, PostType.PROJECT)
+                    is MealPostDto.MealPostDetailResponse -> PostInfoDto(post.title, "", PostType.MEAL)
+                    else -> return@mapNotNull null
+                }
+
+                GetPostResponseDto(
+                    id = it.id,
+                    writer = writer,
                     postId = it.postId,
-                    createdAt = it.createdAt
-            )
+                    title = postData.title,
+                    postType = postData.postType,
+                    content = postData.content,
+                )
+            } else {
+                null
+            }
         }
     }
 
