@@ -1,5 +1,7 @@
 package io.sprout.api.notification.service
 
+import io.sprout.api.notification.entity.NotificationDto
+import io.sprout.api.notification.entity.NotificationRequestDto
 import io.sprout.api.notification.entity.NotificationEntity
 import io.sprout.api.notification.entity.NotificationLogEntity
 import io.sprout.api.notification.repository.NotificationLogRepository
@@ -16,17 +18,34 @@ class NotificationService(
     private val MAX_NOTIFICATIONSCOUNT = 20 // 우선 20개
 
     @Transactional(readOnly = true)
-    fun getNotificationsByUserId(userId: Long): List<NotificationEntity> {
-        return notificationRepository.findAllByUserId(userId)
+    fun getNotificationsByUserId(userId: Long): List<NotificationRequestDto> {
+        val data = notificationRepository.findAllByUserId(userId)
+
+        val x = data.map { m_data ->
+            NotificationRequestDto(
+                m_data.id,
+                m_data.type,
+                m_data.NotiType,
+                m_data.content,
+                m_data.url,
+                m_data.comment,
+                m_data.isRead
+            )
+        }
+
+        return x;
     }
 
     @Transactional
-    fun saveNotification(userId: Long, fromId: Long, content: String): NotificationEntity {
+    fun saveNotification(dto: NotificationDto): NotificationEntity {
         val notification = NotificationEntity(
-                userId = userId,
-                fromId = fromId,
-                type = content.split("::")[0].toLong(),
-                content = content.split("::")[1]
+                userId = dto.userId,
+                fromId = dto.fromId,
+                type = dto.content.split("::")[0].toLong(),
+                content = dto.content.split("::")[1],
+                url = dto.url,
+                NotiType = dto.NotiType,
+                comment = dto.comment
         )
 
         val notification_log = NotificationLogEntity(
@@ -39,7 +58,7 @@ class NotificationService(
         val savedNotification = notificationRepository.save(notification)
         notificationLogRepository.save(notification_log)
 
-        maxNotifications(userId)
+        maxNotifications(dto.userId)
 
         return savedNotification
     }

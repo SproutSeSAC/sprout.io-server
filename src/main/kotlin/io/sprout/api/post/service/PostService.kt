@@ -223,6 +223,12 @@ class PostService(
                 IllegalArgumentException("$postId 없음")
             }
 
+            when (post.postType) {
+                PostType.PROJECT -> projectService.deleteProject(post.linkedId)
+                PostType.NOTICE -> noticeService.deleteNotice(post.linkedId)
+                PostType.MEAL -> mealPostService.deleteMealPost(post.linkedId)
+            }
+
             postRepository.delete(post)
             true
         } catch (e: Exception) {

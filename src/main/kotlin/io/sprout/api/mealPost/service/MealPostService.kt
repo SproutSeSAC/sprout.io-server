@@ -12,6 +12,7 @@ import io.sprout.api.mealPost.model.entities.MealPostParticipationEntity
 import io.sprout.api.mealPost.model.entities.MealPostStatus
 import io.sprout.api.mealPost.repository.MealPostParticipationRepository
 import io.sprout.api.mealPost.repository.MealPostRepository
+import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.sse.service.SseService
@@ -166,7 +167,18 @@ class MealPostService(
 
         try {
             mealPostRepository.save(mealPost)
-            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "0::" + mealPost.title + "에 새로운 스프가 참여했습니다.")
+
+            val dtodata = NotificationDto(
+                fromId = mealPost.mealPostParticipationList.first().user.id,
+                userId = user.id,
+                type = 0,
+                url = "",
+                content = mealPost.title,
+                NotiType = 0,
+                comment = "",
+            )
+
+            sseService.publish(dtodata)
             log.debug("JoinParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
@@ -192,7 +204,18 @@ class MealPostService(
 
         try {
             mealPostRepository.save(mealPost)
-            sseService.publish(user.id, mealPost.mealPostParticipationList.first().user.id, "1::" + mealPost.title + "에 신청한 스프가 취소했습니다.")
+
+            val dtodata = NotificationDto(
+                fromId = mealPost.mealPostParticipationList.first().user.id,
+                userId = user.id,
+                type = 1,
+                url = "",
+                content = mealPost.title,
+                NotiType = 0,
+                comment = "",
+            )
+
+            sseService.publish(dtodata)
             log.debug("LeaveParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
