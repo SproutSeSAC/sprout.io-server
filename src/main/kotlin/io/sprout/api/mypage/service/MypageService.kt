@@ -216,7 +216,9 @@ class MypageService(
             ParticipantDto(
                 title = data.noticeSession.notice.title,
                 id = data.noticeSession.notice.id,
-                participantId = data.id
+                participantId = data.id,
+                startDateTime = data.noticeSession.eventStartDateTime,
+                endDateTime = data.noticeSession.eventEndDateTime
             )
         }
 
