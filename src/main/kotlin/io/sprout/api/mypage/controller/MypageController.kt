@@ -5,6 +5,10 @@ import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.service.MypageService
 import io.sprout.api.post.entities.PostEntity
 import io.swagger.v3.oas.annotations.Operation
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -59,10 +63,12 @@ class MypageController(
 
     @Operation(summary = "찜한 글 조회", description = "찜한 글들의 ID를 반환합니다.")
     @GetMapping("/getScrap")
-    fun getPostScrapList(): ResponseEntity<List<PostScrapDto>> {
+    fun getPostScrapList(
+        @PageableDefault(size = 10) pageable: Pageable
+    ): ResponseEntity<Page<GetPostResponseDto>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
-        return ResponseEntity.ok(mypageService.getPostScrapListByUserId(userId))
+        return ResponseEntity.ok(mypageService.getPostScrapListByUserId(userId, pageable))
     }
 
     @Operation(summary = "신청한 글 조회 (제목만)", description = "신청한 글의 제목들을 반환합니다.")
