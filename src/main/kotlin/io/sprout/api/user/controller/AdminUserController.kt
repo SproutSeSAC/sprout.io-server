@@ -51,6 +51,15 @@ class AdminUserController(
         return ResponseEntity.ok(result)
     }
 
+    /**
+     * 관리자의 사용자 전화번호 변경
+     */
+    @PatchMapping("{userId}")
+    @Operation(summary = "사용자 번호 변경", description = "사용자의 번호를 변경한다.")
+    fun changePhone(@PathVariable userId: Long, @RequestBody phoneNumber: String): ResponseEntity<String> {
+        return ResponseEntity.ok(userService.changePhoneByUserId(userId, phoneNumber))
+    }
+
 
     /**
      * 관리자의 사용자 역할 변경
