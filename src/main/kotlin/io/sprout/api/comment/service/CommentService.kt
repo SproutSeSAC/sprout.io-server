@@ -3,6 +3,7 @@ package io.sprout.api.comment.service
 import io.sprout.api.comment.entity.CommentEntity
 import io.sprout.api.comment.dto.CommentRequestDto
 import io.sprout.api.comment.dto.CommentResponseDto
+import io.sprout.api.comment.dto.commentUserDto
 import io.sprout.api.comment.repository.CommentRepository
 import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.post.repository.PostRepository
@@ -107,10 +108,15 @@ class CommentService(
     fun getCommentsByPostId(postId: Long): List<CommentResponseDto> {
         val comments = commentRepository.findByPostId(postId)
         return comments.map { comment ->
+
+
             CommentResponseDto(
                 id = comment.id,
                 content = comment.content,
-                userNickname = comment.user.nickname,
+                userInfo = commentUserDto(
+                    nickname = comment.user.nickname,
+                    profileImg = comment.user.profileImageUrl ?: ""
+                ),
                 postId = comment.post.id,
                 imgUrl = comment.imgurl,
                 createAt = comment.createdAt
@@ -132,7 +138,10 @@ class CommentService(
         return CommentResponseDto(
             id = comment.id,
             content = comment.content,
-            userNickname = comment.user.nickname,
+            userInfo = commentUserDto(
+                nickname = comment.user.nickname,
+                profileImg = comment.user.profileImageUrl ?: ""
+            ),
             postId = comment.post.id,
             imgUrl = comment.imgurl,
             createAt = comment.createdAt
