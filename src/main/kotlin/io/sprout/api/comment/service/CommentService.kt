@@ -44,7 +44,7 @@ class CommentService(
             fromId = post.clientId,
             userId = clientID,
             type = 3,
-            url = "",
+            url = "${post.id}",
             content = postService.getPostTitle(post.id),
             NotiType = 5,
             comment = dto.content,

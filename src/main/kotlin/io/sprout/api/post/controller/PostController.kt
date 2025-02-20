@@ -28,7 +28,7 @@ class PostController(
             summary = "게시글 등록 API",
             description = "공지사항 또는 프로젝트를 생성하는 API입니다. 입력 DTO의 타입에 따라 저장 데이터가 바뀝니다."
     )
-    fun createPost(@RequestBody requestMap: Map<String, Any>): ResponseEntity<Boolean> {
+    fun createPost(@RequestBody requestMap: Map<String, Any>): ResponseEntity<Pair<Long, Long>> {
         val clientID = securityManager.getAuthenticatedUserName()
             ?: return ResponseEntity.status(401).build()
 
