@@ -22,8 +22,6 @@ data class NoticeRequestDto(
 
     val noticeType: NoticeType,
 
-    val isPhoneNumberRequired: Boolean,
-
     @Schema(description = "등록 시작 시간", example = "2024-11-30T00:00:00", type = "string")
     val applicationStartDateTime: LocalDateTime?,
 
@@ -50,7 +48,6 @@ data class NoticeRequestDto(
             noticeType = this.noticeType,
             meetingType = null,
             viewCount = 0,
-            isPhoneNumberRequired = false,
             meetingPlace = null,
             applicationEndDateTime = null,
             applicationStartDateTime = null,
@@ -75,7 +72,6 @@ data class NoticeRequestDto(
             noticeType = this.noticeType,
             meetingType = this.meetingType,
             viewCount = 0,
-            isPhoneNumberRequired = this.isPhoneNumberRequired,
             meetingPlace = this.meetingPlace,
             applicationEndDateTime = this.applicationEndDateTime,
             applicationStartDateTime = this.applicationStartDateTime,
