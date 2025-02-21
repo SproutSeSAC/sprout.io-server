@@ -165,7 +165,10 @@ class NoticeServiceImpl(
         searchResult.forEach { dto ->
             val post = postRepository.findByLinkedIdAndPostType(dto.noticeId, PostType.NOTICE)
             dto.postId = post?.id
-            dto.isScraped = ((scrapRepository.findByUserIdAndPostId(user.id, post!!.id)) != null)
+            if (post != null)
+            {
+                dto.isScraped = ((scrapRepository.findByUserIdAndPostId(user.id, post.id)) != null)
+            }
         }
 
         val searchResponse = NoticeSearchResponseDto(searchResult)
