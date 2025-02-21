@@ -159,10 +159,13 @@ class NoticeServiceImpl(
     override fun searchNotice(searchRequest: NoticeSearchRequestDto): NoticeSearchResponseDto {
         val userId = getUserId()
 
+        val user = getUser()
+
         val searchResult = noticeRepository.search(searchRequest, userId)
         searchResult.forEach { dto ->
             val post = postRepository.findByLinkedIdAndPostType(dto.noticeId, PostType.NOTICE)
             dto.postId = post?.id
+            dto.isScraped = ((scrapRepository.findByUserIdAndPostId(user.id, post!!.id)) != null)
         }
 
         val searchResponse = NoticeSearchResponseDto(searchResult)
