@@ -35,10 +35,6 @@ class CustomAuthorizationRequestResolver(
         // 기존 파라미터만 가져오고, 추가적인 access_type 파라미터는 생략
         val additionalParams = authorizationRequest.additionalParameters.toMutableMap()
 
-        if (!additionalParams.containsKey("prompt")) {
-            additionalParams["prompt"] = "consent"  // 동의 화면을 항상 표시
-        }
-
         return OAuth2AuthorizationRequest.from(authorizationRequest)
             .additionalParameters(additionalParams)
             .build()
