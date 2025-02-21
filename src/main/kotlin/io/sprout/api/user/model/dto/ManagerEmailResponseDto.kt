@@ -7,6 +7,7 @@ data class ManagerEmailResponseDto(
     val id: Long,
     val email: String,
     val nickname: String,
+    val name: String?,
     val roleType: RoleType
 ) {
 
@@ -17,11 +18,10 @@ data class ManagerEmailResponseDto(
                 id = userEntity.id,
                 email = userEntity.email, // calendarId가 실제로 id와 다른 값이면 수정 필요
                 nickname = userEntity.nickname,
+                name = userEntity.name ?: "NULL",
                 roleType = userEntity.role,
             )
         }
-
-
     }
 }
 
