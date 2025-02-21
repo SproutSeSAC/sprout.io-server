@@ -32,5 +32,12 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     """)
     fun findNoticesByUserIdFromParticipant(@Param("userId") userId: Long): List<NoticeParticipantEntity>
 
+    @Query("""
+        SELECT po
+        FROM PostEntity po
+        WHERE po.linked_id = :projetId
+    """, nativeQuery = true)
+    fun findLinkedIdByDataId(projectId: Long): PostEntity
+    
     fun findByLinkedIdAndPostType(linkedId: Long, postType: PostType): PostEntity?
 }
