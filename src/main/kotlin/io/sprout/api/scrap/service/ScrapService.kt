@@ -18,7 +18,8 @@ class ScrapService(
     fun addScrap(dto: ScrapRequestDto): ScrapResponseDto {
         val existingScrap = scrapRepository.findByUserIdAndPostId(dto.userId, dto.postId)
         if (existingScrap != null) {
-            throw IllegalArgumentException("이미 스크랩한 게시글.")
+            deleteScrap(dto.userId, dto.postId)
+            return ScrapResponseDto(-1,-1,-1, LocalDateTime.now())
         }
 
         val scrap = ScrapEntity(userId = dto.userId, postId = dto.postId)
