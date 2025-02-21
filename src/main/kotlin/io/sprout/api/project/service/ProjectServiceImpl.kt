@@ -114,10 +114,17 @@ class ProjectServiceImpl(
 
     @Transactional
     override fun findProjectDetailById(projectId: Long): ProjectDetailResponseDto? {
-        return handleExceptions {
-            projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!)
-                ?: throw IllegalArgumentException("Project with ID $projectId not found")
+        var x = projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!)
+            ?: throw IllegalArgumentException("Project with ID $projectId not found")
+
+        val post = postRepository.findById(projectId)
+            .orElseThrow { EntityNotFoundException("존재하지 않는 게시글 ID: $projectId") }
+
+        if (post != null) {
+            x.isScraped = (scrapRepository.findByUserIdAndPostId(securityManager.getAuthenticatedUserId(), post.id)) !== null
         }
+
+        return x
     }
 
     @Transactional(readOnly = true)
