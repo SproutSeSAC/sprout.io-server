@@ -47,8 +47,6 @@ class NoticeSessionEntity (
                 && notice.id == other.notice.id
     }
 
-    // TODO hashCode에서 notice.id를 참조하는것이 올바른가? 에 대해서 생각을 해보는것이...
-    //  하지만 kotlin에서 not null을 강제해주는데 맞을지도?
     override fun hashCode(): Int {
         return Objects.hash(
             notice.id,
