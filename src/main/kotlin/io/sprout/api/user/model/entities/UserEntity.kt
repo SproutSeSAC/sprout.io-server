@@ -53,8 +53,9 @@ class UserEntity(
     @Column(name = "last_login_date_time")
     var lastLoginDateTime: LocalDateTime? = null // 마지막 로그인 시간
 
-    @Column(name = "marketing_consent")
-    var marketingConsent: Boolean = false // 마케팅 약관 동의여부
+    var serviceTerms: Boolean = true
+
+    var personalInformationTerms = true
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var userJobList: MutableSet<UserJobEntity> = LinkedHashSet()
@@ -70,8 +71,6 @@ class UserEntity(
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true,fetch = FetchType.LAZY)
     var userCampusList: MutableSet<UserCampusEntity> = LinkedHashSet()
-//    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-//    var googleCalendar: GoogleCalendarEntity? = null
 
     fun addRefreshToken(refreshToken: String){
         this.refreshToken = refreshToken
@@ -107,7 +106,8 @@ class UserEntity(
         phoneNumber = request.phoneNumber
         role = request.role
         status = UserStatus.ACTIVE
-        marketingConsent = request.marketingConsent
+        serviceTerms = request.serviceTerms
+        personalInformationTerms = request.personalInformationTerms
         isEssential = true
 
 

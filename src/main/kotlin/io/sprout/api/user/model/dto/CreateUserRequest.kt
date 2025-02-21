@@ -2,6 +2,7 @@ package io.sprout.api.user.model.dto
 
 import io.sprout.api.user.model.entities.RoleType
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotNull
 
 @Schema(description = "추가 정보 입력에 따른 계정 생성 request")
@@ -34,6 +35,10 @@ data class CreateUserRequest(
     val techStackIdList: MutableSet<Long> = mutableSetOf(),
 
     @Schema(description = "개인정보 취급 방침 동의 여부", nullable = false)
-    @field:NotNull val marketingConsent: Boolean
+    @field:AssertTrue
+    val personalInformationTerms: Boolean,
 
+    @Schema(description = "이용 약관", nullable = false)
+    @field:AssertTrue
+    val serviceTerms: Boolean
 )
