@@ -117,7 +117,7 @@ class MypageService(
                 }
                 PostType.MEAL -> {
                     val linkedId = post.linkedId
-                    mealPostService.getMealPostDetail(linkedId)
+                    mealPostService.getMealPostDetail(linkedId).title
                 }
             }
 
