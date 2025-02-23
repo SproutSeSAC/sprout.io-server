@@ -117,7 +117,7 @@ class ProjectServiceImpl(
         var x = projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!)
             ?: throw IllegalArgumentException("Project with ID $projectId not found")
 
-        val Post = postRepository.findLinkedIdByDataId(projectId)
+        val Post = postRepository.findLinkedIdByDataId(projectId, PostType.PROJECT)
 
         println("POST 찾음! : " + Post.id + " // " + Post.linkedId)
         if (Post != null) {
