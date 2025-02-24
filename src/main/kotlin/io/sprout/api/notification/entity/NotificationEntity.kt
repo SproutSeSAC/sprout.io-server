@@ -1,6 +1,7 @@
 package io.sprout.api.notification.entity
 
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "notification")
@@ -32,4 +33,7 @@ class NotificationEntity(
 
         @Column(name = "comment", nullable = false)
         var comment : String,
+
+        @Column(name = "createdAt", nullable = false)
+        var createdAt : LocalDateTime
 )

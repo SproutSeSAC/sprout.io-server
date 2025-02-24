@@ -9,6 +9,7 @@ import io.sprout.api.notification.repository.NotificationRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class NotificationService(
@@ -29,7 +30,8 @@ class NotificationService(
                 m_data.content,
                 m_data.url,
                 m_data.comment,
-                m_data.isRead
+                m_data.isRead,
+                m_data.createdAt
             )
         }
 
@@ -38,6 +40,8 @@ class NotificationService(
 
     @Transactional
     fun saveNotification(dto: NotificationDto): NotificationEntity {
+        val createAt = LocalDateTime.now()
+
         val notification = NotificationEntity(
                 userId = dto.userId,
                 fromId = dto.fromId,
@@ -45,14 +49,19 @@ class NotificationService(
                 content = dto.content,
                 url = dto.url,
                 NotiType = dto.NotiType,
-                comment = dto.comment
+                comment = dto.comment,
+                createdAt = createAt
         )
 
         val notification_log = NotificationLogEntity(
             userId = notification.userId,
             fromId = notification.fromId,
             type = notification.type,
-            content = notification.content
+            content = notification.content,
+            url = notification.url,
+            NotiType = notification.NotiType,
+            comment = notification.comment,
+            createdAt = notification.createdAt
         )
 
         val savedNotification = notificationRepository.save(notification)
