@@ -1,6 +1,7 @@
 package io.sprout.api.notification.entity
 
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "notification_log")
@@ -22,5 +23,17 @@ class NotificationLogEntity(
         var content: String,
 
         @Column(name = "is_read", nullable = false)
-        var isRead: Boolean = false
+        var isRead: Boolean = false,
+
+        @Column(name = "noti_type", nullable = false)
+        var NotiType: Long,
+
+        @Column(name = "url", nullable = false)
+        var url: String,
+
+        @Column(name = "comment", nullable = false)
+        var comment : String,
+
+        @Column(name = "createdAt", nullable = false)
+        val createdAt: LocalDateTime
 )
