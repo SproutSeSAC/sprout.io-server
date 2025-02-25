@@ -11,6 +11,7 @@ import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.service.ProjectService
+import io.sprout.api.scrap.service.ScrapService
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -20,7 +21,8 @@ class PostService(
     private val postRepository: PostRepository,
     private val projectService: ProjectService,
     private val noticeService: NoticeService,
-    private val mealPostService: MealPostService
+    private val mealPostService: MealPostService,
+    private val scrapService: ScrapService
 ) {
 
     /**
@@ -232,6 +234,7 @@ class PostService(
                 PostType.MEAL -> mealPostService.deleteMealPost(post.linkedId)
             }
 
+            scrapService.deleteAllScrapsWithPostId(postId)
             postRepository.delete(post)
             true
         } catch (e: Exception) {
