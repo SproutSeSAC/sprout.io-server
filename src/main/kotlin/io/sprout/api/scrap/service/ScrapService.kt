@@ -52,6 +52,11 @@ class ScrapService(
         return true
     }
 
+    @Transactional
+    fun deleteAllScrapsWithPostId(postId: Long) {
+        scrapRepository.deleteAllByPostId(postId)
+    }
+
     private fun convertToDto(scrap: ScrapEntity): ScrapResponseDto {
         return ScrapResponseDto(
                 id = scrap.id,

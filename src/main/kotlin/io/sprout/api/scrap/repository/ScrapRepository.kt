@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface ScrapRepository : JpaRepository<ScrapEntity, Long> {
     fun findByUserId(userId: Long): List<ScrapEntity>
     fun findByUserIdAndPostId(userId: Long, postId: Long): ScrapEntity?
+    fun deleteAllByPostId(postId: Long)
 }
