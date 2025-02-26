@@ -5,8 +5,10 @@ import io.sprout.api.notice.model.entities.ParticipantStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 interface NoticeParticipantRepository : JpaRepository<NoticeParticipantEntity, Long> {
@@ -32,4 +34,31 @@ interface NoticeParticipantRepository : JpaRepository<NoticeParticipantEntity, L
         searchParticipantStatus: List<ParticipantStatus>,
         pageable: PageRequest
     ): Page<NoticeParticipantEntity>
+
+//    @Query("""
+//        SELECT participant
+//        FROM NoticeParticipantEntity participant
+//        LEFT JOIN FETCH participant.noticeSession session
+//        WHERE session.eventEndDateTime <= :now
+//        AND participant.status in ('P', )
+//    """)
+//    fun findByUserIdAndTimeIsBefore(now: LocalDateTime): List<NoticeParticipantEntity>
+
+    @Modifying
+    @Query("""
+        UPDATE NoticeParticipantEntity participant
+        SET participant.status = 'COMPLETE'
+        WHERE participant.noticeSession.eventEndDateTime <= :now
+        AND participant.status = 'PARTICIPANT'
+    """)
+    fun updateParticipantToCompleteAfter(now: LocalDateTime)
+
+    @Modifying
+    @Query("""
+        UPDATE NoticeParticipantEntity participant
+        SET participant.status = 'REJECT'
+        WHERE participant.noticeSession.eventEndDateTime <= :now
+        AND participant.status = 'WAIT'
+    """)
+    fun updateWaitToRejectAfter(now: LocalDateTime)
 }
