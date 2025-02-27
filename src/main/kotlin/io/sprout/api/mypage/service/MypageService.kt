@@ -103,6 +103,7 @@ class MypageService(
     // 작성 글 목록 조회
     fun getPostListByUserId(clientId: Long): List<PostAndNickNameDto> {
         val posts = postService.getPostsByClientId(clientId)
+        var projectType = ""
 
         // DTO 변환
         return posts.map { post ->
@@ -113,7 +114,9 @@ class MypageService(
                 }
                 PostType.PROJECT -> {
                     val linkedId = post.linkedId
-                    projectService.getProjectTitleById(linkedId)
+                    val project = projectService.getProjectById(linkedId)
+                    projectType = project?.pType.toString() ?: ""
+                    project?.title ?: "프로젝트를 찾을 수 없음!"
                 }
                 PostType.MEAL -> {
                     val linkedId = post.linkedId
@@ -132,7 +135,8 @@ class MypageService(
                 title = title.toString(),
                 createdAt = post.createdAt,
                 updatedAt = post.updatedAt,
-                createdNickName = user.nickname
+                createdNickName = user.nickname,
+                pType = projectType
             )
         }
     }
@@ -175,9 +179,13 @@ class MypageService(
                     profileImg = user.profileImageUrl ?: ""
                 )
 
+                var projectType = ""
                 val postData = when (post) {
                     is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
-                    is ProjectResponseDto -> PostInfoDto(post.title, post.description, PostType.PROJECT)
+                    is ProjectResponseDto -> {
+                        projectType =post.pType
+                        PostInfoDto(post.title, post.description, PostType.PROJECT)
+                    }
                     is MealPostDto.MealPostDetailResponse -> PostInfoDto(post.title, "", PostType.MEAL)
                     else -> return@mapNotNull null
                 }
@@ -188,7 +196,8 @@ class MypageService(
                     postId = it.postId,
                     title = postData.title,
                     postType = postData.postType,
-                    content = postData.content
+                    content = postData.content,
+                    pType = projectType
                 )
             } else {
                 null

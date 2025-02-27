@@ -10,5 +10,6 @@ data class PostAndNickNameDto(
         val title: String,
         val createdAt: LocalDateTime,
         val updatedAt: LocalDateTime,
-        val createdNickName: String
+        val createdNickName: String,
+        val pType: String = "" // 프로젝트 구분용 (스터디)
 )
