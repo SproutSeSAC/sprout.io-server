@@ -142,11 +142,20 @@ class MypageService(
         val comments = commentService.getCommentsByClientId(clientId)
 
         return comments.map {
+            val mPostType = when (postService.getPostById(it.postId)) {
+                is NoticeDetailResponseDto -> PostType.NOTICE
+                is ProjectResponseDto -> PostType.PROJECT
+                is MealPostDto.MealPostDetailResponse -> PostType.MEAL
+                else -> PostType.NOTICE
+            }
+
             PostCommentDto(
                 commentId = it.id,
                 userNickname = it.userInfo.nickname,
                 postId = it.postId,
                 content = it.content,
+                createdAt = it.createAt,
+                postType = mPostType.toString()
             )
         }
     }
