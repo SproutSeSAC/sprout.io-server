@@ -23,6 +23,8 @@ class StoreProjectionDto{
         val latitude: String,
         val scrapCount: Long,
         val isScrap: Boolean,
+        var postId: Long?,
+        var isScraped: Boolean = false
     ) {
         var storeImageList: MutableList<StoreImageDto> = mutableListOf()
         var storeMenuList: MutableList<StoreMenuDto> = mutableListOf()

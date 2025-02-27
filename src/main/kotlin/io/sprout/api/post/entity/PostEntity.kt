@@ -45,5 +45,6 @@ class PostEntity(
 enum class PostType {
     NOTICE, // 공지사항
     PROJECT, // 모집글
-    MEAL // 한끼팟
+    MEAL, // 한끼팟
+    STORE // 맛집
 }
