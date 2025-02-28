@@ -5,6 +5,9 @@ import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
+import io.sprout.api.post.entities.PostType
+import io.sprout.api.post.repository.PostRepository
+import io.sprout.api.scrap.repository.ScrapRepository
 import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.dto.StoreDto.StoreDetailResponse.*
@@ -26,7 +29,9 @@ class StoreService(
     private val storeRepository: StoreRepository,
     private val scrapedStoreRepository: ScrapedStoreRepository,
     private val securityManager: SecurityManager,
-    private val storeReviewRepository: StoreReviewRepository
+    private val storeReviewRepository: StoreReviewRepository,
+    private val postRepository: PostRepository,
+    private val scrapRepository: ScrapRepository
 ) {
 
     private fun <T> handleExceptions(action: () -> T): T {
@@ -44,9 +49,22 @@ class StoreService(
     }
 
     fun getStoreList(filterRequest: StoreDto.StoreListRequest): List<StoreProjectionDto.StoreInfoDto> {
-        return storeRepository.findStoreList(
+        var tmp = storeRepository.findStoreList(
             filterRequest,
-            securityManager.getAuthenticatedUserName()!!)
+            securityManager.getAuthenticatedUserName()!!
+        )
+
+        tmp.forEach { storeInfoDto ->
+            val post = postRepository.findByLinkedIdAndPostType(storeInfoDto.id, PostType.STORE)
+                ?: throw CustomBadRequestException("게시글(Post)이 없습니다.")
+
+            storeInfoDto.postId = post.id
+            storeInfoDto.isScraped = scrapRepository.findByUserIdAndPostId(
+                securityManager.getAuthenticatedUserId(), post.id
+            ) != null
+        }
+
+        return tmp
     }
 
     fun getFilterCount(campusId: Long): StoreProjectionDto.StoreFilterCount {
@@ -58,7 +76,11 @@ class StoreService(
         val userId = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
         val store = storeRepository.findStoreById(storeId) ?: throw CustomBadRequestException("Not found store")
 
-        val isScraped = scrapedStoreRepository.findByUserIdAndStoreId(userId, storeId) != null
+        val post = postRepository.findByLinkedIdAndPostType(store.id, PostType.STORE)
+            ?: throw CustomBadRequestException("게시글(Post)이 없습니다.")
+
+        val isScraped = ((scrapRepository.findByUserIdAndPostId(userId, post.id)) != null)
+//        val isScraped = scrapedStoreRepository.findByUserIdAndStoreId(userId, storeId) != null
 
         return StoreDto.StoreDetailResponse(
             name = store.name,
@@ -73,6 +95,7 @@ class StoreService(
             isZeropay = store.isZeropay,
             isOverPerson = store.isOverPerson,
             isScraped = isScraped,
+            postId = post.id,
             storeMenuList = store.storeMenuList.map {
                 StoreMenuDetail(
                     id = it.id,

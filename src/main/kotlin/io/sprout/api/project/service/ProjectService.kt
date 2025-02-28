@@ -2,6 +2,7 @@ package io.sprout.api.project.service
 
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.ProjectCommentEntity
+import io.sprout.api.project.model.entities.ProjectEntity
 
 interface ProjectService {
     fun postProject(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean
@@ -17,4 +18,5 @@ interface ProjectService {
     fun getProjectsEndingTomorrow(): List<ProjectSimpleResponseDto>
     fun postProjectAndGetId(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Long
     fun getProjectTitleById(linkedId: Long): String
+    fun getProjectById(linkedId: Long): ProjectEntity?
 }

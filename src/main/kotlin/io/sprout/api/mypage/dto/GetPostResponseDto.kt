@@ -20,5 +20,6 @@ data class GetPostResponseDto (
     val postId: Long,
     val title: String,
     val postType: PostType,
-    val content: String
+    val content: String,
+    val pType: String = "" // 프로젝트, 스터디 구분용
 )
