@@ -91,7 +91,7 @@ class NoticeRepositoryCustomImpl(
     /**
      * 마감 하루전날인 공지사항 검색
      */
-    override fun findEndingTomorrowNotice(userId: Long): MutableList<NoticeCardDto>? {
+    override fun getApplicationCloseNotice(userId: Long, size: Long): MutableList<NoticeCardDto>? {
         val myCourseIds: List<Long> = queryFactory
             .select(userCourse.course.id)
             .from(userCourse)
@@ -106,10 +106,10 @@ class NoticeRepositoryCustomImpl(
             .leftJoin(targetCourse.course, course)
             .where(
                 isInCourse(myCourseIds),
-                notice.applicationEndDateTime.between(LocalDateTime.now(), LocalDateTime.now().plusDays(1L))
+                notice.applicationEndDateTime.after(LocalDateTime.now())
             )
             .orderBy(notice.applicationEndDateTime.asc())
-            .limit(6)
+            .limit(size)
             .fetch()
 
         val result = queryFactory
