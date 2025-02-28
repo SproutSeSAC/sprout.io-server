@@ -9,6 +9,7 @@ import io.sprout.api.user.service.GoogleUserService
 import io.sprout.api.user.service.UserService
 import io.sprout.api.utils.CookieUtils
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -53,9 +54,19 @@ class UserController(
     @Operation(summary = "계정 등록", description = "계정 등록 (회원 상태가 변경된 새로운 access-token 발급)")
     fun initUser(
         @RequestBody @Valid request: CreateUserRequest,
-        @RequestHeader("Access-Token") accessToken: String?
+        @RequestHeader("Access-Token") accessToken: String?,
+        httpRequest: HttpServletRequest
     ): ResponseEntity<Map<String,String>> {
-        val refreshToken = userService.setEssentialUserProfile(request, accessToken)
+        var realToken = accessToken
+        if (accessToken == null) {
+            for (cookie in httpRequest.cookies) {
+                if (cookie.name == "access_token") {
+                    realToken = cookie.value
+                }
+            }
+        }
+
+        val refreshToken = userService.setEssentialUserProfile(request, realToken)
         val newAccessToken = jwtToken.createAccessFromRefreshToken(refreshToken)
 
         val result = hashMapOf("access_token" to newAccessToken)
