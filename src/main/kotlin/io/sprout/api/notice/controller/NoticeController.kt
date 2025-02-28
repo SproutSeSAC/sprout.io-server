@@ -77,9 +77,9 @@ class NoticeController(
     }
 
     @GetMapping("/ending-tomorrow")
-    @Operation(summary = "마감 임박 공지사항 조회", description = "특강 세션 마감 하루전 공지들을 반환합니다.")
-    fun getEndingTomorrowNotices(): ResponseEntity<MutableList<NoticeCardDto>> {
-        val searchNotice = noticeService.getEndingTomorrow()
+    @Operation(summary = "마감 임박 공지사항 조회", description = "특강 세션 등록 마감이 가장 가까운 공지를 반환합니다.")
+    fun getApplicationCloseNotice(@RequestParam(defaultValue = "6") size: Long): ResponseEntity<MutableList<NoticeCardDto>> {
+        val searchNotice = noticeService.getApplicationCloseNotice(size)
 
         return ResponseEntity.ok(searchNotice)
     }
