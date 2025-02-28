@@ -169,8 +169,8 @@ class MealPostService(
             mealPostRepository.save(mealPost)
 
             val dtodata = NotificationDto(
-                fromId = mealPost.mealPostParticipationList.first().user.id,
-                userId = user.id,
+                fromId = user.id,
+                userId = mealPost.mealPostParticipationList.first().user.id,
                 type = 0,
                 url = "",
                 content = mealPost.title,
@@ -206,8 +206,8 @@ class MealPostService(
             mealPostRepository.save(mealPost)
 
             val dtodata = NotificationDto(
-                fromId = mealPost.mealPostParticipationList.first().user.id,
-                userId = user.id,
+                fromId = user.id,
+                userId = mealPost.mealPostParticipationList.first().user.id,
                 type = 1,
                 url = "",
                 content = mealPost.title,

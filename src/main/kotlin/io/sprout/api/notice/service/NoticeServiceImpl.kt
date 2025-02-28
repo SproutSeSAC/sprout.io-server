@@ -216,8 +216,8 @@ class NoticeServiceImpl(
         }
 
         val dtodata = NotificationDto(
-            fromId = session.notice.user.id,
-            userId = user.id,
+            fromId = user.id,
+            userId = session.notice.user.id,
             type = 4,
             url = "",
             content = session.notice.title,
@@ -262,8 +262,8 @@ class NoticeServiceImpl(
         }
 
         val dtodata = NotificationDto(
-            fromId = participant.user.id,
-            userId = user.id,
+            fromId = user.id,
+            userId = participant.user.id,
             type = 6,
             url = "",
             content = noticeSession.notice.title,
@@ -297,8 +297,8 @@ class NoticeServiceImpl(
         AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
 
         val dtodata = NotificationDto(
-            fromId = participant.user.id,
-            userId = user.id,
+            fromId = user.id,
+            userId = participant.user.id,
             type = 7,
             url = "",
             content = noticeSession.notice.title,
@@ -332,8 +332,8 @@ class NoticeServiceImpl(
         }
 
         val dtodata = NotificationDto(
-            fromId = participant.noticeSession.notice.user.id,
-            userId = userId,
+            fromId = userId,
+            userId = participant.noticeSession.notice.user.id,
             type = 5,
             url = "",
             content = participant.noticeSession.notice.title,
