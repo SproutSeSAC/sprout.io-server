@@ -12,6 +12,7 @@ import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
+import io.sprout.api.store.service.StoreService
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -22,7 +23,8 @@ class PostService(
     private val projectService: ProjectService,
     private val noticeService: NoticeService,
     private val mealPostService: MealPostService,
-    private val scrapService: ScrapService
+    private val scrapService: ScrapService,
+    private val storeService: StoreService
 ) {
 
     /**
@@ -119,6 +121,10 @@ class PostService(
             PostType.MEAL -> {
                 val mealId = post.linkedId
                 mealPostService.getMealPostDetail(mealId)
+            }
+            PostType.STORE -> {
+                val storeId = post.linkedId
+                storeService.getStoreDetail(storeId)
             }
             else -> throw EntityNotFoundException("존재하지 않는 형식입니다.")
         }
