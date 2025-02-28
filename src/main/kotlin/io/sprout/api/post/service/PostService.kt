@@ -120,6 +120,7 @@ class PostService(
                 val mealId = post.linkedId
                 mealPostService.getMealPostDetail(mealId)
             }
+            else -> throw EntityNotFoundException("존재하지 않는 형식입니다.")
         }
     }
 
@@ -168,8 +169,9 @@ class PostService(
 
                     meal
                 }
+                else -> null
             }
-        }
+        }.filterNotNull()
     }
 
     /**
@@ -210,6 +212,8 @@ class PostService(
 
                     true
                 }
+
+                else -> false
             }
         } catch (e: Exception) {
             println("업데이트 실패 : ${e.message}")
@@ -232,6 +236,7 @@ class PostService(
                 PostType.PROJECT -> projectService.deleteProject(post.linkedId)
                 PostType.NOTICE -> noticeService.deleteNotice(post.linkedId)
                 PostType.MEAL -> mealPostService.deleteMealPost(post.linkedId)
+                else -> null
             }
 
             scrapService.deleteAllScrapsWithPostId(postId)
@@ -271,6 +276,7 @@ class PostService(
             PostType.MEAL -> {
                 return mealPostService.getMealPostDetail(post.linkedId).title
             }
+            else -> throw EntityNotFoundException("프로젝트를 찾을 수 없습니다. -> 공지는 원본 안 건드림")
         }
     }
 
