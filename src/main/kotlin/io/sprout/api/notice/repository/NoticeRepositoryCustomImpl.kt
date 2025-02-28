@@ -9,6 +9,7 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import io.sprout.api.course.model.entities.QCourseEntity
+import io.sprout.api.notice.model.dto.NoticeCardDto
 import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
 import io.sprout.api.notice.model.dto.NoticeSearchDto
@@ -16,6 +17,7 @@ import io.sprout.api.notice.model.entities.*
 import io.sprout.api.user.model.entities.QUserCourseEntity
 import io.sprout.api.user.model.entities.QUserEntity
 import io.sprout.api.user.model.entities.RoleType
+import java.time.LocalDateTime
 
 class NoticeRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory
@@ -82,6 +84,57 @@ class NoticeRepositoryCustomImpl(
         val ids = getSearchedIds(userId, myCourseIds, searchRequest)
 
         val result = getNoticeDetail(userId, ids)
+
+        return result
+    }
+
+    /**
+     * 마감 하루전날인 공지사항 검색
+     */
+    override fun findEndingTomorrowNotice(userId: Long): MutableList<NoticeCardDto>? {
+        val myCourseIds: List<Long> = queryFactory
+            .select(userCourse.course.id)
+            .from(userCourse)
+            .where(userCourse.user.id.eq(userId))
+            .fetch()
+
+        val ids = queryFactory
+            .selectDistinct(notice.id)
+            .from(notice)
+            .leftJoin(notice.user, user)
+            .leftJoin(notice.targetCourses, targetCourse)
+            .leftJoin(targetCourse.course, course)
+            .where(
+                isInCourse(myCourseIds),
+                notice.applicationEndDateTime.between(LocalDateTime.now(), LocalDateTime.now().plusDays(1L))
+            )
+            .orderBy(notice.applicationEndDateTime.asc())
+            .limit(6)
+            .fetch()
+
+        val result = queryFactory
+            .selectFrom(notice)
+            .leftJoin(notice.user, user)
+            .where(notice.id.`in`(ids))
+            .orderBy(notice.applicationEndDateTime.asc())
+            .transform(
+                groupBy(notice.id).list(
+                    Projections.constructor(
+                        NoticeCardDto::class.java,
+                        notice.id,
+                        notice.title,
+                        notice.applicationEndDateTime,
+
+                        Projections.constructor(
+                            NoticeCardDto.Manager::class.java,
+                            user.id,
+                            user.name,
+                            user.nickname,
+                            user.role
+                        )
+                    )
+                )
+            )
 
         return result
     }
