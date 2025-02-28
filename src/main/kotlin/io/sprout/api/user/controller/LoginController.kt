@@ -80,9 +80,19 @@ class LoginController(
     @GetMapping("/refresh")
     fun refresh(
         @RequestHeader("Refresh-Token") refreshToken: String,
+        httpRequest: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<Map<String, String>> {
-        val newAccessToken = jwtToken.createAccessFromRefreshToken(refreshToken)
+        var realToken = refreshToken
+        if (realToken == null) {
+            for (cookie in httpRequest.cookies) {
+                if (cookie.name == "refresh_token") {
+                    realToken = cookie.value
+                }
+            }
+        }
+
+        val newAccessToken = jwtToken.createAccessFromRefreshToken(realToken)
         val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
         response.addCookie(accessCookie)
         val map = hashMapOf("access_token" to newAccessToken)
