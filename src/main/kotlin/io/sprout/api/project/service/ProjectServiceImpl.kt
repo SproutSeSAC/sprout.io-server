@@ -218,4 +218,11 @@ class ProjectServiceImpl(
                 .orElseThrow { EntityNotFoundException("프로젝트를 찾을 수 없습니다. ID: $linkedId") }
         return project.title ?: "No Title"
     }
+
+    override fun getProjectById(linkedId: Long): ProjectEntity? {
+        val project =
+            projectRepository.findById(linkedId).orElseThrow { IllegalArgumentException("Project not found") }
+
+        return project
+    }
 }

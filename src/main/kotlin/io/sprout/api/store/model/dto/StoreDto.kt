@@ -32,7 +32,7 @@ class StoreDto {
         private val page: Int = 1,
 
         @Schema(description = "페이지 사이즈", nullable = true, defaultValue = "5")
-        val size: Int = 5
+        val size: Int = 5,
     ){
         val pageIndex: Int = page-1
     }
@@ -149,8 +149,9 @@ class StoreDto {
         val storeMenuList: MutableSet<StoreMenuDetail> = LinkedHashSet(),
 
         @Schema(description = "맛집 리뷰 리스트")
-        val storeReviewList: MutableSet<StoreReviewDetail> = LinkedHashSet()
+        val storeReviewList: MutableSet<StoreReviewDetail> = LinkedHashSet(),
 
+        var postId: Long?
     ) {
         @get:Schema(description = "10000원 이하 메뉴 존재 여부")
         val isLessThan10000Menu: Boolean
