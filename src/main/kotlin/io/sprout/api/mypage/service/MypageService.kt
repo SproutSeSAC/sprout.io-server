@@ -122,6 +122,7 @@ class MypageService(
                     val linkedId = post.linkedId
                     mealPostService.getMealPostDetail(linkedId).title
                 }
+                else -> return@map null
             }
 
             val user = userRepository.findById(post.clientId)
@@ -138,7 +139,7 @@ class MypageService(
                 createdNickName = user.nickname,
                 pType = projectType
             )
-        }
+        }.filterNotNull()
     }
 
     // 댓글 조회
