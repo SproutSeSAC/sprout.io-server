@@ -6,6 +6,7 @@ import io.sprout.api.comment.dto.CommentResponseDto
 import io.sprout.api.comment.dto.commentUserDto
 import io.sprout.api.comment.repository.CommentRepository
 import io.sprout.api.notification.entity.NotificationDto
+import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.post.service.PostService
 import io.sprout.api.sse.service.SseService
@@ -31,6 +32,8 @@ class CommentService(
         val post = postRepository.findById(dto.postId)
                 .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없음") }
 
+        val isNotice = if (post.postType == PostType.NOTICE) 3 else 2
+
         val comment = CommentEntity(
                 content = dto.content,
                 user = user,
@@ -41,9 +44,9 @@ class CommentService(
         val savedComment = commentRepository.save(comment)
 
         val dtodata = NotificationDto(
-            fromId = post.clientId,
-            userId = clientID,
-            type = 3,
+            fromId = clientID,
+            userId = post.clientId,
+            type = isNotice.toLong(),
             url = "${post.id}",
             content = postService.getPostTitle(post.id),
             NotiType = 5,
