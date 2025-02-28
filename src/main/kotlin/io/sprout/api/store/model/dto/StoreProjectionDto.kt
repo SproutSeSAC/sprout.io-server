@@ -6,7 +6,7 @@ import io.sprout.api.store.model.entities.FoodType
 class StoreProjectionDto{
 
     //위도, 경도, 스크랩 여부, 스크랩 개수
-    data class StoreInfoDto(
+    data class StoreInfoDto @JvmOverloads constructor(
         val id: Long,
         val name: String,
         val foodType: FoodType,
@@ -23,7 +23,7 @@ class StoreProjectionDto{
         val latitude: String,
         val scrapCount: Long,
         val isScrap: Boolean,
-        var postId: Long?,
+        var postId: Long? = null,
         var isScraped: Boolean = false
     ) {
         var storeImageList: MutableList<StoreImageDto> = mutableListOf()
