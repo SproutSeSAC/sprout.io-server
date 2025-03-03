@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import reactor.core.publisher.Flux
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
 @RestController
 @RequestMapping("/sse")
@@ -18,7 +18,7 @@ class SseController(
 ) {
 
     @ExceptionHandler(Exception::class)
-    fun handleException(e: Exception): ResponseEntity<String?>? {
+    fun handleException(e: Exception): ResponseEntity<String?> {
         println("Exception 발생 : ${e.message}")
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.message)
     }
@@ -26,18 +26,12 @@ class SseController(
     // SSE 구독
     @GetMapping("/subscribe", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     @Operation(summary = "SSE 구독 시작", description = "clientID(Long 타입)를 기반으로 SSE 구독")
-    fun subscribe(): ResponseEntity<Flux<String>> {
+    fun subscribe(): ResponseEntity<SseEmitter> {
         val clientID = securityManager.getAuthenticatedUserId()
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null)
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
 
-        val sink = sseService.subscribe(clientID)
-        return ResponseEntity.ok(
-            sink.asFlux()
-                .doFinally {
-                    println("클라이언트 종료: $clientID")
-                    sseService.unsubscribe(clientID)
-                }
-        )
+        val emitter = sseService.subscribe(clientID)
+        return ResponseEntity.ok(emitter)
     }
 
     // SSE 구독 해제
@@ -65,7 +59,7 @@ class SseController(
             url = "",
             content = message,
             NotiType = 6,
-            comment = "",
+            comment = ""
         )
 
         sseService.publish(dtodata)
