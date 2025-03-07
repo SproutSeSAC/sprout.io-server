@@ -23,5 +23,5 @@ interface NoticeService {
     fun getSessionParticipants(sessionId: Long, pageable: PageRequest, searchParticipantStatus: List<ParticipantStatus>): Page<NoticeParticipantResponseDto>
     fun toggleNoticeScrap(noticeId: Long): ToggleResponse
     fun getNoticeTitleById(linkedId: Long): String
-    fun getApplicationCloseNotice(size: Long): MutableList<NoticeCardDto>?
+    fun getApplicationCloseNotice(size: Long, days: Long): MutableList<NoticeCardDto>?
 }

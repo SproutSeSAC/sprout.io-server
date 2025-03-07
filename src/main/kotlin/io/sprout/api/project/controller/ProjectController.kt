@@ -176,15 +176,16 @@ class ProjectController(
         }
     }
 
-    @GetMapping("/ending-tomorrow")
+    @GetMapping("/ending-close")
     @Operation(
-        summary = "하루 전 종료된 프로젝트 조회 API",
-        description = "하루 전 종료된 프로젝트들에 대해 projectId, content, userNickname을 조회하는 API입니다."
+        summary = "마감 임박 프로젝트 조회 API",
+        description = "마감일이 임박한 프로젝트들을 조회하는 API입니다. 기본값 7일"
     )
-    fun getProjectsEndingYesterday(): ResponseEntity<List<ProjectSimpleResponseDto>> {
-        val projects = projectService.getProjectsEndingTomorrow()
+    fun getProjectsEndingClose(
+        @RequestParam(defaultValue = "6") size: Long,
+        @RequestParam(defaultValue = "7") days: Long
+    ): ResponseEntity<List<ProjectSimpleResponseDto>> {
+        val projects = projectService.getProjectsEndingClose(size, days)
         return ResponseEntity.ok(projects)
     }
-
-
 }

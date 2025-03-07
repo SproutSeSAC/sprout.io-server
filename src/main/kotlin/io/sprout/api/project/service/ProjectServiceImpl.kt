@@ -4,7 +4,6 @@ import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
-import io.sprout.api.position.model.entities.PositionEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.*
@@ -184,9 +183,9 @@ class ProjectServiceImpl(
         }
     }
 
-    override fun getProjectsEndingTomorrow(): List<ProjectSimpleResponseDto> {
-        val yesterday = LocalDate.now().plusDays(1)
-        return projectRepository.findProjectsEndingTommorowWithDetails(yesterday)
+    override fun getProjectsEndingClose(size: Long, days: Long): List<ProjectSimpleResponseDto> {
+        val yesterday = LocalDate.now().plusDays(days)
+        return projectRepository.findProjectsEndingCloseWithDetails(size, days)
     }
 
     private fun saveProjectPositions(savedProjectEntity: ProjectEntity, positions: List<Long>) {

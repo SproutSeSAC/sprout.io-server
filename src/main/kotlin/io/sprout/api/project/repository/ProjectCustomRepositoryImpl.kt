@@ -4,7 +4,6 @@ import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
-import io.sprout.api.position.model.entities.QPositionEntity
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
 import io.sprout.api.specification.model.entities.QJobEntity
@@ -106,7 +105,7 @@ class ProjectCustomRepositoryImpl(
             .fetch()
     }
 
-    override fun findProjectsEndingTommorowWithDetails(tomorrow: LocalDate): List<ProjectSimpleResponseDto> {
+    override fun findProjectsEndingCloseWithDetails(size: Long, days: Long): List<ProjectSimpleResponseDto> {
         val project = QProjectEntity.projectEntity
         val user = QUserEntity.userEntity
 
@@ -120,7 +119,11 @@ class ProjectCustomRepositoryImpl(
             )
             .from(project)
             .join(project.writer, user)
-            .where(project.recruitmentEnd.eq(tomorrow))
+            .where(project.recruitmentEnd.between(
+                LocalDate.now(), 
+                LocalDate.now().plusDays(days)))
+            .orderBy(project.recruitmentEnd.asc())
+            .limit(size)
             .fetch()
             .map { tuple ->
                 ProjectSimpleResponseDto(

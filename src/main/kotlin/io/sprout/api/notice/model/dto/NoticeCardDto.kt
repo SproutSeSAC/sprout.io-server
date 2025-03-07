@@ -4,6 +4,7 @@ import io.sprout.api.user.model.entities.RoleType
 import java.time.LocalDateTime
 
 data class NoticeCardDto(
+    val postId: Long?,
     val noticeId: Long,
     val title: String,
     val applicationEndDate: LocalDateTime,

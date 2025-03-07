@@ -76,10 +76,16 @@ class NoticeController(
         return ResponseEntity.ok(searchNotice)
     }
 
-    @GetMapping("/ending-tomorrow")
-    @Operation(summary = "마감 임박 공지사항 조회", description = "특강 세션 등록 마감이 가장 가까운 공지를 반환합니다.")
-    fun getApplicationCloseNotice(@RequestParam(defaultValue = "6") size: Long): ResponseEntity<MutableList<NoticeCardDto>> {
-        val searchNotice = noticeService.getApplicationCloseNotice(size)
+    /**
+     * 공지사항 마감 임박 API
+     */
+    @GetMapping("/ending-close")
+    @Operation(summary = "마감 임박 공지사항 조회", description = "특강 세션 등록 마감이 가장 가까운 공지를 반환합니다. 기본값 7일")
+    fun getApplicationCloseNotice(
+        @RequestParam(defaultValue = "6") size: Long,
+        @RequestParam(defaultValue = "7") days: Long
+    ): ResponseEntity<MutableList<NoticeCardDto>> {
+        val searchNotice = noticeService.getApplicationCloseNotice(size, days)
 
         return ResponseEntity.ok(searchNotice)
     }
