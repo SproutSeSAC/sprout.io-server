@@ -47,6 +47,18 @@ class NoticeController(
     }
 
     /**
+     * 공지사항 상태 토글
+     * 활성 <-> 비활성
+     */
+    @PatchMapping("/{noticeId}/status")
+    @Operation(summary = "공지사항 상태 변경", description = "공지사항 상태 토글: 활성 <-> 비활성")
+    fun toggleStatus(@PathVariable noticeId: Long): ResponseEntity<Any> {
+        noticeService.toggleStatus(noticeId)
+
+        return ResponseEntity.ok().build()
+    }
+
+    /**
      * 공지사항 조회
      *
      * @param noticeId 조회할 공지사항 ID

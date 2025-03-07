@@ -10,4 +10,7 @@ import java.time.LocalDate
 interface ProjectRepository : JpaRepository<ProjectEntity, Long>, ProjectCustomRepository {
     @Query("SELECT p FROM ProjectEntity p WHERE p.recruitmentEnd = :yesterday")
     fun findProjectsEndingYesterday(yesterday: LocalDate): List<ProjectEntity>
+
+    fun findByIdAndWriterId(userId: Long, projectId: Long): ProjectEntity?
+
 }

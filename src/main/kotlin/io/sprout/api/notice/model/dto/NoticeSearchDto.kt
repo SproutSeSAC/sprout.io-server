@@ -1,5 +1,6 @@
 package io.sprout.api.notice.model.dto
 
+import io.sprout.api.notice.model.entities.NoticeStatus
 import io.sprout.api.notice.model.entities.NoticeType
 import io.sprout.api.user.model.entities.RoleType
 import org.jsoup.Jsoup
@@ -19,6 +20,7 @@ data class NoticeSearchDto(
     val title: String,
     var content: String,
     val isContentOverMaxLength: Boolean,
+    val status: NoticeStatus,
     val viewCount: Int,
     val noticeType: NoticeType,
     val createdDateTime: LocalDateTime,

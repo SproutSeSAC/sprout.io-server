@@ -244,6 +244,18 @@ class NoticeServiceImpl(
     }
 
     /**
+     * 공지사항 상태 토글
+     * 활성화 <-> 비활성화
+     */
+    @Transactional
+    override fun toggleStatus(noticeId: Long) {
+        val notice = (noticeRepository.findByIdAndUserId(noticeId, getUserId())
+            ?: throw CustomBadRequestException("공지사항이 존재하지 않거나 수정 권한이 없습니다."))
+
+        notice.toggleStatus()
+    }
+
+    /**
      * 세션 참가 신청 수락
      *
      * @param sessionId 세션 ID

@@ -102,6 +102,14 @@ class ProjectEntity(
             imgUrl = this.writer.profileImageUrl,
         )
     }
+
+    fun toggleStatus() {
+        projectStatus = if (projectStatus == ProjectStatus.ACTIVE) {
+            ProjectStatus.INACTIVE
+        } else {
+            ProjectStatus.ACTIVE
+        }
+    }
 }
 
 
@@ -124,6 +132,5 @@ enum class ContactMethod {
 
 enum class ProjectStatus {
     ACTIVE, // 모집 중
-    INACTIVE, // 중지
-    END // 마감
+    INACTIVE, // 마감
 }

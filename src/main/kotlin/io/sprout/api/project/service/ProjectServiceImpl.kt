@@ -1,6 +1,7 @@
 package io.sprout.api.project.service
 
 import io.sprout.api.auth.security.manager.SecurityManager
+import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.common.exeption.custom.CustomSystemException
 import io.sprout.api.common.exeption.custom.CustomUnexpectedException
@@ -184,8 +185,22 @@ class ProjectServiceImpl(
     }
 
     override fun getProjectsEndingClose(size: Long, days: Long): List<ProjectSimpleResponseDto> {
-        val yesterday = LocalDate.now().plusDays(days)
         return projectRepository.findProjectsEndingCloseWithDetails(size, days)
+    }
+
+    /**
+     * 프로젝트 상태 토글
+     * 마감 -> 모집중, 모집중 -> 마감
+     */
+    @Transactional
+    override fun toggleStatus(projectId: Long) {
+        val userId = securityManager.getAuthenticatedUserId()
+
+        val projectEntity = projectRepository.findByIdAndWriterId(userId, projectId) ?: throw CustomBadRequestException(
+            "존재하지 않는 프로젝트 이거나 접근 권한이 없습니다."
+        )
+
+        projectEntity.toggleStatus()
     }
 
     private fun saveProjectPositions(savedProjectEntity: ProjectEntity, positions: List<Long>) {
