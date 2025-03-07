@@ -1,7 +1,6 @@
 package io.sprout.api.project.service
 
 import io.sprout.api.project.model.dto.*
-import io.sprout.api.project.model.entities.ProjectCommentEntity
 import io.sprout.api.project.model.entities.ProjectEntity
 
 interface ProjectService {
@@ -15,7 +14,7 @@ interface ProjectService {
     fun deleteComment(commentId: Long): Boolean
     fun deleteProject(projectId: Long): Boolean
     fun updateProject(projectId: Long, projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Boolean
-    fun getProjectsEndingTomorrow(): List<ProjectSimpleResponseDto>
+    fun getProjectsEndingClose(size: Long, days: Long): List<ProjectSimpleResponseDto>
     fun postProjectAndGetId(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Long
     fun getProjectTitleById(linkedId: Long): String
     fun getProjectById(linkedId: Long): ProjectEntity?

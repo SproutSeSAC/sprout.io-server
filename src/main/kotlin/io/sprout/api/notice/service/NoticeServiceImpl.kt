@@ -395,10 +395,10 @@ class NoticeServiceImpl(
     /**
      * 현재 시간 이후로 마감일이 가장 가까운순으로 이벤트 세션 반환
      */
-    override fun getApplicationCloseNotice(size: Long): MutableList<NoticeCardDto>? {
+    override fun getApplicationCloseNotice(size: Long, days: Long): MutableList<NoticeCardDto>? {
         val user = getUser()
 
-        return noticeRepository.getApplicationCloseNotice(user.id, size);
+        return noticeRepository.getApplicationCloseNotice(user.id, size, days);
     }
 
     override fun getNoticeTitleById(linkedId: Long): String {

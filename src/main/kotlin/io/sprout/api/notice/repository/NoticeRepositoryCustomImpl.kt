@@ -14,10 +14,13 @@ import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
 import io.sprout.api.notice.model.dto.NoticeSearchDto
 import io.sprout.api.notice.model.entities.*
+import io.sprout.api.post.entities.QPostEntity
 import io.sprout.api.user.model.entities.QUserCourseEntity
 import io.sprout.api.user.model.entities.QUserEntity
 import io.sprout.api.user.model.entities.RoleType
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 class NoticeRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory
@@ -30,6 +33,8 @@ class NoticeRepositoryCustomImpl(
     val userCourse = QUserCourseEntity.userCourseEntity
     val course = QCourseEntity.courseEntity
     val user = QUserEntity.userEntity
+
+    val post = QPostEntity.postEntity
 
     /**
      * 공지사항 ID에 해당하는 세션 정보, 세션 참가자수, 자신의 참가정보를 반환한다.
@@ -91,7 +96,7 @@ class NoticeRepositoryCustomImpl(
     /**
      * 마감 하루전날인 공지사항 검색
      */
-    override fun getApplicationCloseNotice(userId: Long, size: Long): MutableList<NoticeCardDto>? {
+    override fun getApplicationCloseNotice(userId: Long, size: Long, days: Long): MutableList<NoticeCardDto>? {
         val myCourseIds: List<Long> = queryFactory
             .select(userCourse.course.id)
             .from(userCourse)
@@ -106,7 +111,9 @@ class NoticeRepositoryCustomImpl(
             .leftJoin(targetCourse.course, course)
             .where(
                 isInCourse(myCourseIds),
-                notice.applicationEndDateTime.after(LocalDateTime.now())
+                notice.applicationEndDateTime.between(
+                    LocalDateTime.now(),
+                    LocalDateTime.of(LocalDate.now().plusDays(days), LocalTime.MAX))
             )
             .orderBy(notice.applicationEndDateTime.asc())
             .limit(size)
@@ -115,12 +122,15 @@ class NoticeRepositoryCustomImpl(
         val result = queryFactory
             .selectFrom(notice)
             .leftJoin(notice.user, user)
+            .leftJoin(post)
+                .on(post.linkedId.eq(notice.id))
             .where(notice.id.`in`(ids))
             .orderBy(notice.applicationEndDateTime.asc())
             .transform(
                 groupBy(notice.id).list(
                     Projections.constructor(
                         NoticeCardDto::class.java,
+                        post.id,
                         notice.id,
                         notice.title,
                         notice.applicationEndDateTime,
