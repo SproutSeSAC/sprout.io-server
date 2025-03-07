@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class NoticeServiceImpl(
@@ -211,11 +212,17 @@ class NoticeServiceImpl(
             .orElseThrow { throw CustomBadRequestException("세션이 존재하지 않습니다.") }
         AuthorizationUtils.validateUserCourseContainAtLeastOneTargetCourses(user, session.notice.targetCourses.map { it.course.id }.toSet())
 
+        val now = LocalDateTime.now()
+        if (session.notice.applicationStartDateTime!! > now &&
+            now > session.notice.applicationEndDateTime!!) {
+            throw CustomBadRequestException("신청 기간이 아닙니다. 현재시간: " + now.toString())
+        }
+
         if (noticeParticipantRepository.findByNoticeSessionIdAndUserId(sessionId, user.id) != null) {
             throw CustomDataIntegrityViolationException("중복된 요청입니다.")
         }
 
-        val dtodata = NotificationDto(
+        val dtoData = NotificationDto(
             fromId = user.id,
             userId = session.notice.user.id,
             type = 4,
@@ -225,7 +232,7 @@ class NoticeServiceImpl(
             comment = "",
         )
 
-        sseService.publish(dtodata)
+        sseService.publish(dtoData)
 
         noticeParticipantRepository.save(
             NoticeParticipantEntity(
