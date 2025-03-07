@@ -18,4 +18,5 @@ interface ProjectService {
     fun postProjectAndGetId(projectRecruitmentRequestDTO: ProjectRecruitmentRequestDto): Long
     fun getProjectTitleById(linkedId: Long): String
     fun getProjectById(linkedId: Long): ProjectEntity?
+    fun toggleStatus(projectId: Long)
 }

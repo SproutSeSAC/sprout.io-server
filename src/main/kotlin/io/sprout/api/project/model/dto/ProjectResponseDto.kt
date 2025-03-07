@@ -1,11 +1,13 @@
 package io.sprout.api.project.model.dto
 
 import com.querydsl.core.annotations.QueryProjection
+import io.sprout.api.project.model.entities.ProjectStatus
 import java.time.LocalDate
 
 data class ProjectResponseDto @QueryProjection constructor(
     val id: Long,
     val title: String,
+    val status: ProjectStatus,
     val description: String,
     val recruitmentCount: Int,
     val meetingType: String,
@@ -25,6 +27,7 @@ data class ProjectResponseDto @QueryProjection constructor(
        return ProjectResponseDto(
            id = this.id,
            title = this.title,
+           status = this.status,
            description = this.description,
            recruitmentCount = this.recruitmentCount,
            meetingType = this.meetingType,

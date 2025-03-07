@@ -24,4 +24,5 @@ interface NoticeService {
     fun toggleNoticeScrap(noticeId: Long): ToggleResponse
     fun getNoticeTitleById(linkedId: Long): String
     fun getApplicationCloseNotice(size: Long, days: Long): MutableList<NoticeCardDto>?
+    fun toggleStatus(noticeId: Long)
 }

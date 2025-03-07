@@ -258,6 +258,7 @@ class ProjectCustomRepositoryImpl(
                         ProjectResponseDto::class.java,
                         projectEntity.id,
                         projectEntity.title,
+                        projectEntity.projectStatus,
                         projectEntity.description,
                         projectEntity.recruitmentCount,
                         projectEntity.meetingType.stringValue(),

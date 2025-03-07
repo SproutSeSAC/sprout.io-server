@@ -176,6 +176,18 @@ class ProjectController(
         }
     }
 
+    @PatchMapping("/{projectId}/status")
+    @Operation(
+        summary = "프로젝트 상태 변경",
+        description = "상태를 토글 변경 모집중 -> 마감, 마감 -> 모집중"
+    )
+    fun toggleStatus(@PathVariable projectId: Long): ResponseEntity<Any> {
+        projectService.toggleStatus(projectId)
+
+        return ResponseEntity.ok().build()
+    }
+
+
     @GetMapping("/ending-close")
     @Operation(
         summary = "마감 임박 프로젝트 조회 API",

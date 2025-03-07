@@ -177,6 +177,7 @@ class NoticeRepositoryCustomImpl(
                         notice.title,
                         notice.content.substring(0, 150),
                         notice.content.length().gt(150),
+                        notice.status,
                         notice.viewCount,
                         notice.noticeType,
                         notice.createdAt,

@@ -124,6 +124,17 @@ class NoticeEntity(
     fun increaseViewCount() {
         viewCount += 1
     }
+
+    /**
+     * 상태 토글
+     */
+    fun toggleStatus() {
+        status = if (status == NoticeStatus.ACTIVE) {
+            NoticeStatus.INACTIVE
+        } else {
+            NoticeStatus.ACTIVE
+        }
+    }
 }
 
 enum class NoticeStatus {
