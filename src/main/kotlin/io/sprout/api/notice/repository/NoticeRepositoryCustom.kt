@@ -10,4 +10,5 @@ interface NoticeRepositoryCustom {
     fun findByIdWithSession(noticeId: Long, userId: Long): List<NoticeDetailResponseDto.Session>
     fun search(searchRequest: NoticeSearchRequestDto, userId: Long): MutableList<NoticeSearchDto>
     fun getApplicationCloseNotice(userId: Long, size: Long, days: Long): MutableList<NoticeCardDto>?
+    fun findAllByIdIn(ids: List<Long>): MutableList<NoticeSearchDto>
 }
