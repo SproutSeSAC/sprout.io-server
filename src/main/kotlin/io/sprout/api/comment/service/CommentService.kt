@@ -118,7 +118,8 @@ class CommentService(
                 content = comment.content,
                 userInfo = commentUserDto(
                     nickname = comment.user.nickname,
-                    profileImg = comment.user.profileImageUrl ?: ""
+                    profileImg = comment.user.profileImageUrl ?: "",
+                    role = comment.user.role.toString()
                 ),
                 postId = comment.post.id,
                 imgUrl = comment.imgurl,
@@ -143,7 +144,8 @@ class CommentService(
             content = comment.content,
             userInfo = commentUserDto(
                 nickname = comment.user.nickname,
-                profileImg = comment.user.profileImageUrl ?: ""
+                profileImg = comment.user.profileImageUrl ?: "",
+                role = comment.user.role.toString()
             ),
             postId = comment.post.id,
             imgUrl = comment.imgurl,
