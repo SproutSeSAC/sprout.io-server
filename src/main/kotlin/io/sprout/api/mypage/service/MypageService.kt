@@ -15,6 +15,7 @@ import io.sprout.api.project.model.dto.ProjectDetailResponseDto
 import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
+import io.sprout.api.store.repository.StoreReviewRepository
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.data.domain.Page
@@ -25,15 +26,16 @@ import java.time.LocalDateTime
 
 @Service
 class MypageService(
-        private val userRepository: UserRepository,
-        private val userCourseRepository: UserCourseRepository,
-        private val courseRepository: CourseRepository,
-        private val postService: PostService,
-        private val noticeService: NoticeService,
-        private val projectService: ProjectService,
-        private val mealPostService: MealPostService,
-        private val commentService: CommentService,
-        private val scrapService: ScrapService
+    private val userRepository: UserRepository,
+    private val userCourseRepository: UserCourseRepository,
+    private val courseRepository: CourseRepository,
+    private val postService: PostService,
+    private val noticeService: NoticeService,
+    private val projectService: ProjectService,
+    private val mealPostService: MealPostService,
+    private val commentService: CommentService,
+    private val scrapService: ScrapService,
+    private val storeReviewRepository: StoreReviewRepository,
 ) {
 
     // region [프로필 관련 API]
@@ -145,11 +147,24 @@ class MypageService(
 
     // 댓글 조회
     fun getPostCommentListByUserId(clientId: Long): List<PostCommentDto> {
+        val storeReviews = storeReviewRepository.findByUserId(clientId)
         val comments = commentService.getCommentsByClientId(clientId)
-        return comments.map {
-            var projectType = ""
 
-            val post = postService.getPostById(it.postId);
+        val storeReviewComments = storeReviews.map {
+            PostCommentDto(
+                commentId = it.id,
+                userNickname = it.user.nickname,
+                postId = postService.getPostByLinkedIdAndPostType(it.store.id, PostType.STORE).id,
+                content = it.review ?: "",
+                createdAt = it.createdAt,
+                postType = PostType.STORE.toString(),
+                pType = ""
+            )
+        }
+
+        val postComments = comments.map {
+            var projectType = ""
+            val post = postService.getPostById(it.postId)
 
             val mPostType = when (post) {
                 is NoticeDetailResponseDto -> PostType.NOTICE
@@ -171,6 +186,8 @@ class MypageService(
                 pType = projectType
             )
         }
+
+        return storeReviewComments + postComments
     }
 
     // 찜한 글 목록 조회

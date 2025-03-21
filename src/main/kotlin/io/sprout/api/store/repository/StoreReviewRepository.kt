@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface StoreReviewRepository: JpaRepository<StoreReviewEntity, Long> {
-
+    fun findByUserId(userId: Long): List<StoreReviewEntity>
 }
