@@ -11,6 +11,7 @@ import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
+import io.sprout.api.project.model.dto.ProjectDetailResponseDto
 import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
@@ -183,11 +184,13 @@ class MypageService(
                 var projectType = ""
                 val postData = when (post) {
                     is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
-                    is ProjectResponseDto -> {
-                        projectType =post.pType
+                    is ProjectDetailResponseDto -> {
+                        projectType = PostType.PROJECT.toString()
                         PostInfoDto(post.title, post.description, PostType.PROJECT)
                     }
-                    is MealPostDto.MealPostDetailResponse -> PostInfoDto(post.title, "", PostType.MEAL)
+                    is MealPostDto.MealPostDetailResponse -> {
+                        PostInfoDto(post.title, "", PostType.MEAL)
+                    }
                     else -> return@mapNotNull null
                 }
 
