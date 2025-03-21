@@ -185,7 +185,7 @@ class MypageService(
                 val postData = when (post) {
                     is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
                     is ProjectDetailResponseDto -> {
-                        projectType = PostType.PROJECT.toString()
+                        projectType = post.pType.toString()
                         PostInfoDto(post.title, post.description, PostType.PROJECT)
                     }
                     is MealPostDto.MealPostDetailResponse -> {
