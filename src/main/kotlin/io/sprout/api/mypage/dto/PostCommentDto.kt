@@ -8,5 +8,6 @@ data class PostCommentDto(
         val postId: Long,
         val content: String,
         val createdAt: LocalDateTime,
-        val postType: String
+        val postType: String,
+        val pType: String
 )

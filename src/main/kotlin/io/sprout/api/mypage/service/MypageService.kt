@@ -146,11 +146,17 @@ class MypageService(
     // 댓글 조회
     fun getPostCommentListByUserId(clientId: Long): List<PostCommentDto> {
         val comments = commentService.getCommentsByClientId(clientId)
-
         return comments.map {
-            val mPostType = when (postService.getPostById(it.postId)) {
+            var projectType = ""
+
+            val post = postService.getPostById(it.postId);
+
+            val mPostType = when (post) {
                 is NoticeDetailResponseDto -> PostType.NOTICE
-                is ProjectResponseDto -> PostType.PROJECT
+                is ProjectDetailResponseDto -> {
+                    projectType = post.pType.toString()
+                    PostType.PROJECT
+                }
                 is MealPostDto.MealPostDetailResponse -> PostType.MEAL
                 else -> PostType.NOTICE
             }
@@ -161,7 +167,8 @@ class MypageService(
                 postId = it.postId,
                 content = it.content,
                 createdAt = it.createAt,
-                postType = mPostType.toString()
+                postType = mPostType.toString(),
+                pType = projectType
             )
         }
     }
