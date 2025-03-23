@@ -79,10 +79,8 @@ class ProjectServiceImpl(
                     if (m_id != null) { x.add(m_id)  }
                 }
 
-                val (filteredProjects, count) = projectRepository.findAllByIdIn(x)
-
-                projectList = filteredProjects
-                totalCount = count
+                projectList = projectList.filter { dto -> dto.id in x }
+                totalCount = projectList.size.toLong()
 
                 projectList.forEach{ dto -> dto.isScraped = true }
             }

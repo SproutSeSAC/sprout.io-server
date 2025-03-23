@@ -7,5 +7,4 @@ interface ProjectCustomRepository {
     fun findProjectDetailById(id: Long, userId: Long): ProjectDetailResponseDto?
     fun getCommentsByProjectId(projectId: Long): List<ProjectCommentResponseDto>
     fun findProjectsEndingCloseWithDetails(size: Long, days: Long) : List<ProjectSimpleResponseDto>
-    fun findAllByIdIn(ids: List<Long>): Pair<List<ProjectResponseDto>, Long>
 }

@@ -265,9 +265,6 @@ class NoticeRepositoryCustomImpl(
 
         return notice.noticeType.eq(noticeType)
     }
-
-
-
 }
 
 
