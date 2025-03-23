@@ -49,22 +49,22 @@ class StoreService(
     }
 
     fun getStoreList(filterRequest: StoreDto.StoreListRequest): List<StoreProjectionDto.StoreInfoDto> {
-        var tmp = storeRepository.findStoreList(
-            filterRequest,
-            securityManager.getAuthenticatedUserName()!!
-        )
+        val authenticatedUserId = securityManager.getAuthenticatedUserId()
+        var storeList = storeRepository.findStoreList(filterRequest, securityManager.getAuthenticatedUserName()!!)
 
-        tmp.forEach { storeInfoDto ->
+        storeList.forEach { storeInfoDto ->
             val post = postRepository.findByLinkedIdAndPostType(storeInfoDto.id, PostType.STORE)
                 ?: throw CustomBadRequestException("게시글(Post)이 없습니다.")
 
             storeInfoDto.postId = post.id
-            storeInfoDto.isScraped = scrapRepository.findByUserIdAndPostId(
-                securityManager.getAuthenticatedUserId(), post.id
-            ) != null
+            storeInfoDto.isScraped = scrapRepository.findByUserIdAndPostId(authenticatedUserId, post.id) != null
         }
 
-        return tmp
+        if (filterRequest.onlyScraped == true) {
+            storeList = storeList.filter { it.isScraped }
+        }
+
+        return storeList
     }
 
     fun getFilterCount(campusId: Long): StoreProjectionDto.StoreFilterCount {
