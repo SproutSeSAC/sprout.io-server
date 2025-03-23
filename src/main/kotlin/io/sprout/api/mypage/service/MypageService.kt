@@ -11,9 +11,11 @@ import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
+import io.sprout.api.project.model.dto.ProjectDetailResponseDto
 import io.sprout.api.project.model.dto.ProjectResponseDto
 import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
+import io.sprout.api.store.repository.StoreReviewRepository
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.data.domain.Page
@@ -24,15 +26,16 @@ import java.time.LocalDateTime
 
 @Service
 class MypageService(
-        private val userRepository: UserRepository,
-        private val userCourseRepository: UserCourseRepository,
-        private val courseRepository: CourseRepository,
-        private val postService: PostService,
-        private val noticeService: NoticeService,
-        private val projectService: ProjectService,
-        private val mealPostService: MealPostService,
-        private val commentService: CommentService,
-        private val scrapService: ScrapService
+    private val userRepository: UserRepository,
+    private val userCourseRepository: UserCourseRepository,
+    private val courseRepository: CourseRepository,
+    private val postService: PostService,
+    private val noticeService: NoticeService,
+    private val projectService: ProjectService,
+    private val mealPostService: MealPostService,
+    private val commentService: CommentService,
+    private val scrapService: ScrapService,
+    private val storeReviewRepository: StoreReviewRepository,
 ) {
 
     // region [프로필 관련 API]
@@ -144,12 +147,31 @@ class MypageService(
 
     // 댓글 조회
     fun getPostCommentListByUserId(clientId: Long): List<PostCommentDto> {
+        val storeReviews = storeReviewRepository.findByUserId(clientId)
         val comments = commentService.getCommentsByClientId(clientId)
 
-        return comments.map {
-            val mPostType = when (postService.getPostById(it.postId)) {
+        val storeReviewComments = storeReviews.map {
+            PostCommentDto(
+                commentId = it.id,
+                userNickname = it.user.nickname,
+                postId = postService.getPostByLinkedIdAndPostType(it.store.id, PostType.STORE).id,
+                content = it.review ?: "",
+                createdAt = it.createdAt,
+                postType = PostType.STORE.toString(),
+                pType = ""
+            )
+        }
+
+        val postComments = comments.map {
+            var projectType = ""
+            val post = postService.getPostById(it.postId)
+
+            val mPostType = when (post) {
                 is NoticeDetailResponseDto -> PostType.NOTICE
-                is ProjectResponseDto -> PostType.PROJECT
+                is ProjectDetailResponseDto -> {
+                    projectType = post.pType.toString()
+                    PostType.PROJECT
+                }
                 is MealPostDto.MealPostDetailResponse -> PostType.MEAL
                 else -> PostType.NOTICE
             }
@@ -160,9 +182,12 @@ class MypageService(
                 postId = it.postId,
                 content = it.content,
                 createdAt = it.createAt,
-                postType = mPostType.toString()
+                postType = mPostType.toString(),
+                pType = projectType
             )
         }
+
+        return storeReviewComments + postComments
     }
 
     // 찜한 글 목록 조회
@@ -183,11 +208,13 @@ class MypageService(
                 var projectType = ""
                 val postData = when (post) {
                     is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
-                    is ProjectResponseDto -> {
-                        projectType =post.pType
+                    is ProjectDetailResponseDto -> {
+                        projectType = post.pType.toString()
                         PostInfoDto(post.title, post.description, PostType.PROJECT)
                     }
-                    is MealPostDto.MealPostDetailResponse -> PostInfoDto(post.title, "", PostType.MEAL)
+                    is MealPostDto.MealPostDetailResponse -> {
+                        PostInfoDto(post.title, "", PostType.MEAL)
+                    }
                     else -> return@mapNotNull null
                 }
 

@@ -28,6 +28,9 @@ class StoreDto {
         @Schema(description = "요리 타입 - 복수 선택 가능", nullable = true, defaultValue = "[]", example = "KOREAN, CHINESE, JAPANESE, WESTERN, ASIAN, SNACK, CAFE")
         val foodTypeList: MutableSet<FoodType> = LinkedHashSet(),
 
+        @Schema(description = "스크랩한 항목만 조회 여부", nullable = true, defaultValue = "false")
+        val onlyScraped: Boolean? = false,
+
         @Schema(description = "페이지 번호",  nullable = true, defaultValue = "1")
         private val page: Int = 1,
 

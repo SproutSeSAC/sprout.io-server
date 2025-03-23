@@ -66,16 +66,31 @@ class ProjectServiceImpl(
             val updatedFilterRequest = filterRequest.copy(page = validPage, size = validSize)
             val id = securityManager.getAuthenticatedUserId()
 
-            val (projectList, totalCount) = projectRepository.filterProjects(
+            var (projectList, totalCount) = projectRepository.filterProjects(
                 updatedFilterRequest,
                 securityManager.getAuthenticatedUserName()!!
             )
 
-            projectList.forEach { dto ->
-                val post = postRepository.findByLinkedIdAndPostType(dto.id, PostType.PROJECT)
-                dto.postId = post?.id
-                if (dto.postId != null) {
-                    dto.isScraped = (scrapRepository.findByUserIdAndPostId(id, dto.postId!!)) !== null
+            if (filterRequest.onlyScraped) {
+                val x: MutableList<Long> = mutableListOf()
+
+                // scrap이 켜져있는 ID 전체 읽기
+                scrapRepository.findLinkedIdByUserId(id).forEach { m_id ->
+                    if (m_id != null) { x.add(m_id)  }
+                }
+
+                projectList = projectList.filter { dto -> dto.id in x }
+                totalCount = projectList.size.toLong()
+
+                projectList.forEach{ dto -> dto.isScraped = true }
+            }
+            else {
+                projectList.forEach { dto ->
+                    val post = postRepository.findByLinkedIdAndPostType(dto.id, PostType.PROJECT)
+                    dto.postId = post?.id
+                    if (dto.postId != null) {
+                        dto.isScraped = (scrapRepository.findByUserIdAndPostId(id, dto.postId!!)) !== null
+                    }
                 }
             }
 

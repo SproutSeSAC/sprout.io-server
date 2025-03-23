@@ -1,5 +1,6 @@
 package io.sprout.api.notice.repository
 
+import io.sprout.api.notice.model.dto.NoticeSearchDto
 import io.sprout.api.notice.model.entities.NoticeEntity
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository

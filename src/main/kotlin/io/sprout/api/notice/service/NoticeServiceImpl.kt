@@ -159,16 +159,31 @@ class NoticeServiceImpl(
      */
     override fun searchNotice(searchRequest: NoticeSearchRequestDto): NoticeSearchResponseDto {
         val userId = getUserId()
-
         val user = getUser()
 
-        val searchResult = noticeRepository.search(searchRequest, userId)
-        searchResult.forEach { dto ->
-            val post = postRepository.findByLinkedIdAndPostType(dto.noticeId, PostType.NOTICE)
-            dto.postId = post?.id
-            if (post != null)
-            {
-                dto.isScraped = ((scrapRepository.findByUserIdAndPostId(user.id, post.id)) != null)
+        var searchResult = noticeRepository.search(searchRequest, userId)
+
+        if (searchRequest.onlyScraped != null && searchRequest.onlyScraped) {
+            val x: MutableList<Long> = mutableListOf()
+
+            // scrap이 켜져있는 ID 전체 읽기
+            scrapRepository.findLinkedIdByUserId(user.id).forEach { id ->
+                if(id != null) {
+                    x.add(id)
+                }
+            }
+
+            searchResult = searchResult.filter { dto -> dto.noticeId in x }.toMutableList()
+            searchResult.forEach { dto -> dto.isScraped = true }
+        }
+        else {
+            searchResult.forEach { dto ->
+                val post = postRepository.findByLinkedIdAndPostType(dto.noticeId, PostType.NOTICE)
+                dto.postId = post?.id
+                if (post != null)
+                {
+                    dto.isScraped = ((scrapRepository.findByUserIdAndPostId(user.id, post.id)) != null)
+                }
             }
         }
 
