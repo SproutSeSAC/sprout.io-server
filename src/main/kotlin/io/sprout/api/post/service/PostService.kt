@@ -266,6 +266,10 @@ class PostService(
         return post.linkedId ?: throw IllegalArgumentException("테이블 매핑 오류")
     }
 
+    @Transactional
+    fun getPostByLinkedIdAndPostType(linkedId: Long, postType: PostType): PostEntity {
+        return postRepository.findByLinkedIdAndPostType(linkedId, postType) ?: throw IllegalArgumentException("읽을 수 없음");
+    }
 
     @Transactional
     fun getPostTitle(postId: Long): String {

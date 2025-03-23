@@ -5,7 +5,8 @@ import java.time.LocalDateTime
 
 data class commentUserDto (
      val nickname: String,
-     val profileImg: String
+     val profileImg: String,
+     val role: String
 )
 
 data class CommentResponseDto(

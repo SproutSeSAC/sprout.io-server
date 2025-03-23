@@ -35,7 +35,7 @@ class NotificationService(
             )
         }
 
-        return x;
+        return x.reversed()
     }
 
     @Transactional
