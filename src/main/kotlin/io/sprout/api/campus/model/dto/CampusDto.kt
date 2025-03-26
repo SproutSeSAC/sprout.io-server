@@ -11,6 +11,9 @@ class CampusDto {
         data class CampusDetail(
             val id: Long,
             val name: String,
+            val longitude: String,
+            val latitude: String,
+            val naverPlaceId: String,
         )
     }
 

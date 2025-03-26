@@ -87,6 +87,7 @@ class StoreService(
             storeImageList = store.storeImageList.map { it.path },
             address = store.address,
             campusName = store.campus.name,
+            mapSchemaId = store.mapSchemaUrl,
             breakTime = store.breakTime,
             workingDay = store.workingDay,
             contact = store.contact,

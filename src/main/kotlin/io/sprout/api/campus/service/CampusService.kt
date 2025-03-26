@@ -13,7 +13,10 @@ class CampusService(
         val response = campusList.map { campus ->
             CampusDto.CampusListResponse.CampusDetail(
                 id = campus.id,
-                name = campus.name
+                name = campus.name,
+                longitude = campus.longitude,
+                latitude = campus.latitude,
+                naverPlaceId = campus.naverPlaceId
             )
         }
 
