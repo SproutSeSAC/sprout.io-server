@@ -11,6 +11,7 @@ class StoreProjectionDto{
         val name: String,
         val foodType: FoodType,
         val campusName: String,
+        val mapSchemaId: String,
         val address: String,
         val contact: String,
         val workingDay: String,

@@ -124,6 +124,9 @@ class StoreDto {
         @Schema(description = "캠퍼스 명")
         val campusName: String,
 
+        @Schema(description = "naver map schema Id")
+        val mapSchemaId: String?,
+
         @Schema(description = "브레이크 시간")
         val breakTime: String,
 

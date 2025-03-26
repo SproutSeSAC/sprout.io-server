@@ -15,6 +15,12 @@ class CampusEntity(
     @Column(nullable = false, length = 200)
     var address: String, // 캠퍼스 주소
 
+    val longitude: String,
+
+    val latitude: String,
+
+    val naverPlaceId: String,
+
 ): BaseEntity()  {
 
     @Id
@@ -24,7 +30,7 @@ class CampusEntity(
     @OneToMany(mappedBy = "campus", fetch = FetchType.LAZY)
     var storeList: MutableSet<StoreEntity> = LinkedHashSet()
 
-    constructor(id: Long) : this("", "") {
+    constructor(id: Long) : this("", "", "", "", "") {
         this.id = id
     }
 }

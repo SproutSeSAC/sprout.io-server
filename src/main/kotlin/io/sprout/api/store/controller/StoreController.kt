@@ -60,14 +60,4 @@ class StoreController(
 
         return ResponseEntity.ok().build()
     }
-
-    @GetMapping("/direction")
-    @Operation(summary = "식당 길찾기 API", description = "해당 식당으로의 길찾기 값 조회")
-    fun getStoreDirection(
-        @ModelAttribute directionRequest: StoreDto.MapDirectionRequest
-    ): ResponseEntity<DirectionResponse> {
-        val directionResponse = mapDirectionService.findDirection(directionRequest)
-
-        return ResponseEntity.ok(directionResponse)
-    }
 }

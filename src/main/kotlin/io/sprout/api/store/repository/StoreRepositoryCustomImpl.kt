@@ -47,6 +47,7 @@ class StoreRepositoryCustomImpl(
                         store.name,
                         store.foodType,
                         store.campus.name,
+                        store.mapSchemaUrl,
                         store.address,
                         store.contact,
                         store.workingDay,
