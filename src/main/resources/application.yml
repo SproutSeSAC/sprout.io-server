@@ -2,23 +2,19 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:mariadb://localhost:3306/sprout
-    username: root
-    password: hiworld
+    url: jdbc:mariadb://sprout-dev.cf42e2mq2dxs.ap-northeast-2.rds.amazonaws.com:3306/sprout-dev
+    username: sprout
+    password: Sprout123!!
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
     defer-datasource-initialization: true
-#    show-sql: true
     generate-ddl: true
     open-in-view: true
     hibernate:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       ddl-auto: update
-#    properties:
-#      hibernate:
-#        format_sql: true
   security:
     oauth2:
       client:
@@ -26,16 +22,11 @@ spring:
           google:
             client-id: 652860783083-6h8femuq1q8825j6hlve003lg1rrndb8.apps.googleusercontent.com
             client-secret: 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
-            redirect-uri: http://localhost:8080/api/login/oauth2/code/google
+            redirect-uri: https://prod-sprout.duckdns.org/back/api/login/oauth2/code/google
             scope:
               - profile
               - email
               - openid
-              - https://www.googleapis.com/auth/userinfo.email
-              - https://www.googleapis.com/auth/userinfo.profile
-              - https://www.googleapis.com/auth/calendar
-            authorization-grant-type: authorization_code
-            client-name: Google
 
 server:
   servlet:
@@ -44,6 +35,10 @@ server:
       charset: UTF-8
     session:
       timeout: 1800
+      cookie:
+        path: /
+        same-site: none
+        secure: true
   port: 8080
 
 cors:
@@ -57,7 +52,7 @@ cors:
     - https://prod-sprout.duckdns.org
 
 url:
-  redirect-url:  http://localhost:8080/api/login/success
+  redirect-url: https://prod-sprout.duckdns.org/back/api/login/success
 
 jwt:
   access-token:
@@ -95,4 +90,4 @@ aws:
   region: ap-northeast-2
 
 user:
-  email: "flqld86851@gmail.com"
+  email: "sprout.sesac@gmail.com"
