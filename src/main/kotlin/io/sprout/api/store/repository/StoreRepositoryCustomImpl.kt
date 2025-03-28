@@ -8,6 +8,8 @@ import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
+import io.sprout.api.post.entities.QPostEntity
+import io.sprout.api.scrap.entity.QScrapEntity
 import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.dto.StoreProjectionDto
 import io.sprout.api.store.model.entities.*
@@ -21,7 +23,10 @@ class StoreRepositoryCustomImpl(
         val store = QStoreEntity.storeEntity
         val storeImage = QStoreImageEntity.storeImageEntity
         val storeMenu = QStoreMenuEntity.storeMenuEntity
-        val storeScrap = QScrapedStoreEntity.scrapedStoreEntity
+//        val storeScrap = QScrapedStoreEntity.scrapedStoreEntity
+
+        val postEntity = QPostEntity.postEntity
+        val scrapEntity = QScrapEntity.scrapEntity
 
         val result = jpaQueryFactory
             .selectFrom(store)
@@ -58,19 +63,24 @@ class StoreRepositoryCustomImpl(
                         store.isOverPerson,
                         store.longitude,
                         store.latitude,
+                        // 스크랩 수: store.id와 post.linkedId가 일치하고, 그 post에 연결된 scrap의 개수
                         ExpressionUtils.`as`(
-                            JPAExpressions.select(count(storeScrap.id))
-                                .from(storeScrap)
-                                .where(
-                                    storeScrap.store.id.eq(store.id)
-                                ), "scrapCount"
+                            JPAExpressions.select(count(scrapEntity.id))
+                                .from(postEntity)
+                                .leftJoin(scrapEntity)
+                                .on(scrapEntity.postId.eq(postEntity.id))
+                                .where(postEntity.linkedId.eq(store.id)),
+                            "scrapCount"
                         ),
+                        // 사용자가 스크랩했는지 여부: store.id와 post.linkedId가 일치하며, 그 post와 연결된 scrap에서 userId가 일치하는지
                         ExpressionUtils.`as`(
-                            JPAExpressions.select(storeScrap.id)
-                                .from(storeScrap)
+                            JPAExpressions.select(scrapEntity.id)
+                                .from(postEntity)
+                                .leftJoin(scrapEntity)
+                                .on(scrapEntity.postId.eq(postEntity.id))
                                 .where(
-                                    storeScrap.store.id.eq(store.id)
-                                        .and(storeScrap.user.id.eq(userId))
+                                    postEntity.linkedId.eq(store.id)
+                                        .and(scrapEntity.userId.eq(userId))
                                 )
                                 .exists(),
                             "isScrap"
