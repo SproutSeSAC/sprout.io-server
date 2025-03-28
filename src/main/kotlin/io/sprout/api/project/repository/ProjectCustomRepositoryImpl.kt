@@ -4,8 +4,10 @@ import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
+import io.sprout.api.post.entities.QPostEntity
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
+import io.sprout.api.scrap.entity.QScrapEntity
 import io.sprout.api.specification.model.entities.QJobEntity
 import io.sprout.api.specification.model.entities.QTechStackEntity
 import io.sprout.api.user.model.entities.QUserEntity
@@ -59,15 +61,20 @@ class ProjectCustomRepositoryImpl(
         project ?: return null
 
         // 2. 스크랩 여부 조회
-        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+        val postEntity = QPostEntity.postEntity
+        val scrapEntity = QScrapEntity.scrapEntity
+
         val isScraped = queryFactory
             .selectOne()
-            .from(scrapedProjectEntity)
+            .from(postEntity)
+            .leftJoin(scrapEntity)
+            .on(scrapEntity.postId.eq(postEntity.id)
+                .and(scrapEntity.userId.eq(userId)))
             .where(
-                scrapedProjectEntity.project.id.eq(id)
-                    .and(scrapedProjectEntity.user.id.eq(userId))
+                postEntity.linkedId.eq(id)
+                    .and(scrapEntity.id.isNotNull)
             )
-            .fetchFirst() != null // 스크랩한 기록이 있는지 여부를 확인
+            .fetchFirst() != null
 
         // 3. 엔티티를 DTO로 변환하고, 스크랩 여부 설정
         return project.toDto().apply {
@@ -142,7 +149,9 @@ class ProjectCustomRepositoryImpl(
     ): BooleanBuilder {
         val builder = BooleanBuilder()
         val projectEntity = QProjectEntity.projectEntity
-        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+        val postEntity = QPostEntity.postEntity
+        val scrapEntity = QScrapEntity.scrapEntity
+//        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
 
         filterRequest.techStack?.let {
             builder.and(projectEntity.techStacks.any().techStack.id.`in`(it))
@@ -161,7 +170,8 @@ class ProjectCustomRepositoryImpl(
         }
 
         if (filterRequest.onlyScraped) {
-            builder.and(scrapedProjectEntity.user.id.eq(userId))
+            builder.and(scrapEntity.userId.eq(userId))
+//            builder.and(scrapedProjectEntity.user.id.eq(userId))
         }
 
         filterRequest.keyWord?.let {
@@ -177,7 +187,10 @@ class ProjectCustomRepositoryImpl(
         filterRequest: ProjectFilterRequest
     ): Long {
         val projectEntity = QProjectEntity.projectEntity
-        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+//        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+
+        val postEntity = QPostEntity.postEntity
+        val scrapEntity = QScrapEntity.scrapEntity
 
         val query = queryFactory
             .select(projectEntity.count())
@@ -185,7 +198,10 @@ class ProjectCustomRepositoryImpl(
 
         // 스크랩 필터링이 있는 경우에만 조인
         if (filterRequest.onlyScraped) {
-            query.leftJoin(scrapedProjectEntity).on(scrapedProjectEntity.project.id.eq(projectEntity.id))
+            query.leftJoin(postEntity).on(postEntity.linkedId.eq(projectEntity.id))
+            query.leftJoin(scrapEntity)
+                .on(scrapEntity.postId.eq(postEntity.id)
+                    .and(scrapEntity.userId.eq(userId)))
         }
 
         return query
@@ -198,27 +214,33 @@ class ProjectCustomRepositoryImpl(
         builder: BooleanBuilder
     ): List<Long> {
         val projectEntity = QProjectEntity.projectEntity
-        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
+        val postEntity = QPostEntity.postEntity
+        val scrapEntity = QScrapEntity.scrapEntity
 
         val orderSpecifier = when (filterRequest.sort) {
             "popularity" -> projectEntity.viewCount.desc()
             else -> projectEntity.id.desc()
         }
 
-        return queryFactory
+        val query = queryFactory
             .select(projectEntity.id)
             .from(projectEntity)
-            .apply {
-                if (filterRequest.onlyScraped) {
-                    leftJoin(scrapedProjectEntity).on(scrapedProjectEntity.project.id.eq(projectEntity.id))
-                }
-            }
+            .leftJoin(postEntity)
+            .on(postEntity.linkedId.eq(projectEntity.id))
+            .leftJoin(scrapEntity)
+            .on(scrapEntity.postId.eq(postEntity.id))
             .where(builder)
             .orderBy(orderSpecifier)
             .limit(filterRequest.size.toLong())
             .offset((filterRequest.page - 1).toLong() * filterRequest.size.toLong())
-            .fetch()
+
+        if (filterRequest.onlyScraped) {
+            query.where(scrapEntity.id.isNotNull)
+        }
+
+        return query.fetch()
     }
+
 
     private fun fetchProjectDetails(
         filterRequest: ProjectFilterRequest,
@@ -227,30 +249,41 @@ class ProjectCustomRepositoryImpl(
     ): List<ProjectResponseDto> {
         val projectEntity = QProjectEntity.projectEntity
         val projectPositionEntity = QProjectPositionEntity.projectPositionEntity
-//        val positionEntity = QPositionEntity.positionEntity
         val positionEntity = QJobEntity.jobEntity
-        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
         val projectTechStackEntity = QProjectTechStackEntity.projectTechStackEntity
         val techStackEntity = QTechStackEntity.techStackEntity
 
+        val postEntity = QPostEntity.postEntity
+        val scrapEntity = QScrapEntity.scrapEntity
+
+        // 정렬 조건
         val orderSpecifier = if (filterRequest.sort == "popularity") {
             projectEntity.viewCount.desc()
         } else {
             projectEntity.id.desc()
         }
 
-        return queryFactory
+        val query = queryFactory
+            .select(projectEntity)
             .from(projectEntity)
             .leftJoin(projectEntity.techStacks, projectTechStackEntity)
             .leftJoin(projectTechStackEntity.techStack, techStackEntity)
             .leftJoin(projectEntity.positions, projectPositionEntity)
             .leftJoin(projectPositionEntity.position, positionEntity)
-            .leftJoin(scrapedProjectEntity)
-            .on(
-                scrapedProjectEntity.project.id.eq(projectEntity.id)
-                    .and(scrapedProjectEntity.user.id.eq(userId))
-            )
+            .leftJoin(postEntity)
+            .on(postEntity.linkedId.eq(projectEntity.id))
+            .leftJoin(scrapEntity)
+            .on(scrapEntity.postId.eq(postEntity.id)
+                .and(scrapEntity.userId.eq(userId)))
             .where(projectEntity.id.`in`(projectIds))
+
+        // 스크랩 여부 처리
+        if (filterRequest.onlyScraped) {
+            query.where(scrapEntity.id.isNotNull)
+        }
+
+        // 필드 구성
+        val result = query
             .orderBy(orderSpecifier)
             .transform(
                 GroupBy.groupBy(projectEntity.id).list(
@@ -274,10 +307,12 @@ class ProjectCustomRepositoryImpl(
                                 projectTechStackEntity.techStack.path
                             )
                         ),
-                        scrapedProjectEntity.id.isNotNull,
+                        scrapEntity.id.isNotNull,
                         projectEntity.viewCount
                     )
                 )
             )
+
+        return result
     }
 }

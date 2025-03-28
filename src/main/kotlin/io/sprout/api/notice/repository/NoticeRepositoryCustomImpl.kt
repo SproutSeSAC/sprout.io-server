@@ -15,6 +15,7 @@ import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
 import io.sprout.api.notice.model.dto.NoticeSearchDto
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.post.entities.QPostEntity
+import io.sprout.api.scrap.entity.QScrapEntity
 import io.sprout.api.user.model.entities.QUserCourseEntity
 import io.sprout.api.user.model.entities.QUserEntity
 import io.sprout.api.user.model.entities.RoleType
@@ -35,6 +36,7 @@ class NoticeRepositoryCustomImpl(
     val user = QUserEntity.userEntity
 
     val post = QPostEntity.postEntity
+    val scrap = QScrapEntity.scrapEntity
 
     /**
      * 공지사항 ID에 해당하는 세션 정보, 세션 참가자수, 자신의 참가정보를 반환한다.
@@ -202,30 +204,34 @@ class NoticeRepositoryCustomImpl(
         myCourseIds: List<Long>,
         searchRequest: NoticeSearchRequestDto
     ): MutableList<Long>? {
-        val ids = queryFactory
+        val query = queryFactory
             .select(notice.id)
             .from(notice)
             .leftJoin(notice.user, user)
             .leftJoin(notice.targetCourses, targetCourse)
             .leftJoin(targetCourse.course, course)
-            .leftJoin(scrapedNotice)
-            .on(
-                scrapedNotice.notice.id.eq(notice.id)
-                    .and(scrapedNotice.user.id.eq(userId))
-            )
+            .leftJoin(post)
+            .on(post.linkedId.eq(notice.id))
             .where(
                 isInCourse(myCourseIds),
                 containKeyword(searchRequest.keyword),
                 isWriterRoleType(searchRequest.roleType),
-                isNoticeType(searchRequest.noticeType),
-                isOnlyScraped(searchRequest.onlyScraped, userId)
+                isNoticeType(searchRequest.noticeType)
             )
+
+        if (searchRequest.onlyScraped == true) {
+            query.leftJoin(scrap)
+                .on(scrap.postId.eq(post.id)
+                    .and(scrap.userId.eq(userId)))
+            query.where(scrap.id.isNotNull)
+        }
+
+        return query
             .groupBy(notice.id)
             .orderBy(OrderSpecifier(Order.DESC, notice.createdAt))
             .limit(searchRequest.size.toLong() + 1)
             .offset(searchRequest.offset.toLong())
             .fetch()
-        return ids
     }
 
     private fun isInCourse(myCoursesIds: List<Long>): BooleanExpression? {
