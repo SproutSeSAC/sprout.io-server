@@ -426,13 +426,11 @@ class NoticeServiceImpl(
     }
 
     private fun getUserId(): Long {
-//        return 10015.toLong()
         return securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
     }
 
     private fun getUser(): UserEntity {
         val userId =  securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Not found user")
-//        val userId = 10015.toLong()
         return userRepository.findById(userId).orElseThrow { throw CustomBadRequestException("Not found user") }
     }
 
