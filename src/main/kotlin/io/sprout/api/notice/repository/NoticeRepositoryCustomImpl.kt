@@ -14,6 +14,7 @@ import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
 import io.sprout.api.notice.model.dto.NoticeSearchDto
 import io.sprout.api.notice.model.entities.*
+import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.entities.QPostEntity
 import io.sprout.api.scrap.entity.QScrapEntity
 import io.sprout.api.user.model.entities.QUserCourseEntity
@@ -52,6 +53,7 @@ class NoticeRepositoryCustomImpl(
                     noticeSession.id,
                     noticeSession.eventStartDateTime,
                     noticeSession.eventEndDateTime,
+                    noticeSession.ordinal,
                     JPAExpressions
                         .select(noticeParticipant.id.count())
                         .from(noticeParticipant)
@@ -125,7 +127,8 @@ class NoticeRepositoryCustomImpl(
             .selectFrom(notice)
             .leftJoin(notice.user, user)
             .leftJoin(post)
-                .on(post.linkedId.eq(notice.id))
+                .on(post.linkedId.eq(notice.id).and(
+                    post.postType.eq(PostType.NOTICE)))
             .where(notice.id.`in`(ids))
             .orderBy(notice.applicationEndDateTime.asc())
             .transform(

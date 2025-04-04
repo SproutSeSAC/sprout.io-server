@@ -268,6 +268,7 @@ class MypageService(
                     title = data.noticeSession.notice.title,
                     id = data.noticeSession.notice.id,
                     participantId = data.id,
+                    ordinal = data.noticeSession.ordinal,
                     startDateTime = data.noticeSession.eventStartDateTime,
                     endDateTime = data.noticeSession.eventEndDateTime,
                 )
@@ -278,6 +279,7 @@ class MypageService(
                 title = data.noticeSession.notice.title,
                 id = data.noticeSession.notice.id,
                 participantId = data.id,
+                ordinal = data.noticeSession.ordinal,
                 startDateTime = data.noticeSession.eventStartDateTime,
                 endDateTime = data.noticeSession.eventEndDateTime,
             )
