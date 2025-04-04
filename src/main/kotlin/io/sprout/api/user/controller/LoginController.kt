@@ -35,29 +35,29 @@ class LoginController(
         val log = LoggerFactory.getLogger(this::class.java)
 
         // 쿠키에서 access_token과 refresh_token 값을 추출
-        var accessToken: String? = null
-        var refreshToken: String? = null
-
-        val cookies = request.cookies
-        if (cookies != null) {
-            for (cookie in cookies) {
-                when (cookie.name) {
-                    "access_token" -> accessToken = cookie.value
-                    "refresh_token" -> refreshToken = cookie.value
-                }
-            }
-        } else {
-            log.info("No cookies found in the request.")
-        }
-
-        log.info("login success acTocken = {}", accessToken)
+//        var accessToken: String? = null
+//        var refreshToken: String? = null
+//
+//        val cookies = request.cookies
+//        if (cookies != null) {
+//            for (cookie in cookies) {
+//                when (cookie.name) {
+//                    "access_token" -> accessToken = cookie.value
+//                    "refresh_token" -> refreshToken = cookie.value
+//                }
+//            }
+//        } else {
+//            log.info("No cookies found in the request.")
+//        }
+//
+//        log.info("login success acTocken = {}", accessToken)
 
         // 리디렉션할 URL에 쿼리 파라미터로 access_token과 refresh_token 추가
         val redirectUrl = buildString {
             append("https://prod-sprout.duckdns.org/login-check")
-            if (accessToken != null && refreshToken != null) {
-                append("?access_token=$accessToken&refresh_token=$refreshToken")
-            }
+//            if (accessToken != null && refreshToken != null) {
+//                append("?access_token=$accessToken&refresh_token=$refreshToken")
+//            }
         }
 
         log.info("Redirecting to: {}", redirectUrl)
@@ -79,21 +79,18 @@ class LoginController(
      */
     @GetMapping("/refresh")
     fun refresh(
-        @RequestHeader("Refresh-Token") refreshToken: String,
         httpRequest: HttpServletRequest,
         response: HttpServletResponse
     ): ResponseEntity<Map<String, String>> {
-        var realToken = refreshToken
-        if (realToken == null) {
-            for (cookie in httpRequest.cookies) {
-                if (cookie.name == "refresh_token") {
-                    realToken = cookie.value
-                }
+        var refreshToken = ""
+        for (cookie in httpRequest.cookies) {
+            if (cookie.name == "refresh_token") {
+                refreshToken = cookie.value
             }
         }
 
-        val newAccessToken = jwtToken.createAccessFromRefreshToken(realToken)
-        val accessCookie = CookieUtils.createCookie("access_token", newAccessToken)
+        val newAccessToken = jwtToken.createAccessFromRefreshToken(refreshToken)
+        val accessCookie = CookieUtils.createCookie("access_token", newAccessToken, false)
         response.addCookie(accessCookie)
         val map = hashMapOf("access_token" to newAccessToken)
         return ResponseEntity.ok(map)

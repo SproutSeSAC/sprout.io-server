@@ -386,7 +386,7 @@ class UserService(
         val userId = user.id
         val accessToken = jwtToken.createAccessTokenFromMemberId(userId, user.isEssential)
         val refreshToken = jwtToken.createRefreshToken(userId)
-        val accessCookie = CookieUtils.createCookie("access_token", accessToken)
+        val accessCookie = CookieUtils.createCookie("access_token", accessToken, false)
         val refreshCookie = CookieUtils.createCookie("refresh_token", refreshToken)
         response.addCookie(accessCookie)
         response.addCookie(refreshCookie)

@@ -3,6 +3,7 @@ package io.sprout.api.auth.token.domain
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.config.properties.JwtPropertiesConfig
 import io.sprout.api.user.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -51,9 +52,10 @@ class JwtToken(
     fun createAccessFromRefreshToken(refreshJws: String): String {
 
         val currentMs = System.currentTimeMillis()
-        val user = userRepository.findByRefreshToken(refreshJws)
+        val user = userRepository.findByRefreshToken(refreshJws) ?: throw CustomBadRequestException("invalid refresh token")
+
         return Jwts.builder()
-            .setSubject(user!!.id.toString())  // memberId를 subject로 설정
+            .setSubject(user.id.toString())  // memberId를 subject로 설정
             .claim("isEssential", user.isEssential)  // universityEmail 클레임 추가
             .setExpiration(Date(currentMs + 1000 * jwtPropertiesConfig.accessToken.expiration))  // 만료 시간 설정
             .signWith(accessSecretKey)  // 비밀 키로 서명

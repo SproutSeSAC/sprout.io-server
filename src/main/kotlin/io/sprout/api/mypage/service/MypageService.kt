@@ -262,12 +262,16 @@ class MypageService(
         val now = LocalDateTime.now()
         val nearList = sortedPosts
             .filter { it.noticeSession.eventStartDateTime.isAfter(now) }
-            .take(3)
+            .take(4)
             .map { data ->
                 ParticipantDto(
-                    title = data.noticeSession.notice.title,
-                    id = data.noticeSession.notice.id,
+                    postId = postService
+                        .getPostByLinkedIdAndPostType(data.noticeSession.notice.id, PostType.NOTICE)
+                        .id,
+                    sessionId = data.noticeSession.id,
                     participantId = data.id,
+                    title = data.noticeSession.notice.title,
+                    role = data.noticeSession.notice.user.role,
                     ordinal = data.noticeSession.ordinal,
                     startDateTime = data.noticeSession.eventStartDateTime,
                     endDateTime = data.noticeSession.eventEndDateTime,
@@ -276,9 +280,13 @@ class MypageService(
 
         val participantDtoList = sortedPosts.mapIndexed { index, data ->
             ParticipantDto(
-                title = data.noticeSession.notice.title,
-                id = data.noticeSession.notice.id,
+                postId = postService
+                    .getPostByLinkedIdAndPostType(data.noticeSession.notice.id, PostType.NOTICE)
+                    .id,
+                sessionId = data.noticeSession.id,
                 participantId = data.id,
+                title = data.noticeSession.notice.title,
+                role = data.noticeSession.notice.user.role,
                 ordinal = data.noticeSession.ordinal,
                 startDateTime = data.noticeSession.eventStartDateTime,
                 endDateTime = data.noticeSession.eventEndDateTime,
