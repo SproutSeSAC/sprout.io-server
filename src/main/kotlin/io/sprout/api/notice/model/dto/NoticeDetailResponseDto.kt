@@ -70,6 +70,7 @@ data class NoticeDetailResponseDto(
         val sessionId: Long,
         val sessionStartDateTime: LocalDateTime,
         val sessionEndDateTime: LocalDateTime,
+        val ordinal: Int,
         val participantCount: Long,
         val currentStatus: ParticipantStatus?
     )

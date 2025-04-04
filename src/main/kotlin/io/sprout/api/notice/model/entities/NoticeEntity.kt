@@ -101,13 +101,15 @@ class NoticeEntity(
         }
         this.targetCourses.addAll(updateCourseList)
 
-        val updateSessions = noticeRequest.sessions.map {
+        val updateSessions = noticeRequest.sessions.sortedBy { it.sessionEndDateTime }.mapIndexed { index, noticeSessionDTO ->
             NoticeSessionEntity(
                 notice = this,
-                eventStartDateTime = it.sessionStartDateTime,
-                eventEndDateTime = it.sessionEndDateTime,
+                eventStartDateTime = noticeSessionDTO.sessionStartDateTime,
+                eventEndDateTime = noticeSessionDTO.sessionEndDateTime,
+                ordinal = index+1
             )
         }
+
         val sessionIterator: MutableIterator<NoticeSessionEntity> = noticeSessions.iterator()
         while (sessionIterator.hasNext()) {
             val course = sessionIterator.next()

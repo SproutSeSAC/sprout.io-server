@@ -85,10 +85,12 @@ data class NoticeRequestDto(
         ) }
             .toMutableSet())
 
-        noticeEntity.noticeSessions.plusAssign(sessions.map { NoticeSessionEntity(
+        noticeEntity.noticeSessions.plusAssign(sessions.sortedBy { it.sessionEndDateTime }.mapIndexed { index, noticeSessionDTO ->
+            NoticeSessionEntity(
             notice = noticeEntity,
-            eventStartDateTime = it.sessionStartDateTime,
-            eventEndDateTime = it.sessionEndDateTime,
+            eventStartDateTime = noticeSessionDTO.sessionStartDateTime,
+            eventEndDateTime = noticeSessionDTO.sessionEndDateTime,
+            ordinal = index+1
         ) }
             .toMutableSet())
 

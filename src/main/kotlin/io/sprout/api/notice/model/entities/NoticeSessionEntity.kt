@@ -1,9 +1,6 @@
 package io.sprout.api.notice.model.entities
 
-import io.sprout.api.common.model.entities.BaseEntity
-import io.sprout.api.course.model.entities.CourseEntity
 import jakarta.persistence.*
-import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime
 import java.util.*
 
@@ -23,6 +20,8 @@ class NoticeSessionEntity (
     val eventStartDateTime: LocalDateTime,
     val eventEndDateTime: LocalDateTime,
 
+    val ordinal: Int
+
 ){
     @OneToMany(mappedBy = "noticeSession", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     val noticeParticipants : MutableSet<NoticeParticipantEntity> = mutableSetOf()
@@ -34,7 +33,8 @@ class NoticeSessionEntity (
         id = noticeSessionId,
         notice = NoticeEntity(-1),
         eventEndDateTime = LocalDateTime.now(),
-        eventStartDateTime = LocalDateTime.now()
+        eventStartDateTime = LocalDateTime.now(),
+        ordinal = 1,
     )
 
 

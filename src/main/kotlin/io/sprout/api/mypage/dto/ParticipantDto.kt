@@ -10,6 +10,7 @@ data class ParticipantListResponseDto(
 data class ParticipantDto (
     val title: String,
     val id: Long,
+    val ordinal: Int,
     val participantId: Long,
     val startDateTime: LocalDateTime,
     val endDateTime: LocalDateTime,
