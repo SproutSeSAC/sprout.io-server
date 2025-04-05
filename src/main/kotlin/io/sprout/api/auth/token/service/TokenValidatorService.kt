@@ -13,14 +13,13 @@ class TokenValidatorService(private val tokenService: JwtToken) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
     /**
-     * Access token과 refresh token이 존재하는지 확인
+     * Access token이 존재하는지 확인
      *
      * @param accessJws Token String
-     * @param refreshJws Token String
      */
     @Throws(IOException::class)
-    fun isNotExistToken(accessJws: String?, refreshJws: String?, response: HttpServletResponse): Boolean {
-        return accessJws == null || refreshJws == null
+    fun isNotExistToken(accessJws: String?, response: HttpServletResponse): Boolean {
+        return accessJws == null
     }
 
     /**

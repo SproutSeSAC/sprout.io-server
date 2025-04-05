@@ -85,14 +85,12 @@ class JwtFilter(
     ) {
         extractTokensFromRequest(request)
         val accessJws = request.getAttribute("accessJws") as String?
-        val refreshJws = request.getAttribute("refreshJws") as String?
         logger.info("accessJws: $accessJws")
-        logger.info("refreshJws: $refreshJws")
 
         /**
          *  토큰 header 없을시 404
          */
-        if (tokenValidatorService.isNotExistToken(accessJws, refreshJws, response)) {
+        if (tokenValidatorService.isNotExistToken(accessJws, response)) {
             writeBody(NOT_EXIST_TOKEN, response)
             return
         }
@@ -125,17 +123,13 @@ class JwtFilter(
 
     private fun extractTokensFromRequest(request: HttpServletRequest) {
         var accessJws: String? = request.getHeader("Access-Token")
-        var refreshJws: String? = request.getHeader("Refresh-Token")
 
-
-        if (accessJws == null && refreshJws == null) {
+        if (accessJws == null) {
             val cookies = request.cookies
             accessJws = getTokenFromCookies(cookies, "access_token")
-            refreshJws = getTokenFromCookies(cookies, "refresh_token")
         }
 
         request.setAttribute("accessJws", accessJws)
-        request.setAttribute("refreshJws", refreshJws)
     }
 
     private fun writeBody(exceptionCode: ExceptionCode, response: HttpServletResponse) {
