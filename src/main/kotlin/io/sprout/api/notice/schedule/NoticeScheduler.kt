@@ -38,7 +38,7 @@ class NoticeScheduler(
     /**
      * 공지사항 특강/세션의 참가신청기간이 지나면 자동으로 INACTIVE상태로 바꾼다.
      */
-    @Scheduled(cron = "1,30 * * * * *")
+    @Scheduled(cron = "0 0,30 * * * *")
     @Transactional
     fun closeNoticeWhenEndDateTimePassed() {
         val now = LocalDateTime.now()
