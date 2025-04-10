@@ -1,9 +1,12 @@
 package io.sprout.api.user.model.dto
 
+import io.sprout.api.user.model.entities.RoleType
+
 data class UserSearchResponseDto(
     val userId: Long,
     val name: String,
     val nickname: String,
+    val role: RoleType,
     val email: String,
     val phoneNumber: String,
     val campus: MutableList<Campus> = mutableListOf(),

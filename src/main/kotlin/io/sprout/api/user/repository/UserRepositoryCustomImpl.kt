@@ -90,6 +90,7 @@ class UserRepositoryCustomImpl(
                         userEntity.id,
                         userEntity.name,
                         userEntity.nickname,
+                        userEntity.role,
                         userEntity.email,
                         userEntity.phoneNumber,
                         GroupBy.list(

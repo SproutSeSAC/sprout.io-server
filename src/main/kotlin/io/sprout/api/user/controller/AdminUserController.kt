@@ -56,7 +56,7 @@ class AdminUserController(
      */
     @PatchMapping("{userId}")
     @Operation(summary = "사용자 번호 변경", description = "사용자의 번호를 변경한다.")
-    fun changePhone(@PathVariable userId: Long, @RequestBody phoneNumber: String): ResponseEntity<String> {
+    fun changePhone(@PathVariable userId: Long, @RequestBody phoneNumber: PhoneNumber): ResponseEntity<String> {
         return ResponseEntity.ok(userService.changePhoneByUserId(userId, phoneNumber))
     }
 
