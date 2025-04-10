@@ -64,9 +64,6 @@ class UserRepositoryCustomImpl(
         val totalCount = jpaQueryFactory.select(userEntity.id.count())
             .from(userEntity)
             .where(createFilterBuilder(searchRequest, myCourseIds))
-            .orderBy(userEntity.createdAt.desc())
-            .limit(searchRequest.size)
-            .offset(searchRequest.getOffset())
             .fetchOne()
 
         // 검색 Id만 찾기 - 캠퍼스 Id, courseId, keyword-name, mycourse in
@@ -129,9 +126,6 @@ class UserRepositoryCustomImpl(
         val totalCount = jpaQueryFactory.select(userEntity.id.count())
             .from(userEntity)
             .where(createFilterBuilder(searchRequest, myCourseIds))
-            .orderBy(userEntity.createdAt.desc())
-            .limit(searchRequest.size)
-            .offset(searchRequest.getOffset())
             .fetchOne()
 
         val resultIds = jpaQueryFactory
@@ -213,7 +207,7 @@ class UserRepositoryCustomImpl(
             builder.and(userEntity.role.`in`(it))
         }
         searchRequest.keyword?.let {
-            builder.and(userEntity.name.eq(it))
+            builder.and(userEntity.name.like("%$it%"))
         }
         searchRequest.campusId?.let {
             builder.and(userEntity.userCourseList.any().course.campus.id.`in`(it))
