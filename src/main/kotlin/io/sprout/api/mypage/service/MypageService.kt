@@ -257,11 +257,12 @@ class MypageService(
     // 참여 글 데이터 전체 조회 (전체)
     fun getPostParticipantListByUserId(userId: Long): ParticipantListResponseDto {
         val detailPosts: List<NoticeParticipantEntity> = postService.getNoticesByUserIdFromParticipant(userId)
-        val sortedPosts = detailPosts.sortedBy { it.noticeSession.eventStartDateTime }
 
         val now = LocalDateTime.now()
-        val nearList = sortedPosts
+
+        val nearList = detailPosts
             .filter { it.noticeSession.eventStartDateTime.isAfter(now) }
+            .sortedBy { it.noticeSession.eventStartDateTime }
             .take(4)
             .map { data ->
                 ParticipantDto(
@@ -278,22 +279,25 @@ class MypageService(
                 )
             }
 
-        val participantDtoList = sortedPosts.mapIndexed { index, data ->
-            ParticipantDto(
-                postId = postService
-                    .getPostByLinkedIdAndPostType(data.noticeSession.notice.id, PostType.NOTICE)
-                    .id,
-                sessionId = data.noticeSession.id,
-                participantId = data.id,
-                title = data.noticeSession.notice.title,
-                role = data.noticeSession.notice.user.role,
-                ordinal = data.noticeSession.ordinal,
-                startDateTime = data.noticeSession.eventStartDateTime,
-                endDateTime = data.noticeSession.eventEndDateTime,
-            )
-        }
+        val participantDtoList = detailPosts
+            .sortedByDescending { it.noticeSession.id }
+            .map { data ->
+                ParticipantDto(
+                    postId = postService
+                        .getPostByLinkedIdAndPostType(data.noticeSession.notice.id, PostType.NOTICE)
+                        .id,
+                    sessionId = data.noticeSession.id,
+                    participantId = data.id,
+                    title = data.noticeSession.notice.title,
+                    role = data.noticeSession.notice.user.role,
+                    ordinal = data.noticeSession.ordinal,
+                    startDateTime = data.noticeSession.eventStartDateTime,
+                    endDateTime = data.noticeSession.eventEndDateTime,
+                )
+            }
 
         return ParticipantListResponseDto(nearList, participantDtoList)
     }
+
     // endregion
 }
