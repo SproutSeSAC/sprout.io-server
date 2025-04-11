@@ -149,9 +149,6 @@ class ProjectCustomRepositoryImpl(
     ): BooleanBuilder {
         val builder = BooleanBuilder()
         val projectEntity = QProjectEntity.projectEntity
-        val postEntity = QPostEntity.postEntity
-        val scrapEntity = QScrapEntity.scrapEntity
-//        val scrapedProjectEntity = QScrapedProjectEntity.scrapedProjectEntity
 
         filterRequest.techStack?.let {
             builder.and(projectEntity.techStacks.any().techStack.id.`in`(it))
@@ -167,11 +164,6 @@ class ProjectCustomRepositoryImpl(
 
         filterRequest.pType?.let {
             builder.and(projectEntity.pType.eq(it))
-        }
-
-        if (filterRequest.onlyScraped) {
-//            builder.and(scrapEntity.userId.eq(userId))
-//            builder.and(scrapedProjectEntity.user.id.eq(userId))
         }
 
         filterRequest.keyWord?.let {
