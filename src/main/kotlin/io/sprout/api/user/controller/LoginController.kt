@@ -52,14 +52,14 @@ class LoginController(
 //
 //        log.info("login success acTocken = {}", accessToken)
 
-        // 리디렉션할 URL에 쿼리 파라미터로 access_token과 refresh_token 추가
-        val redirectUrl = buildString {
-            append("https://prod-sprout.duckdns.org/login-check")
-//            if (accessToken != null && refreshToken != null) {
-//                append("?access_token=$accessToken&refresh_token=$refreshToken")
-//            }
+        val host = request.serverName
+        val redirectUrl = if (host.contains("localhost")) {
+            "http://localhost:3000/login-check"
+        } else {
+            "https://prod-sprout.duckdns.org/login-check"
         }
 
+        log.info("Init Browser Domain to: {}", host)
         log.info("Redirecting to: {}", redirectUrl)
 
         // 리디렉션 처리
