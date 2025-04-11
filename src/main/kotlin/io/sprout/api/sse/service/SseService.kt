@@ -3,6 +3,7 @@ package io.sprout.api.sse.service
 import io.sprout.api.notice.repository.NoticeSessionRepository
 import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.notification.service.NotificationService
+import jakarta.transaction.Transactional
 import org.springframework.http.MediaType
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -79,6 +80,7 @@ class SseService (
 
     // 세션 알림 전송
     @Scheduled(cron = "0 0,30 * * * *")
+    @Transactional
     fun sendSessionNotifications() {
         val now = LocalDateTime.now()
 
