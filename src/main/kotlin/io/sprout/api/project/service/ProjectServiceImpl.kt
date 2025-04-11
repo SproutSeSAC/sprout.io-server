@@ -67,8 +67,7 @@ class ProjectServiceImpl(
             val id = securityManager.getAuthenticatedUserId()
 
             var (projectList, totalCount) = projectRepository.filterProjects(
-                updatedFilterRequest,
-                securityManager.getAuthenticatedUserName()!!
+                updatedFilterRequest, id
             )
 
             projectList.forEach { dto ->
