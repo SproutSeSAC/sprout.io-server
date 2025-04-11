@@ -27,7 +27,7 @@ class ProjectCustomRepositoryImpl(
 
         // 스크랩 여부에 따라 조인
         val totalCount = fetchTotalCount(builder, userId, filterRequest)
-        val projectIds = fetchProjectIds(filterRequest, builder)
+        val projectIds = fetchProjectIds(filterRequest, builder, userId)
         val projects = fetchProjectDetails(filterRequest, projectIds, userId)
 
         val distinctProjects = projects
@@ -170,7 +170,7 @@ class ProjectCustomRepositoryImpl(
         }
 
         if (filterRequest.onlyScraped) {
-            builder.and(scrapEntity.userId.eq(userId))
+//            builder.and(scrapEntity.userId.eq(userId))
 //            builder.and(scrapedProjectEntity.user.id.eq(userId))
         }
 
@@ -211,7 +211,8 @@ class ProjectCustomRepositoryImpl(
 
     private fun fetchProjectIds(
         filterRequest: ProjectFilterRequest,
-        builder: BooleanBuilder
+        builder: BooleanBuilder,
+        userid: Long
     ): List<Long> {
         val projectEntity = QProjectEntity.projectEntity
         val postEntity = QPostEntity.postEntity
@@ -222,23 +223,30 @@ class ProjectCustomRepositoryImpl(
             else -> projectEntity.id.desc()
         }
 
-        val query = queryFactory
-            .select(projectEntity.id)
-            .from(projectEntity)
-            .leftJoin(postEntity)
-            .on(postEntity.linkedId.eq(projectEntity.id))
-            .leftJoin(scrapEntity)
-            .on(scrapEntity.postId.eq(postEntity.id))
-            .where(builder)
-            .orderBy(orderSpecifier)
-            .limit(filterRequest.size.toLong())
-            .offset((filterRequest.page - 1).toLong() * filterRequest.size.toLong())
-
         if (filterRequest.onlyScraped) {
-            query.where(scrapEntity.id.isNotNull)
+            val query = queryFactory
+                .select(projectEntity.id)
+                .from(postEntity)
+                .leftJoin(scrapEntity)
+                .on(postEntity.id.eq(scrapEntity.postId))
+                .leftJoin(projectEntity)
+                .on(postEntity.linkedId.eq(projectEntity.id))
+                .where(scrapEntity.userId.eq(userid).and(builder))
+                .orderBy(orderSpecifier)
+                .limit(filterRequest.size.toLong())
+                .offset((filterRequest.page - 1).toLong() * filterRequest.size.toLong())
+            return query.fetch()
+        } else {
+            return queryFactory
+                .select(projectEntity.id)
+                .from(postEntity)
+                .leftJoin(projectEntity)
+                .on(postEntity.linkedId.eq(projectEntity.id))
+                .where(builder)
+                .orderBy(orderSpecifier)
+                .limit(filterRequest.size.toLong())
+                .offset((filterRequest.page - 1).toLong() * filterRequest.size.toLong()).fetch()
         }
-
-        return query.fetch()
     }
 
 
