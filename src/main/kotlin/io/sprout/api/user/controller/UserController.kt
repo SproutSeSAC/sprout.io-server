@@ -7,7 +7,6 @@ import io.sprout.api.user.model.dto.*
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.service.GoogleUserService
 import io.sprout.api.user.service.UserService
-import io.sprout.api.utils.CookieUtils
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -31,7 +30,9 @@ class UserController(
     @GetMapping("/check")
     @Operation(summary = "계정 조회", description = "계정 조회")
     fun getUserInfo(): UserDetailResponse {
-        return userService.getUserInfo()
+        val userId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+
+        return userService.getUserInfo(userId)
     }
 
     /**

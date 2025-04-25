@@ -1,10 +1,13 @@
 package io.sprout.api.user.controller
 
 import io.sprout.api.common.model.entities.PageResponse
-import io.sprout.api.mypage.dto.CardDto
+import io.sprout.api.mypage.dto.*
 import io.sprout.api.user.model.dto.*
 import io.sprout.api.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -45,11 +48,39 @@ class AdminUserController(
      */
     @GetMapping("/{userId}")
     @Operation(summary = "사용자 조회", description = "V1. Mypage profile과 동일한 내용 전달")
-    fun getUserDetail(@PathVariable userId: Long): ResponseEntity<CardDto.UserCard> {
+    fun getUserDetail(@PathVariable userId: Long): ResponseEntity<UserDetailResponse> {
         val result = userService.getUserDetailByAdmin(userId)
 
         return ResponseEntity.ok(result)
     }
+
+    @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")
+    @GetMapping("/{userId}/post")
+    fun getPostList(@PathVariable userId: Long): ResponseEntity<List<PostAndNickNameDto>> {
+        return ResponseEntity.ok(userService.getPostListByUserId(userId))
+    }
+
+    @Operation(summary = "작성 댓글 조회", description = "작성한 댓글들의 ID와 게시글 ID를 반환합니다.")
+    @GetMapping("/{userId}/comments")
+    fun getCommentList(@PathVariable userId: Long): ResponseEntity<List<PostCommentDto>> {
+        return ResponseEntity.ok(userService.getPostCommentListByUserId(userId))
+    }
+
+    @Operation(summary = "찜한 글 조회", description = "찜한 글들의 ID를 반환합니다.")
+    @GetMapping("/{userId}/scrap")
+    fun getPostScrapList(
+        @PathVariable userId: Long,
+        @PageableDefault(size = 10) pageable: Pageable
+    ): ResponseEntity<Page<GetPostResponseDto>> {
+        return ResponseEntity.ok(userService.getPostScrapListByUserId(userId, pageable))
+    }
+
+    @Operation(summary = "신청한 글 조회 (제목만)", description = "신청한 글을 반환합니다.")
+    @GetMapping("/{userId}/participantTitle")
+    fun getPostParticipantIDList(@PathVariable userId: Long): ResponseEntity<ParticipantListResponseDto> {
+        return ResponseEntity.ok(userService.getPostParticipantListByUserId(userId))
+    }
+
 
     /**
      * 관리자의 사용자 전화번호 변경
@@ -96,6 +127,15 @@ class AdminUserController(
         userService.createUserMemo(createRequest, traineeId)
 
         return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/trainees/{traineeId}/memo")
+    @Operation(summary = "학생에 대한 메모 조회", description = "학생의 메모를 조회한다. 값이 없다면 빈 body가 return 된다.")
+    fun getMemo(@PathVariable traineeId: Long): ResponseEntity<UserMemoResponseDto> {
+
+        val userMemo = userService.getUserMemo(traineeId)
+
+        return ResponseEntity.ok(userMemo)
     }
 
     /**
