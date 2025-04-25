@@ -13,7 +13,7 @@ import io.sprout.api.config.exception.BaseException
 import io.sprout.api.config.exception.ExceptionCode
 import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.course.model.entities.CourseEntity
-import io.sprout.api.mypage.dto.CardDto
+import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.service.MypageService
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
@@ -27,6 +27,8 @@ import io.sprout.api.utils.NicknameGenerator
 import io.sprout.api.verificationCode.repository.VerificationCodeRepository
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -244,9 +246,7 @@ class UserService(
     /**
      * user detail 조회
      */
-    fun getUserInfo(): UserDetailResponse {
-        val userId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
-
+    fun getUserInfo(userId: Long): UserDetailResponse {
         val user = userRepository.findUserById(userId) ?: throw CustomBadRequestException("Not found user")
         val campusEntities = courseRepository.findUserCampusByUserId(userId)
         return UserDetailResponse(user, campusEntities)
@@ -306,13 +306,13 @@ class UserService(
     /**
      * 사용자 조회 (관리자용)
      */
-    fun getUserDetailByAdmin(userId: Long): CardDto.UserCard {
+    fun getUserDetailByAdmin(userId: Long): UserDetailResponse {
         val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
         val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
 
         AuthorizationUtils.validateUserIsAdminRole(admin)
 
-        return mypageService.getUserCard(userId)
+        return getUserInfo(userId)
     }
 
     /**
@@ -400,5 +400,51 @@ class UserService(
 
         user.phoneNumber = phoneNumber.phoneNumber
         return user.phoneNumber
+    }
+
+    fun getUserMemo(traineeId: Long): UserMemoResponseDto? {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        return userMemoRepository.findByUserIdAndTargetUserId(managerId, traineeId)
+            ?.let { UserMemoResponseDto(it) }
+    }
+
+    fun getPostListByUserId(userId: Long): List<PostAndNickNameDto>? {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        return mypageService.getPostListByUserId(userId)
+    }
+
+    fun getPostCommentListByUserId(userId: Long): List<PostCommentDto>? {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        return mypageService.getPostCommentListByUserId(userId)
+    }
+
+    fun getPostScrapListByUserId(userId: Long, pageable: Pageable): Page<GetPostResponseDto>? {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        return mypageService.getPostScrapListByUserId(userId, pageable)
+    }
+
+    fun getPostParticipantListByUserId(userId: Long): ParticipantListResponseDto {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        return mypageService.getPostParticipantListByUserId(userId)
     }
 }
