@@ -97,7 +97,7 @@ class JwtFilter(
         logger.debug { "accessToken: $accessJws" }
 
         /**
-         ** 토큰 만료시 401 refresh 로 다시 요망
+         ** 올바른 토큰이 아니거나 토큰 만료시 401
          */
         if (tokenValidatorService.isInvalidAccessToken(accessJws, response)) {
             writeBody(INVALID_TOKEN, response)

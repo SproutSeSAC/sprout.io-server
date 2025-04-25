@@ -2,10 +2,15 @@ package io.sprout.api.auth.token.domain
 
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.MalformedJwtException
+import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
+import io.jsonwebtoken.security.SignatureException
+import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.config.properties.JwtPropertiesConfig
 import io.sprout.api.user.repository.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -16,6 +21,8 @@ class JwtToken(
     private val jwtPropertiesConfig: JwtPropertiesConfig,
     private val userRepository: UserRepository
 ) {
+    private val log = LoggerFactory.getLogger(JwtToken::class.java)
+
     // 비밀 키 생성 (여기선 256비트 HMAC 키를 생성)
     private val accessSecretKey =
         Keys.hmacShaKeyFor(jwtPropertiesConfig.accessToken.secret.toByteArray(StandardCharsets.UTF_8))
@@ -94,7 +101,7 @@ class JwtToken(
 
 
     // 토큰의 유효성 검사
-    fun isExpiredAccessToken(token: String): Boolean {
+    fun isInvalidAccessToken(token: String): Boolean {
         try {
             val claims = Jwts.parserBuilder()
                 .setSigningKey(accessSecretKey)
@@ -106,9 +113,14 @@ class JwtToken(
         } catch (e: ExpiredJwtException) {
             // 토큰이 만료되었을 경우 이 예외를 캐치
             return true // 만료되었음을 반환
+        } catch (e: MalformedJwtException) {
+            log.warn("malformed Jwt encounter: {}", token)
+            return true
+        } catch (e: SignatureException) {
+            log.warn("invalid signature Jwt encounter: {}", token)
+            return true
         } catch (e: Exception) {
-            // 그 외의 예외 처리
-            return false
+            return true
         }
     }
 }
