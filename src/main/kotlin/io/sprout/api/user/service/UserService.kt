@@ -397,6 +397,7 @@ class UserService(
     fun changePhoneByUserId(userId: Long, phoneNumber: PhoneNumber): String {
         val user = userRepository.findById(userId)
             .orElseThrow { IllegalArgumentException("해당 ID의 사용자가 없습니다. id=$userId") }
+        println("user.phoneNumber = ${user.phoneNumber}")
 
         user.phoneNumber = phoneNumber.phoneNumber
         return user.phoneNumber

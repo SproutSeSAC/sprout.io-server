@@ -9,10 +9,7 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import io.sprout.api.course.model.entities.QCourseEntity
-import io.sprout.api.notice.model.dto.NoticeCardDto
-import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
-import io.sprout.api.notice.model.dto.NoticeSearchRequestDto
-import io.sprout.api.notice.model.dto.NoticeSearchDto
+import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.entities.QPostEntity
@@ -20,6 +17,7 @@ import io.sprout.api.scrap.entity.QScrapEntity
 import io.sprout.api.user.model.entities.QUserCourseEntity
 import io.sprout.api.user.model.entities.QUserEntity
 import io.sprout.api.user.model.entities.RoleType
+import org.springframework.data.domain.PageRequest
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -93,6 +91,81 @@ class NoticeRepositoryCustomImpl(
         val ids = getSearchedIds(userId, myCourseIds, searchRequest)
 
         val result = getNoticeDetail(userId, ids)
+
+        return result
+    }
+
+    override fun getSessions(userId: Long, pageable: PageRequest, applicationStatus: NoticeStatus?): MutableList<NoticeSessionResponseDto>? {
+        val myCourseIds: List<Long> = queryFactory
+            .select(userCourse.course.id)
+            .from(userCourse)
+            .where(userCourse.user.id.eq(userId))
+            .fetch()
+
+        val ids = queryFactory
+            .selectDistinct(noticeSession.id)
+            .from(noticeSession)
+            .leftJoin(noticeSession.notice, notice)
+            .leftJoin(notice.user, user)
+            .leftJoin(notice.targetCourses, targetCourse)
+            .leftJoin(targetCourse.course, course)
+            .where(
+                isInCourse(myCourseIds),
+                isNoticeStatus(applicationStatus),
+            )
+            .orderBy(OrderSpecifier(Order.DESC, noticeSession.eventStartDateTime))
+            .limit(pageable.pageSize.toLong())
+            .offset(pageable.offset)
+            .fetch()
+
+        val result = queryFactory
+            .selectFrom(noticeSession)
+            .leftJoin(noticeSession.notice, notice)
+            .leftJoin(notice.user, user)
+            .leftJoin(notice.targetCourses, targetCourse)
+            .leftJoin(targetCourse.course, course)
+            .leftJoin(post)
+                .on(post.linkedId.eq(notice.id).and(post.postType.eq(PostType.NOTICE)))
+
+            .where(noticeSession.id.`in`(ids))
+            .orderBy(OrderSpecifier(Order.DESC, noticeSession.eventStartDateTime))
+            .transform(
+                groupBy(noticeSession.id).list(
+                    Projections.constructor(
+                        NoticeSessionResponseDto::class.java,
+                        post.id,
+                        notice.id,
+                        notice.title,
+                        notice.noticeType,
+                        notice.status,
+                        notice.createdAt,
+                        notice.applicationStartDateTime,
+                        notice.applicationEndDateTime,
+                        notice.meetingPlace,
+                        notice.meetingType,
+                        notice.participantCapacity,
+                        Projections.constructor(
+                            NoticeSessionResponseDto.Writer::class.java,
+                            user.id,
+                            user.name,
+                            user.profileImageUrl,
+                            user.role
+                        ),
+                        list(Projections.constructor(
+                            NoticeSessionResponseDto.TargetCourse::class.java,
+                            course.id,
+                            course.title
+                        )),
+                        Projections.constructor(
+                            NoticeSessionResponseDto.Session::class.java,
+                            noticeSession.id,
+                            noticeSession.eventStartDateTime,
+                            noticeSession.eventEndDateTime,
+                            noticeSession.ordinal
+                        ),
+                    )
+                )
+            )
 
         return result
     }
@@ -273,6 +346,14 @@ class NoticeRepositoryCustomImpl(
         }
 
         return notice.noticeType.eq(noticeType)
+    }
+
+    private fun isNoticeStatus(status: NoticeStatus?): BooleanExpression? {
+        if (status == null) {
+            return null
+        }
+
+        return notice.status.eq(status)
     }
 }
 

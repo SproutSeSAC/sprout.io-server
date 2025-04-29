@@ -127,6 +127,13 @@ class NoticeServiceImpl(
     }
 
     /**
+     *  공지사항 세션 조회 (관리자만)
+     */
+    override fun getNoticeSessions(pageable: PageRequest, applicationStatus: NoticeStatus?): MutableList<NoticeSessionResponseDto>? {
+        return noticeRepository.getSessions(getUserId(), pageable, applicationStatus)
+    }
+
+    /**
      * 공지사항 댓글 삭제
      *
      * @param commentId 삭제할 댓글 ID
@@ -139,6 +146,7 @@ class NoticeServiceImpl(
 
         noticeCommentRepository.deleteById(commentId)
     }
+
 
     /**
      * 공지사항 댓글 생성
