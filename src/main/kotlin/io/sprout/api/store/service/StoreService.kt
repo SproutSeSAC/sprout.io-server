@@ -12,15 +12,20 @@ import io.sprout.api.specification.model.dto.SpecificationsDto
 import io.sprout.api.store.model.dto.StoreDto
 import io.sprout.api.store.model.dto.StoreDto.StoreDetailResponse.*
 import io.sprout.api.store.model.dto.StoreProjectionDto
+import io.sprout.api.store.model.dto.StoreReportRequestDto
+import io.sprout.api.store.model.dto.StoreReportResponseDto
 import io.sprout.api.store.model.entities.FoodType
 import io.sprout.api.store.model.entities.ScrapedStoreEntity
 import io.sprout.api.store.model.entities.StoreEntity
 import io.sprout.api.store.model.entities.StoreReviewEntity
 import io.sprout.api.store.repository.ScrapedStoreRepository
+import io.sprout.api.store.repository.StoreReportRepository
 import io.sprout.api.store.repository.StoreRepository
 import io.sprout.api.store.repository.StoreReviewRepository
 import io.sprout.api.user.model.entities.UserEntity
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
 
@@ -31,7 +36,8 @@ class StoreService(
     private val securityManager: SecurityManager,
     private val storeReviewRepository: StoreReviewRepository,
     private val postRepository: PostRepository,
-    private val scrapRepository: ScrapRepository
+    private val scrapRepository: ScrapRepository,
+    private val storeReportRepository: StoreReportRepository,
 ) {
 
     private fun <T> handleExceptions(action: () -> T): T {
@@ -148,5 +154,15 @@ class StoreService(
             UserEntity(securityManager.getAuthenticatedUserName()!!),
             store))
 
+    }
+
+    fun storeReport(storeReportRequest: StoreReportRequestDto) {
+        val report = storeReportRequest.toEntity(securityManager.getAuthenticatedUserId())
+
+        storeReportRepository.save(report)
+    }
+
+    fun getStoreReport(pageable: PageRequest): Page<StoreReportResponseDto> {
+        return storeReportRepository.findAll(pageable).map { StoreReportResponseDto(it) }
     }
 }
