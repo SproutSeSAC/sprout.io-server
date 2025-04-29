@@ -2,6 +2,8 @@ package io.sprout.api.store.model.entities
 
 import io.sprout.api.campus.model.entities.CampusEntity
 import io.sprout.api.common.model.entities.BaseEntity
+import io.sprout.api.user.model.entities.RoleType
+import io.sprout.api.user.model.entities.UserStatus
 import jakarta.persistence.*
 
 @Entity
@@ -75,6 +77,24 @@ class StoreEntity(
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var storeImageList: MutableSet<StoreImageEntity> = LinkedHashSet()
 
+    constructor(id: Long) : this(
+        name= "",
+        address = "",
+        contact="",
+        FoodType.ASIAN,
+        workingDay ="",
+        breakTime = "",
+        holiday = "",
+        isVoucher = false,
+        isZeropay = false,
+        walkTime = 0,
+        isOverPerson = false,
+        campus= CampusEntity(0),
+        longitude = "",
+        latitude = ""
+    ) {
+        this.id = id
+    }
 }
 
 enum class FoodType {

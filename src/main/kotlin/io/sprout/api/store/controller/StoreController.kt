@@ -1,13 +1,13 @@
 package io.sprout.api.store.controller
 
-import io.sprout.api.store.model.dto.DirectionResponse
-import io.sprout.api.store.model.dto.StoreDto
-import io.sprout.api.store.model.dto.StoreProjectionDto
-import io.sprout.api.store.model.dto.Trafast
-import io.sprout.api.store.model.entities.FoodType
-import io.sprout.api.store.service.MapDirectionService
+import io.sprout.api.store.model.dto.*
+import io.sprout.api.store.model.entities.StoreEntity
 import io.sprout.api.store.service.StoreService
 import io.swagger.v3.oas.annotations.Operation
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/store")
 class StoreController(
     private val storeService: StoreService,
-    private val mapDirectionService: MapDirectionService
 ) {
 
     @GetMapping("/{storeId}")
@@ -59,5 +58,26 @@ class StoreController(
         storeService.createReview(storeId, reviewCreateRequest)
 
         return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/report")
+    @Operation(summary = "맛집 제보 및 신고", description = "type = \'ADD\' | \'UPDATE\'")
+    fun reportStore(
+        @RequestBody storeReportRequest: StoreReportRequestDto
+    ): ResponseEntity<Void> {
+        storeService.storeReport(storeReportRequest)
+
+        return ResponseEntity.ok().build()
+    }
+
+    @GetMapping("/report")
+    @Operation(summary = "맛집 제보 조회", description = "type = \'ADD\' | \'UPDATE\'")
+    fun reportStore(
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+    ): ResponseEntity<Page<StoreReportResponseDto>> {
+        val pageable = PageRequest.of(page-1, size, Sort.by("createdAt").descending())
+
+        return ResponseEntity.ok(storeService.getStoreReport(pageable))
     }
 }
