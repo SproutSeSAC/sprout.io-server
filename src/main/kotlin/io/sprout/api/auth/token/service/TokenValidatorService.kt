@@ -3,7 +3,6 @@ package io.sprout.api.auth.token.service
 import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
 import io.sprout.api.auth.token.domain.JwtToken
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -29,7 +28,7 @@ class TokenValidatorService(private val tokenService: JwtToken) {
      */
     @Throws(IOException::class)
     fun isInvalidAccessToken(accessToken: String?, response: HttpServletResponse): Boolean {
-        if (accessToken != null && tokenService.isExpiredAccessToken(accessToken)) {
+        if (accessToken != null && tokenService.isInvalidAccessToken(accessToken)) {
             log.debug("Token InValidated")
             return true
         }

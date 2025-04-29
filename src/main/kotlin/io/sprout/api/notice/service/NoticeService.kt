@@ -1,6 +1,7 @@
 package io.sprout.api.notice.service
 
 import io.sprout.api.notice.model.dto.*
+import io.sprout.api.notice.model.entities.NoticeStatus
 import io.sprout.api.notice.model.entities.ParticipantStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -25,4 +26,5 @@ interface NoticeService {
     fun getNoticeTitleById(linkedId: Long): String
     fun getApplicationCloseNotice(size: Long, days: Long): MutableList<NoticeCardDto>?
     fun toggleStatus(noticeId: Long)
+    fun getNoticeSessions(pageable: PageRequest, applicationStatus: NoticeStatus?): MutableList<NoticeSessionResponseDto>?
 }
