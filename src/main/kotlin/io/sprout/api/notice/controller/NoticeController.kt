@@ -1,6 +1,7 @@
 package io.sprout.api.notice.controller
 
 import io.sprout.api.notice.model.dto.*
+import io.sprout.api.notice.model.entities.NoticeStatus
 import io.sprout.api.notice.model.entities.ParticipantStatus
 import io.sprout.api.notice.service.NoticeService
 import io.swagger.v3.oas.annotations.Operation
@@ -162,6 +163,22 @@ class NoticeController(
     @Operation(summary = "공지사항을 삭제합니다.", description = "연관된 모든 것을 삭제합니다.")
     fun deleteNotice(@PathVariable noticeId: Long) {
         noticeService.deleteNotice(noticeId)
+    }
+
+    /**
+     * 공지사항 세션 조회
+     * 자신의 교육과정 범위 내에서 조회
+     */
+    @Operation(summary = "공지사항 세션 조회", description = "자신의 교육과정 내 세션 조회")
+    @GetMapping("/sessions")
+    fun getNoticeSessions(@RequestParam(defaultValue = "1") page: Int,
+                          @RequestParam(defaultValue = "10") size: Int,
+                          @RequestParam(required = false) applicationStatus: NoticeStatus?
+    ): ResponseEntity<MutableList<NoticeSessionResponseDto>?> {
+        val pageable = PageRequest.of(page-1, size)
+
+        return ResponseEntity
+            .ok(noticeService.getNoticeSessions(pageable, applicationStatus))
     }
 
     /**

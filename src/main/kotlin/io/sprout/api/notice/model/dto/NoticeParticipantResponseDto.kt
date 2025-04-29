@@ -2,6 +2,7 @@ package io.sprout.api.notice.model.dto
 
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.model.entities.ParticipantStatus
+import java.time.LocalDateTime
 
 /**
  * 세션 참가자 조회
@@ -15,6 +16,7 @@ data class NoticeParticipantResponseDto(
     val userName: String?,
     val nickName: String,
     val profileImageUrl: String?,
+    val applicationDateTime: LocalDateTime,
 
     val courses: List<Course>,
     val campuses: List<Campus>
@@ -28,6 +30,7 @@ data class NoticeParticipantResponseDto(
         participant.user.name,
         participant.user.nickname,
         participant.user.profileImageUrl,
+        participant.createdAt,
 
         participant.user.userCourseList
             .map { Course(it.course.id, it.course.title) },
