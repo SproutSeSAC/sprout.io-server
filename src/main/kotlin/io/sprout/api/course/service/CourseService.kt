@@ -32,6 +32,8 @@ class CourseService(
             CourseDto.CourseListResponse.CourseDetail(
                 id = course.id,
                 title = course.title,
+                startDate = course.startDate,
+                endDate = course.endDate,
                 campusName = course.campus!!.name
             )
         }

@@ -1,6 +1,7 @@
 package io.sprout.api.course.model.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
 
 class CourseDto {
 
@@ -11,6 +12,8 @@ class CourseDto {
         data class CourseDetail(
             val id: Long,
             val title: String,
+            val startDate: LocalDate,
+            val endDate: LocalDate,
             val campusName: String
         )
     }
