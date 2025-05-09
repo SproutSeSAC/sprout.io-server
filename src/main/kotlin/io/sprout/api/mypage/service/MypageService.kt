@@ -195,40 +195,47 @@ class MypageService(
         val scraps = scrapService.getScrapsByUserId(clientId)
 
         val scrapPosts = scraps.mapNotNull {
-            val user = userRepository.findUserById(it.userId)
             val post = postService.getPostById(it.postId)
-
-            if (user != null && post != null) {
-                val writer = writerDto(
-                    name = user.name ?: "",
-                    nickname = user.nickname,
-                    profileImg = user.profileImageUrl ?: ""
-                )
-
-                var projectType = ""
-                val postData = when (post) {
-                    is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
-                    is ProjectDetailResponseDto -> {
-                        projectType = post.pType.toString()
-                        PostInfoDto(post.title, post.description, PostType.PROJECT)
-                    }
-                    is MealPostDto.MealPostDetailResponse -> {
-                        PostInfoDto(post.title, "", PostType.MEAL)
-                    }
-                    else -> return@mapNotNull null
-                }
-
-                GetPostResponseDto(
-                    id = it.id,
-                    writer = writer,
-                    postId = it.postId,
-                    title = postData.title,
-                    postType = postData.postType,
-                    content = postData.content,
-                    pType = projectType
-                )
-            } else {
+            val userId = postService.getPostWriterById(it.postId)
+            if (userId == null) {
                 null
+            }
+            else {
+                val user = userRepository.findUserById(userId);
+
+                if (user != null && post != null) {
+                    val writer = writerDto(
+                        name = user.name ?: "",
+                        nickname = user.nickname,
+                        profileImg = user.profileImageUrl ?: ""
+                    )
+
+                    var projectType = ""
+                    val postData = when (post) {
+                        is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
+                        is ProjectDetailResponseDto -> {
+                            projectType = post.pType.toString()
+                            PostInfoDto(post.title, post.description, PostType.PROJECT)
+                        }
+                        is MealPostDto.MealPostDetailResponse -> {
+                            PostInfoDto(post.title, "", PostType.MEAL)
+                        }
+                        else -> return@mapNotNull null
+                    }
+
+                    GetPostResponseDto(
+                        id = it.id,
+                        writer = writer,
+                        postId = it.postId,
+                        title = postData.title,
+                        postType = postData.postType,
+                        content = postData.content,
+                        pType = projectType
+                    )
+                }
+                else {
+                    null
+                }
             }
         }
 
