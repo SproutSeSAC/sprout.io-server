@@ -1,5 +1,6 @@
 package io.sprout.api.mypage.dto
 
+import io.sprout.api.notice.model.entities.NoticeMeetingType
 import io.sprout.api.user.model.entities.RoleType
 import java.time.LocalDateTime
 
@@ -18,4 +19,7 @@ data class ParticipantDto (
     val participantId: Long,
     val startDateTime: LocalDateTime,
     val endDateTime: LocalDateTime,
+    val meetingType: NoticeMeetingType?,
+    val meetingPlace: String?,
+    val satisfactionSurvey: String?,
 )
