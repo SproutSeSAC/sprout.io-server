@@ -283,6 +283,9 @@ class MypageService(
                     ordinal = data.noticeSession.ordinal,
                     startDateTime = data.noticeSession.eventStartDateTime,
                     endDateTime = data.noticeSession.eventEndDateTime,
+                    satisfactionSurvey = data.noticeSession.notice.satisfactionSurvey,
+                    meetingPlace = data.noticeSession.notice.meetingPlace,
+                    meetingType = data.noticeSession.notice.meetingType,
                 )
             }
 
@@ -300,6 +303,9 @@ class MypageService(
                     ordinal = data.noticeSession.ordinal,
                     startDateTime = data.noticeSession.eventStartDateTime,
                     endDateTime = data.noticeSession.eventEndDateTime,
+                    satisfactionSurvey = data.noticeSession.notice.satisfactionSurvey,
+                    meetingPlace = data.noticeSession.notice.meetingPlace,
+                    meetingType = data.noticeSession.notice.meetingType,
                 )
             }
 
