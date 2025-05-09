@@ -22,6 +22,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      #  환경변수 설정
+      - name: properties setting
+        run: |
+          echo "${{ secrets.APPLICATION_YML}}" > ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_DEV_YML}}" > ./src/main/resources/application-dev.yml
+        working-directory: /home/runner/work/sprout.io-server/sprout.io-server
+
       # 3. 빌드
       - name: Build Project with Gradle
         run: ./gradlew clean build --parallel
