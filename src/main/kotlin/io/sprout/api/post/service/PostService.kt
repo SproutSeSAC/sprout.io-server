@@ -131,6 +131,28 @@ class PostService(
     }
 
     /**
+     * 게시글 작성자 ID 반환
+     * NOTICE, PROJECT만 가능
+     */
+    @Transactional
+    fun getPostWriterById(postId: Long): Long? {
+        val post = postRepository.findById(postId)
+            .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
+
+        return when (post.postType) {
+            PostType.NOTICE -> {
+                val noticeId = post.linkedId
+                noticeService.getNoticeById(noticeId).writer.userId
+            }
+            PostType.PROJECT -> {
+                val projectId = post.linkedId
+                projectService.findProjectDetailById(projectId)?.writerId
+            }
+            else -> throw EntityNotFoundException("존재하지 않는 형식입니다.")
+        }
+    }
+
+    /**
      * 타입별 게시글 읽기
      * 입력 TYPE에 맞는 값을 반환합니다.
      */
