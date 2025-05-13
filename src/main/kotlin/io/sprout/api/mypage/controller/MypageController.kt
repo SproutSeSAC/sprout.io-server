@@ -47,10 +47,12 @@ class MypageController(
 
     @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")
     @GetMapping("/getPost")
-    fun getPostList(): ResponseEntity<List<PostAndNickNameDto>> {
+    fun getPostList(
+        @PageableDefault(size = 10) pageable: Pageable
+    ): ResponseEntity<Page<PostAndNickNameDto>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
-        return ResponseEntity.ok(mypageService.getPostListByUserId(userId))
+        return ResponseEntity.ok(mypageService.getPostListByUserId(userId, pageable))
     }
 
     @Operation(summary = "작성 댓글 조회", description = "작성한 댓글들의 ID와 게시글 ID를 반환합니다.")

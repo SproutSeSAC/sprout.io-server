@@ -413,14 +413,14 @@ class UserService(
             ?.let { UserMemoResponseDto(it) }
     }
 
-    fun getPostListByUserId(userId: Long): List<PostAndNickNameDto>? {
-        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
-        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
-
-        AuthorizationUtils.validateUserIsManagerRole(manager)
-
-        return mypageService.getPostListByUserId(userId)
-    }
+//    fun getPostListByUserId(userId: Long): List<PostAndNickNameDto>? {
+//        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+//        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+//
+//        AuthorizationUtils.validateUserIsManagerRole(manager)
+//
+//        return mypageService.getPostListByUserId(userId)
+//    }
 
     fun getPostCommentListByUserId(userId: Long): List<PostCommentDto>? {
         val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
