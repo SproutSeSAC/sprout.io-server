@@ -9,6 +9,7 @@ import io.sprout.api.mypage.repository.*
 import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectDetailResponseDto
@@ -104,28 +105,40 @@ class MypageService(
     // region [게시글 관련 API]
 
     // 작성 글 목록 조회
-    fun getPostListByUserId(clientId: Long): List<PostAndNickNameDto> {
-        val posts = postService.getPostsByClientId(clientId)
-        var projectType = ""
+    fun getPostListByUserId(clientId: Long, pageable: Pageable): Page<PostAndNickNameDto> {
+        val posts: Page<PostEntity> = postService.getPostsByClientIdAndPage(clientId, pageable);
 
-        // DTO 변환
         return posts.map { post ->
+            var projectType = ""
             val title = when (post.postType) {
                 PostType.NOTICE -> {
-                    val linkedId = post.linkedId
-                    noticeService.getNoticeTitleById(linkedId)
+                    try {
+                        noticeService.getNoticeTitleById(post.linkedId)
+                    } catch (e: Exception) {
+                        println("NOTICE ERROR: id=${post.linkedId}, message=${e.message}")
+                        "공지사항을 찾을 수 없음."
+                    }
                 }
                 PostType.PROJECT -> {
                     val linkedId = post.linkedId
-                    val project = projectService.getProjectById(linkedId)
-                    projectType = project?.pType.toString() ?: ""
-                    project?.title ?: "프로젝트를 찾을 수 없음!"
+                    try {
+                        val project = projectService.getProjectById(linkedId)
+                        projectType = project?.pType?.toString() ?: ""
+                        project?.title ?: "프로젝트를 찾을 수 없음!"
+                    } catch (e: Exception) {
+                        println("PROJECT ERROR: linkedId=$linkedId, message=${e.message}")
+                        "프로젝트(스터디)를 찾을 수 없음."
+                    }
                 }
                 PostType.MEAL -> {
-                    val linkedId = post.linkedId
-                    mealPostService.getMealPostDetail(linkedId).title
+                    try {
+                        mealPostService.getMealPostDetail(post.linkedId).title
+                    } catch (e: Exception) {
+                        println("MEAL ERROR: id=${post.linkedId}, message=${e.message}")
+                        "한끼팟 게시글을 찾을 수 없음."
+                    }
                 }
-                else -> return@map null
+                else -> null
             }
 
             val user = userRepository.findById(post.clientId)
@@ -143,6 +156,9 @@ class MypageService(
                 pType = projectType
             )
         }.filterNotNull()
+            .let { content ->
+                PageImpl(content, pageable, posts.totalElements)
+            }
     }
 
     // 댓글 조회

@@ -5,7 +5,6 @@ import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
-import io.sprout.api.post.dto.PostDto
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
@@ -15,7 +14,9 @@ import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.store.service.StoreService
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
+import org.springframework.data.domain.Pageable
 
 @Service
 class PostService(
@@ -318,6 +319,11 @@ class PostService(
     @Transactional()
     fun getPostsByClientId(clientId: Long): List<PostEntity> {
         return postRepository.findAllByClientId(clientId)
+    }
+
+    @Transactional()
+    fun getPostsByClientIdAndPage(clientId: Long, pageable: Pageable): Page<PostEntity> {
+        return postRepository.findAllByClientId(clientId, pageable);
     }
 
     /**
