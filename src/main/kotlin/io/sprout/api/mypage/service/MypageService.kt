@@ -9,6 +9,7 @@ import io.sprout.api.mypage.repository.*
 import io.sprout.api.notice.model.dto.NoticeDetailResponseDto
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectDetailResponseDto
@@ -104,28 +105,40 @@ class MypageService(
     // region [게시글 관련 API]
 
     // 작성 글 목록 조회
-    fun getPostListByUserId(clientId: Long): List<PostAndNickNameDto> {
-        val posts = postService.getPostsByClientId(clientId)
-        var projectType = ""
+    fun getPostListByUserId(clientId: Long, pageable: Pageable): Page<PostAndNickNameDto> {
+        val posts: Page<PostEntity> = postService.getPostsByClientIdAndPage(clientId, pageable);
 
-        // DTO 변환
         return posts.map { post ->
+            var projectType = ""
             val title = when (post.postType) {
                 PostType.NOTICE -> {
-                    val linkedId = post.linkedId
-                    noticeService.getNoticeTitleById(linkedId)
+                    try {
+                        noticeService.getNoticeTitleById(post.linkedId)
+                    } catch (e: Exception) {
+                        println("NOTICE ERROR: id=${post.linkedId}, message=${e.message}")
+                        "공지사항을 찾을 수 없음."
+                    }
                 }
                 PostType.PROJECT -> {
                     val linkedId = post.linkedId
-                    val project = projectService.getProjectById(linkedId)
-                    projectType = project?.pType.toString() ?: ""
-                    project?.title ?: "프로젝트를 찾을 수 없음!"
+                    try {
+                        val project = projectService.getProjectById(linkedId)
+                        projectType = project?.pType?.toString() ?: ""
+                        project?.title ?: "프로젝트를 찾을 수 없음!"
+                    } catch (e: Exception) {
+                        println("PROJECT ERROR: linkedId=$linkedId, message=${e.message}")
+                        "프로젝트(스터디)를 찾을 수 없음."
+                    }
                 }
                 PostType.MEAL -> {
-                    val linkedId = post.linkedId
-                    mealPostService.getMealPostDetail(linkedId).title
+                    try {
+                        mealPostService.getMealPostDetail(post.linkedId).title
+                    } catch (e: Exception) {
+                        println("MEAL ERROR: id=${post.linkedId}, message=${e.message}")
+                        "한끼팟 게시글을 찾을 수 없음."
+                    }
                 }
-                else -> return@map null
+                else -> null
             }
 
             val user = userRepository.findById(post.clientId)
@@ -143,6 +156,9 @@ class MypageService(
                 pType = projectType
             )
         }.filterNotNull()
+            .let { content ->
+                PageImpl(content, pageable, posts.totalElements)
+            }
     }
 
     // 댓글 조회
@@ -195,40 +211,47 @@ class MypageService(
         val scraps = scrapService.getScrapsByUserId(clientId)
 
         val scrapPosts = scraps.mapNotNull {
-            val user = userRepository.findUserById(it.userId)
             val post = postService.getPostById(it.postId)
-
-            if (user != null && post != null) {
-                val writer = writerDto(
-                    name = user.name ?: "",
-                    nickname = user.nickname,
-                    profileImg = user.profileImageUrl ?: ""
-                )
-
-                var projectType = ""
-                val postData = when (post) {
-                    is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
-                    is ProjectDetailResponseDto -> {
-                        projectType = post.pType.toString()
-                        PostInfoDto(post.title, post.description, PostType.PROJECT)
-                    }
-                    is MealPostDto.MealPostDetailResponse -> {
-                        PostInfoDto(post.title, "", PostType.MEAL)
-                    }
-                    else -> return@mapNotNull null
-                }
-
-                GetPostResponseDto(
-                    id = it.id,
-                    writer = writer,
-                    postId = it.postId,
-                    title = postData.title,
-                    postType = postData.postType,
-                    content = postData.content,
-                    pType = projectType
-                )
-            } else {
+            val userId = postService.getPostWriterById(it.postId)
+            if (userId == null) {
                 null
+            }
+            else {
+                val user = userRepository.findUserById(userId);
+
+                if (user != null && post != null) {
+                    val writer = writerDto(
+                        name = user.name ?: "",
+                        nickname = user.nickname,
+                        profileImg = user.profileImageUrl ?: ""
+                    )
+
+                    var projectType = ""
+                    val postData = when (post) {
+                        is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
+                        is ProjectDetailResponseDto -> {
+                            projectType = post.pType.toString()
+                            PostInfoDto(post.title, post.description, PostType.PROJECT)
+                        }
+                        is MealPostDto.MealPostDetailResponse -> {
+                            PostInfoDto(post.title, "", PostType.MEAL)
+                        }
+                        else -> return@mapNotNull null
+                    }
+
+                    GetPostResponseDto(
+                        id = it.id,
+                        writer = writer,
+                        postId = it.postId,
+                        title = postData.title,
+                        postType = postData.postType,
+                        content = postData.content,
+                        pType = projectType
+                    )
+                }
+                else {
+                    null
+                }
             }
         }
 
@@ -276,6 +299,9 @@ class MypageService(
                     ordinal = data.noticeSession.ordinal,
                     startDateTime = data.noticeSession.eventStartDateTime,
                     endDateTime = data.noticeSession.eventEndDateTime,
+                    satisfactionSurvey = data.noticeSession.notice.satisfactionSurvey,
+                    meetingPlace = data.noticeSession.notice.meetingPlace,
+                    meetingType = data.noticeSession.notice.meetingType,
                 )
             }
 
@@ -293,6 +319,9 @@ class MypageService(
                     ordinal = data.noticeSession.ordinal,
                     startDateTime = data.noticeSession.eventStartDateTime,
                     endDateTime = data.noticeSession.eventEndDateTime,
+                    satisfactionSurvey = data.noticeSession.notice.satisfactionSurvey,
+                    meetingPlace = data.noticeSession.notice.meetingPlace,
+                    meetingType = data.noticeSession.notice.meetingType,
                 )
             }
 

@@ -5,7 +5,6 @@ import io.sprout.api.mealPost.service.MealPostService
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
-import io.sprout.api.post.dto.PostDto
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
@@ -15,7 +14,9 @@ import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.store.service.StoreService
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
+import org.springframework.data.domain.Pageable
 
 @Service
 class PostService(
@@ -125,6 +126,28 @@ class PostService(
             PostType.STORE -> {
                 val storeId = post.linkedId
                 storeService.getStoreDetail(storeId)
+            }
+            else -> throw EntityNotFoundException("존재하지 않는 형식입니다.")
+        }
+    }
+
+    /**
+     * 게시글 작성자 ID 반환
+     * NOTICE, PROJECT만 가능
+     */
+    @Transactional
+    fun getPostWriterById(postId: Long): Long? {
+        val post = postRepository.findById(postId)
+            .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
+
+        return when (post.postType) {
+            PostType.NOTICE -> {
+                val noticeId = post.linkedId
+                noticeService.getNoticeById(noticeId).writer.userId
+            }
+            PostType.PROJECT -> {
+                val projectId = post.linkedId
+                projectService.findProjectDetailById(projectId)?.writerId
             }
             else -> throw EntityNotFoundException("존재하지 않는 형식입니다.")
         }
@@ -296,6 +319,11 @@ class PostService(
     @Transactional()
     fun getPostsByClientId(clientId: Long): List<PostEntity> {
         return postRepository.findAllByClientId(clientId)
+    }
+
+    @Transactional()
+    fun getPostsByClientIdAndPage(clientId: Long, pageable: Pageable): Page<PostEntity> {
+        return postRepository.findAllByClientId(clientId, pageable);
     }
 
     /**
