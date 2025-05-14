@@ -171,14 +171,17 @@ class NoticeController(
      */
     @Operation(summary = "공지사항 세션 조회", description = "자신의 교육과정 내 세션 조회")
     @GetMapping("/sessions")
-    fun getNoticeSessions(@RequestParam(defaultValue = "1") page: Int,
-                          @RequestParam(defaultValue = "10") size: Int,
-                          @RequestParam(required = false) applicationStatus: NoticeStatus?
-    ): ResponseEntity<MutableList<NoticeSessionResponseDto>?> {
-        val pageable = PageRequest.of(page-1, size)
+    fun getNoticeSessions(
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(required = false) applicationStatus: NoticeStatus?,
+        @RequestParam(required = false) keyword: String?
+    ): ResponseEntity<NoticeSessionResponseDto> {
+
+        val pageable = PageRequest.of(page - 1, size)
 
         return ResponseEntity
-            .ok(noticeService.getNoticeSessions(pageable, applicationStatus))
+            .ok(noticeService.getNoticeSessions(pageable, applicationStatus, keyword))
     }
 
     /**

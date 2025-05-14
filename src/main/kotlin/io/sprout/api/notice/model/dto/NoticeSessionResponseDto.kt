@@ -5,25 +5,31 @@ import io.sprout.api.user.model.entities.RoleType
 import java.time.LocalDateTime
 
 data class NoticeSessionResponseDto(
-    var postId: Long,
-    val noticeId: Long,
-    val title: String,
-    val noticeType: NoticeType,
-    val status: NoticeStatus,
-    val createdAt: LocalDateTime,
+    val noticeSession: List<NoticeSessionCard>,
 
-    var applicationStartDateTime: LocalDateTime? = null,
-    var applicationEndDateTime: LocalDateTime? = null,
-    var meetingPlace: String? = null,
-    var meetingType: NoticeMeetingType?,
-    var participantCapacity: Int? = null,
-
-    var writer: Writer,
-    // 교육과정 대상
-    var targetCourses: List<TargetCourse> = mutableListOf(),
-    // 특강 세션
-    var session: Session,
+    val isLastPage: Boolean
 ){
+    data class NoticeSessionCard(
+        var postId: Long,
+        val noticeId: Long,
+        val title: String,
+        val noticeType: NoticeType,
+        val status: NoticeStatus,
+        val createdAt: LocalDateTime,
+
+        var applicationStartDateTime: LocalDateTime? = null,
+        var applicationEndDateTime: LocalDateTime? = null,
+        var meetingPlace: String? = null,
+        var meetingType: NoticeMeetingType?,
+        var participantCapacity: Int? = null,
+
+        var writer: Writer,
+        // 교육과정 대상
+        var targetCourses: List<TargetCourse> = mutableListOf(),
+        // 특강 세션
+        var session: Session,
+    )
+
     data class Writer(
         val userId: Long,
         val userName: String,

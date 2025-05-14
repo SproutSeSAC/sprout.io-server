@@ -129,8 +129,13 @@ class NoticeServiceImpl(
     /**
      *  공지사항 세션 조회 (관리자만)
      */
-    override fun getNoticeSessions(pageable: PageRequest, applicationStatus: NoticeStatus?): MutableList<NoticeSessionResponseDto>? {
-        return noticeRepository.getSessions(getUserId(), pageable, applicationStatus)
+    override fun getNoticeSessions(
+        pageable: PageRequest,
+        applicationStatus: NoticeStatus?,
+        keyword: String?
+    ): NoticeSessionResponseDto {
+
+        return noticeRepository.getSessions(getUserId(), pageable, applicationStatus, keyword)
     }
 
     /**
