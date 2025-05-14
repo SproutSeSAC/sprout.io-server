@@ -95,7 +95,7 @@ class NoticeRepositoryCustomImpl(
         return result
     }
 
-    override fun getSessions(userId: Long, pageable: PageRequest, applicationStatus: NoticeStatus?): MutableList<NoticeSessionResponseDto>? {
+    override fun getSessions(userId: Long, pageable: PageRequest, applicationStatus: NoticeStatus?, keyword: String?): NoticeSessionResponseDto {
         val myCourseIds: List<Long> = queryFactory
             .select(userCourse.course.id)
             .from(userCourse)
@@ -112,11 +112,21 @@ class NoticeRepositoryCustomImpl(
             .where(
                 isInCourse(myCourseIds),
                 isNoticeStatus(applicationStatus),
+                likeNoticeTitle(keyword)
             )
             .orderBy(OrderSpecifier(Order.DESC, noticeSession.eventStartDateTime))
-            .limit(pageable.pageSize.toLong())
+            .limit(pageable.pageSize.toLong() + 1L)
             .offset(pageable.offset)
             .fetch()
+
+        // size result
+        // 5    6       X           remove
+        // 5    5       last page   X
+        // 5    3       last page   X
+        val isLastPage = pageable.pageSize + 1 > ids.size
+        if (ids.size == pageable.pageSize + 1) {
+            ids.removeLast()
+        }
 
         val result = queryFactory
             .selectFrom(noticeSession)
@@ -132,7 +142,7 @@ class NoticeRepositoryCustomImpl(
             .transform(
                 groupBy(noticeSession.id).list(
                     Projections.constructor(
-                        NoticeSessionResponseDto::class.java,
+                        NoticeSessionResponseDto.NoticeSessionCard::class.java,
                         post.id,
                         notice.id,
                         notice.title,
@@ -167,7 +177,7 @@ class NoticeRepositoryCustomImpl(
                 )
             )
 
-        return result
+        return NoticeSessionResponseDto(result, isLastPage)
     }
 
     /**
@@ -354,6 +364,14 @@ class NoticeRepositoryCustomImpl(
         }
 
         return notice.status.eq(status)
+    }
+
+    private fun likeNoticeTitle(keyword: String?): BooleanExpression? {
+        if (keyword == null) {
+            return null
+        }
+
+        return notice.title.contains(keyword)
     }
 }
 

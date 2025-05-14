@@ -26,5 +26,5 @@ interface NoticeService {
     fun getNoticeTitleById(linkedId: Long): String
     fun getApplicationCloseNotice(size: Long, days: Long): MutableList<NoticeCardDto>?
     fun toggleStatus(noticeId: Long)
-    fun getNoticeSessions(pageable: PageRequest, applicationStatus: NoticeStatus?): MutableList<NoticeSessionResponseDto>?
+    fun getNoticeSessions(pageable: PageRequest, applicationStatus: NoticeStatus?, keyword: String?): NoticeSessionResponseDto
 }
