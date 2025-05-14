@@ -22,17 +22,20 @@
 
 
 ## 이미지
-<p align="center">
-    <img alt="캡처" height="auto" src="./readme_img/로그인.png" width="30%"/>
-    <img alt="캡처" height="auto" src="./readme_img/회원가입.png" width="30%"/>
-    <img alt="캡처" height="auto" src="./readme_img/마이페이지.png" width="30%"/>
-</p>
-<p align="center">
-    <img alt="캡처" height="auto" src="./readme_img/메인1.png" width="30%"/>
-    <img alt="캡처" height="auto" src="readme_img/식당_자세히_보기.png" width="30%"/>
-    <img alt="캡처" height="auto" src="readme_img/한끼팟.png" width="30%"/>
-</p>
 
+[//]: # (<img alt="캡처" height="auto" src="./readme_img/img1.png"/>)
+[//]: # (<img alt="캡처" height="auto" src="./readme_img/img2.png"/>)
+[//]: # (<img alt="캡처" height="auto" src="./readme_img/img3.png"/>)
+[//]: # (<img alt="캡처" height="auto" src="./readme_img/img4.png"/>)
+
+<p align="center">
+<img alt="캡처" height="auto" src="./readme_img/img1.png" width="70%"/>
+<img alt="캡처" height="auto" src="./readme_img/img2.png" width="70%"/>
+</p>
+<p align="center">
+<img alt="캡처" height="auto" src="./readme_img/img3.png" width="70%"/>
+<img alt="캡처" height="auto" src="./readme_img/img4.png" width="70%"/>
+</p>
 
 
 ## 메인 기능
@@ -53,24 +56,29 @@
 - 커뮤니티 형성: 교육생들이 식사 전에 모임을 만들 수 있는 커뮤니티입니다.
 - 닉네임 사용: 닉네임을 통해 교육생들 간의 친밀감을 높입니다.
 - 소통 기능: 댓글과 참여 버튼을 통해 서로 소통하고 함께 식사할 수 있는 자리를 만듭니다.
+### 학습 관리
+- 공지 작성: 자신이 담당하는 교육생들이 볼 수 있는 공지를 만듭니다. 
+- 특강 신청: 강의 일정별로 특강 신청 및 현황을 제공합니다.
+- 스터디 기능: 학생들간의 스터디를 형성하여 사용자들의 학습능력을 향상시킵니다.
+### 사용자 관리
+- 메모 기능: 매니저는 각각 학생의 메모를 작성할 수 있습니다.
+- 학생 명단 관리: 학생 명단, 정보를 관리할 수 있습니다.
 
 ## Stack
 - **Language**: Kotlin, JavaScript(Vanilla)
 - **Library & Framework**: Spring boot(3.1.5), Axios, Bootstrap
 - **DataBase**: MariaDB
 - **ORM**: hibernate
-- **Deploy**: PortForwarding을 통한 개인 컴퓨터
+- **Deploy**: AWS
 
 ## Service Architecture
 <p align="center">
-    <img alt="캡처" height="auto" src="./readme_img/아키텍처.webp" width="60%"/>
+    <img alt="캡처" height="auto" src="./readme_img/archi.png" width="60%"/>
 </p>
 
 ## Developer
 - 강윤석(기획 및 프로젝트 총괄)
-- 장효림(Full Stack 개발 및 구현)
-- 정선영(페이지 프레임 설계 및 기획)
-- 노희진(컨텐츠 기획)
-- 이민지(컨텐츠 기획 및 UI 일부 설계)
-- 오수연(UI 및 UX 설계)
-- 박상우(Backend 개발 및 구현)
+- 조유나(UI 및 UX 설계)
+- 전예림(Frontend 개발 및 구현)
+- 이현웅(Backend 개발 및 구현)
+- 김찬빈(Backend 개발 및 구현)
