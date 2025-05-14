@@ -15,6 +15,7 @@ import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.course.model.entities.CourseEntity
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.service.MypageService
+import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
 import io.sprout.api.specification.repository.TechStackRepository
@@ -51,7 +52,8 @@ class UserService(
     private val verificationCodeRepository: VerificationCodeRepository,
     private val jdbcTemplate: JdbcTemplate,
     private val mypageService: MypageService,
-    private val userMemoRepository: UserMemoRepository
+    private val userMemoRepository: UserMemoRepository,
+    private val postRepository: PostRepository
 ) {
     private val log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler::class.java)
 
@@ -148,9 +150,11 @@ class UserService(
         """
 
         val deleteTable = listOf(
-            "user_course", "user_domain", "user_job", "user_campus",
-            "user_tech_stack", "notice_participant", "project_post_participant",
-            "scraped_notice", "scraped_project", "scraped_store",
+            "user_course", "user_campus",
+            "user_tech_stack", "user_domain", "user_job",
+            "notice_participant", "project_post_participant",
+            "scraped_notice", "scraped_project", "scraped_store", "scrap",
+            "notification",
             "user_memo"
         )
 
@@ -166,6 +170,8 @@ class UserService(
                 jdbcTemplate.update(updateSql, anonymousUserId, userId)
             }
         }
+
+        postRepository.updateClientId(userId, anonymousUserId)
 
         userRepository.deleteById(userId)
     }
@@ -286,6 +292,9 @@ class UserService(
 
         AuthorizationUtils.validateUserIsAdminRole(admin)
         AuthorizationUtils.validateUserCourseContainAllTargetCourses(admin, updateRequest.courseIdList)
+        if (updateRequest.courseIdList.isEmpty()) {
+            throw CustomBadRequestException("invalid input: course ids is empty")
+        }
 
         val targetUser = userRepository.findUserById(targetUserId) ?: throw CustomBadRequestException("Not found user")
         targetUser.role = updateRequest.role
@@ -296,10 +305,14 @@ class UserService(
             updateRequest.courseIdList
                 .map { UserCourseEntity(CourseEntity(it), targetUser) }
         )
-        targetUser.userCampusList.addAll(
-            updateRequest.campusIdList
-                .map { UserCampusEntity(CampusEntity(it), targetUser) }
-        )
+
+        if(updateRequest.role.equals(RoleType.OPERATION_MANAGER) || updateRequest.role.equals(RoleType.CAMPUS_LEADER) || updateRequest.role.equals(RoleType.SUPER_ADMIN)) {
+            targetUser.userCampusList.addAll(
+                updateRequest.campusIdList
+                    .map { UserCampusEntity(CampusEntity(it), targetUser) }
+            )
+        }
+
     }
 
 

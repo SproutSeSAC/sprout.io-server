@@ -6,6 +6,7 @@ import io.sprout.api.post.entities.PostType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
@@ -43,4 +44,12 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
 
     
     fun findByLinkedIdAndPostType(linkedId: Long, postType: PostType): PostEntity?
+
+    @Modifying
+    @Query("""
+        UPDATE PostEntity po
+        SET po.clientId = :nextId
+        WHERE  po.clientId = :prevId
+    """)
+    fun updateClientId(prevId: Long, nextId: Long)
 }

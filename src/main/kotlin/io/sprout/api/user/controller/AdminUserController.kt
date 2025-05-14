@@ -54,12 +54,6 @@ class AdminUserController(
         return ResponseEntity.ok(result)
     }
 
-//    @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")
-//    @GetMapping("/{userId}/post")
-//    fun getPostList(@PathVariable userId: Long): ResponseEntity<List<PostAndNickNameDto>> {
-//        return ResponseEntity.ok(userService.getPostListByUserId(userId))
-//    }
-
     @Operation(summary = "작성 댓글 조회", description = "작성한 댓글들의 ID와 게시글 ID를 반환합니다.")
     @GetMapping("/{userId}/comments")
     fun getCommentList(@PathVariable userId: Long): ResponseEntity<List<PostCommentDto>> {
