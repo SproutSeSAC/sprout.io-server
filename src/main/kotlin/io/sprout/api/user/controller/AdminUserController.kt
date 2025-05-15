@@ -2,6 +2,7 @@ package io.sprout.api.user.controller
 
 import io.sprout.api.common.model.entities.PageResponse
 import io.sprout.api.mypage.dto.*
+import io.sprout.api.post.entities.PostType
 import io.sprout.api.user.model.dto.*
 import io.sprout.api.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
@@ -54,10 +55,23 @@ class AdminUserController(
         return ResponseEntity.ok(result)
     }
 
+    @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")
+    @GetMapping("/{userId}/post")
+    fun getPostList(
+        @PathVariable userId: Long,
+        @PageableDefault(size = 10) pageable: Pageable,
+        @RequestParam(required = false) postTypes: List<PostType>?
+    ): ResponseEntity<Page<PostAndNickNameDto>> {
+        return ResponseEntity.ok(userService.getPostListByUserId(userId, pageable, postTypes))
+    }
+
     @Operation(summary = "작성 댓글 조회", description = "작성한 댓글들의 ID와 게시글 ID를 반환합니다.")
     @GetMapping("/{userId}/comments")
-    fun getCommentList(@PathVariable userId: Long): ResponseEntity<List<PostCommentDto>> {
-        return ResponseEntity.ok(userService.getPostCommentListByUserId(userId))
+    fun getCommentList(@PathVariable userId: Long,
+       @PageableDefault(size = 10) pageable: Pageable,
+       @RequestParam(required = false) postTypes: List<PostType>?
+    ): ResponseEntity<Page<PostCommentDto>> {
+        return ResponseEntity.ok(userService.getPostCommentListByUserId(userId, pageable, postTypes))
     }
 
     @Operation(summary = "찜한 글 조회", description = "찜한 글들의 ID를 반환합니다.")

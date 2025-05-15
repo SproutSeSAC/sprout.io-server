@@ -14,6 +14,7 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     fun findByPostType(postType: PostType): List<PostEntity>
     fun findAllByClientId(clientId: Long): List<PostEntity>
     fun findAllByClientId(clientId: Long, pageable: Pageable): Page<PostEntity>
+    fun findAllByClientIdAndPostTypeIn(clientId: Long, postType: List<PostType>, pageable: Pageable): Page<PostEntity>
 
     @Query("""
         SELECT p.linkedId
