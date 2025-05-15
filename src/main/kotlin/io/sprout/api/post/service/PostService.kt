@@ -326,6 +326,11 @@ class PostService(
         return postRepository.findAllByClientId(clientId, pageable);
     }
 
+    @Transactional()
+    fun getPostsByClientIdAndPageAndPostTypeIn(clientId: Long, postType: List<PostType>, pageable: Pageable): Page<PostEntity> {
+        return postRepository.findAllByClientIdAndPostTypeIn(clientId, postType, pageable);
+    }
+
     /**
      * 참여 글 목록 읽기 (ID만)
      */

@@ -105,8 +105,14 @@ class MypageService(
     // region [게시글 관련 API]
 
     // 작성 글 목록 조회
-    fun getPostListByUserId(clientId: Long, pageable: Pageable): Page<PostAndNickNameDto> {
-        val posts: Page<PostEntity> = postService.getPostsByClientIdAndPage(clientId, pageable);
+    fun getPostListByUserId(clientId: Long, pageable: Pageable, postTypes: List<PostType>?): Page<PostAndNickNameDto> {
+        val posts: Page<PostEntity>
+
+        if (postTypes.isNullOrEmpty()) {
+            posts = postService.getPostsByClientIdAndPage(clientId, pageable)
+        } else {
+            posts = postService.getPostsByClientIdAndPageAndPostTypeIn(clientId, postTypes, pageable)
+        }
 
         return posts.map { post ->
             var projectType = ""
@@ -162,7 +168,11 @@ class MypageService(
     }
 
     // 댓글 조회
-    fun getPostCommentListByUserId(clientId: Long): List<PostCommentDto> {
+    fun getPostCommentListByUserId(
+        clientId: Long,
+        pageable: Pageable,
+        postTypes: List<PostType>?
+    ): Page<PostCommentDto> {
         val storeReviews = storeReviewRepository.findByUserId(clientId)
         val comments = commentService.getCommentsByClientId(clientId)
 
@@ -181,7 +191,6 @@ class MypageService(
         val postComments = comments.map {
             var projectType = ""
             val post = postService.getPostById(it.postId)
-
             val mPostType = when (post) {
                 is NoticeDetailResponseDto -> PostType.NOTICE
                 is ProjectDetailResponseDto -> {
@@ -203,8 +212,24 @@ class MypageService(
             )
         }
 
-        return storeReviewComments + postComments
+        val combined = (storeReviewComments + postComments)
+
+        val filtered = if (postTypes.isNullOrEmpty()) {
+            combined
+        } else {
+            val stringPostTypes = postTypes.map { it.toString() }
+            combined.filter { stringPostTypes.contains(it.postType) }
+        }
+
+        val sorted = filtered.sortedByDescending { it.createdAt }
+
+        val start = pageable.offset.toInt()
+        val end = (start + pageable.pageSize).coerceAtMost(sorted.size)
+        val pageContent = if (start >= end) emptyList() else sorted.subList(start, end)
+
+        return PageImpl(pageContent, pageable, sorted.size.toLong())
     }
+
 
     // 찜한 글 목록 조회
     fun getPostScrapListByUserId(clientId: Long, pageable: Pageable?): Page<GetPostResponseDto> {
@@ -219,7 +244,7 @@ class MypageService(
             else {
                 val user = userRepository.findUserById(userId);
 
-                if (user != null && post != null) {
+                if (user != null) {
                     val writer = writerDto(
                         name = user.name ?: "",
                         nickname = user.nickname,

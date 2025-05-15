@@ -4,6 +4,7 @@ import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.service.MypageService
 import io.sprout.api.post.entities.PostEntity
+import io.sprout.api.post.entities.PostType
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -48,19 +49,23 @@ class MypageController(
     @Operation(summary = "작성 글 조회", description = "작성한 글들의 ID를 반환합니다.")
     @GetMapping("/getPost")
     fun getPostList(
-        @PageableDefault(size = 10) pageable: Pageable
+        @PageableDefault(size = 10) pageable: Pageable,
+        @RequestParam(required = false) postTypes: List<PostType>?
     ): ResponseEntity<Page<PostAndNickNameDto>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
-        return ResponseEntity.ok(mypageService.getPostListByUserId(userId, pageable))
+        return ResponseEntity.ok(mypageService.getPostListByUserId(userId, pageable, postTypes))
     }
 
     @Operation(summary = "작성 댓글 조회", description = "작성한 댓글들의 ID와 게시글 ID를 반환합니다.")
     @GetMapping("/getComments")
-    fun getCommentList(): ResponseEntity<List<PostCommentDto>> {
+    fun getCommentList(
+        @PageableDefault(size = 10) pageable: Pageable,
+        @RequestParam(required = false) postTypes: List<PostType>?
+    ): ResponseEntity<Page<PostCommentDto>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
-        return ResponseEntity.ok(mypageService.getPostCommentListByUserId(userId))
+        return ResponseEntity.ok(mypageService.getPostCommentListByUserId(userId, pageable, postTypes))
     }
 
     @Operation(summary = "찜한 글 조회", description = "찜한 글들의 ID를 반환합니다.")

@@ -15,6 +15,7 @@ import io.sprout.api.course.infra.CourseRepository
 import io.sprout.api.course.model.entities.CourseEntity
 import io.sprout.api.mypage.dto.*
 import io.sprout.api.mypage.service.MypageService
+import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.specification.repository.DomainRepository
 import io.sprout.api.specification.repository.JobRepository
@@ -426,22 +427,22 @@ class UserService(
             ?.let { UserMemoResponseDto(it) }
     }
 
-//    fun getPostListByUserId(userId: Long): List<PostAndNickNameDto>? {
-//        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
-//        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
-//
-//        AuthorizationUtils.validateUserIsManagerRole(manager)
-//
-//        return mypageService.getPostListByUserId(userId)
-//    }
-
-    fun getPostCommentListByUserId(userId: Long): List<PostCommentDto>? {
+    fun getPostListByUserId(clientId: Long, pageable: Pageable, postTypes: List<PostType>?): Page<PostAndNickNameDto>? {
         val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
         val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
 
         AuthorizationUtils.validateUserIsManagerRole(manager)
 
-        return mypageService.getPostCommentListByUserId(userId)
+        return mypageService.getPostListByUserId(clientId, pageable, postTypes);
+    }
+
+    fun getPostCommentListByUserId(clientId: Long, pageable: Pageable, postTypes: List<PostType>?): Page<PostCommentDto>? {
+        val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsManagerRole(manager)
+
+        return mypageService.getPostCommentListByUserId(clientId, pageable, postTypes)
     }
 
     fun getPostScrapListByUserId(userId: Long, pageable: Pageable): Page<GetPostResponseDto>? {
