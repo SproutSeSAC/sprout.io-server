@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class NotificationService(
@@ -17,6 +18,11 @@ class NotificationService(
         private val notificationLogRepository: NotificationLogRepository
 ) {
     private val MAX_NOTIFICATIONSCOUNT = 20 // 우선 20개
+
+    val userLocks = ConcurrentHashMap<Long, Any>()
+
+    fun getUserLock(userId: Long): Any =
+        userLocks.computeIfAbsent(userId) { Any() }
 
     @Transactional(readOnly = true)
     fun getNotificationsByUserId(userId: Long): List<NotificationRequestDto> {
@@ -40,9 +46,10 @@ class NotificationService(
 
     @Transactional
     fun saveNotification(dto: NotificationDto): NotificationEntity {
-        val createAt = LocalDateTime.now()
+        synchronized(getUserLock(dto.userId)) {
+            val createAt = LocalDateTime.now()
 
-        val notification = NotificationEntity(
+            val notification = NotificationEntity(
                 userId = dto.userId,
                 fromId = dto.fromId,
                 type = dto.type,
@@ -51,25 +58,26 @@ class NotificationService(
                 NotiType = dto.NotiType,
                 comment = dto.comment,
                 createdAt = createAt
-        )
+            )
 
-        val notification_log = NotificationLogEntity(
-            userId = notification.userId,
-            fromId = notification.fromId,
-            type = notification.type,
-            content = notification.content,
-            url = notification.url,
-            NotiType = notification.NotiType,
-            comment = notification.comment,
-            createdAt = notification.createdAt
-        )
+            val notification_log = NotificationLogEntity(
+                userId = notification.userId,
+                fromId = notification.fromId,
+                type = notification.type,
+                content = notification.content,
+                url = notification.url,
+                NotiType = notification.NotiType,
+                comment = notification.comment,
+                createdAt = notification.createdAt
+            )
 
-        val savedNotification = notificationRepository.save(notification)
-        notificationLogRepository.save(notification_log)
+            val savedNotification = notificationRepository.save(notification)
+            notificationLogRepository.save(notification_log)
 
-        maxNotifications(dto.userId)
+            maxNotifications(dto.userId)
 
-        return savedNotification
+            return savedNotification
+        }
     }
 
     @Transactional
@@ -110,13 +118,15 @@ class NotificationService(
 
     @Transactional
     fun deleteAllNotification(clientId: Long): Boolean {
-        return try {
-            val notifications = notificationRepository.findAllByUserId(clientId)
-            notificationRepository.deleteAll(notifications)
-            true
-        } catch (e: Exception) {
-            println("알림 삭제 오류 : ${e.message}")
-            false
+        synchronized(getUserLock(clientId)) {
+            return try {
+                val notifications = notificationRepository.findAllByUserId(clientId)
+                notificationRepository.deleteAll(notifications)
+                true
+            } catch (e: Exception) {
+                println("알림 삭제 오류 : ${e.message}")
+                false
+            }
         }
     }
 
