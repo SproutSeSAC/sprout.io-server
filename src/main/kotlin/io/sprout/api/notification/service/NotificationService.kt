@@ -84,12 +84,11 @@ class NotificationService(
     fun maxNotifications(userId: Long) {
         val notifications = notificationRepository.findAllByUserId(userId)
         if (notifications.size > MAX_NOTIFICATIONSCOUNT) {
-            val excessCount = notifications.size - MAX_NOTIFICATIONSCOUNT
-            val toDelete = notifications.sortedBy { it.id }.take(excessCount)
+            val idsToKeep = notifications.sortedByDescending { it.createdAt }
+                .take(MAX_NOTIFICATIONSCOUNT)
+                .map { it.id }
 
-            toDelete.forEach { notification ->
-                notificationRepository.delete(notification)
-            }
+            notificationRepository.deleteByUserIdAndIdNotIn(userId, idsToKeep)
         }
     }
 
