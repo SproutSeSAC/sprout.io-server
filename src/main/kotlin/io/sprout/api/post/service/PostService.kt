@@ -9,6 +9,7 @@ import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
+import io.sprout.api.project.model.entities.PType
 import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.store.service.StoreService
@@ -329,6 +330,11 @@ class PostService(
     @Transactional()
     fun getPostsByClientIdAndPageAndPostTypeIn(clientId: Long, postType: List<PostType>, pageable: Pageable): Page<PostEntity> {
         return postRepository.findAllByClientIdAndPostTypeIn(clientId, postType, pageable);
+    }
+
+    @Transactional()
+    fun getPostsByClientIdAndPageAndPTypeAndPostTypeIn(clientId: Long, postType: List<PostType>, pTypes: List<PType>, pageable: Pageable): Page<PostEntity> {
+        return postRepository.findProjectPostsByPostType(clientId, postType, pTypes, pageable);
     }
 
     /**
