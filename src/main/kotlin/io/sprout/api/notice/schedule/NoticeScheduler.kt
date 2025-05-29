@@ -19,8 +19,8 @@ class NoticeScheduler(
     private val log = LoggerFactory.getLogger(NoticeScheduler::class.java)
 
     /**
-     * 특강 세션이 닫힌다면
-     * 참가자는 상태를 COMPLETE, 대기자는 REJECT로 상태를 바꾸어준다.
+     * 특강 세션 시간이 만료되면
+     * 대기자는 REJECT로 상태를 바꾸어준다.
      *
      */
     @Scheduled(cron = "0 0,30 * * * *")
@@ -28,10 +28,9 @@ class NoticeScheduler(
     fun completeNoticeParticipant() {
         val now = LocalDateTime.now()
 
-        noticeParticipantRepository.updateParticipantToCompleteAfter(now)
         noticeParticipantRepository.updateWaitToRejectAfter(now)
 
-        log.info("complete participants status update")
+        log.info("participants status update complete")
     }
 
 

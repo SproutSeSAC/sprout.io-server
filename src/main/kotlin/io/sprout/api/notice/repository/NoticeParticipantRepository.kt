@@ -35,24 +35,6 @@ interface NoticeParticipantRepository : JpaRepository<NoticeParticipantEntity, L
         pageable: PageRequest
     ): Page<NoticeParticipantEntity>
 
-//    @Query("""
-//        SELECT participant
-//        FROM NoticeParticipantEntity participant
-//        LEFT JOIN FETCH participant.noticeSession session
-//        WHERE session.eventEndDateTime <= :now
-//        AND participant.status in ('P', )
-//    """)
-//    fun findByUserIdAndTimeIsBefore(now: LocalDateTime): List<NoticeParticipantEntity>
-
-    @Modifying
-    @Query("""
-        UPDATE NoticeParticipantEntity participant
-        SET participant.status = 'COMPLETE'
-        WHERE participant.noticeSession.eventEndDateTime <= :now
-        AND participant.status = 'PARTICIPANT'
-    """)
-    fun updateParticipantToCompleteAfter(now: LocalDateTime)
-
     @Modifying
     @Query("""
         UPDATE NoticeParticipantEntity participant

@@ -29,7 +29,6 @@ class NoticeParticipantEntity (
 enum class ParticipantStatus{
     WAIT,
     PARTICIPANT,
-    REJECT,
-    COMPLETE
+    REJECT
 }
 
