@@ -79,6 +79,7 @@ class SseService (
     }
 
     // 세션 알림 전송
+//    @Scheduled(cron = "0 * * * * *")
     @Scheduled(cron = "0 0,30 * * * *")
     @Transactional
     fun sendSessionNotifications() {
@@ -91,8 +92,8 @@ class SseService (
                 val dtodata = NotificationDto(
                     fromId = session.notice.user.id,
                     userId = participant.user.id,
-                    type = 8,
-                    url = "",
+                    type = 9,
+                    url = session.notice.meetingPlace.toString(),
                     content = session.notice.title,
                     NotiType = 3,
                     comment = ""
@@ -102,14 +103,14 @@ class SseService (
         }
 
         val past30 = now.minusMinutes(31)
-        val pastSessions = noticeSessionRepository.findSessionsBefore(past30)
+        val pastSessions = noticeSessionRepository.findSessionsBefore(now, past30)
         pastSessions.forEach { session ->
             session.noticeParticipants.forEach { participant ->
                 val dtodata = NotificationDto(
                     fromId = session.notice.user.id,
                     userId = participant.user.id,
-                    type = 9,
-                    url = "",
+                    type = 10,
+                    url = session.notice.satisfactionSurvey.toString(),
                     content = session.notice.title,
                     NotiType = 3,
                     comment = ""
