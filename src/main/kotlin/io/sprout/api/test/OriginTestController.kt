@@ -99,6 +99,41 @@ class OriginTestController(
         )
     }
 
+    @GetMapping("/getAdminCookie3")
+    @Operation(summary = "Application 계정 단편 로그인2")
+    fun getTokens3(response: HttpServletResponse): Map<String, String?> {
+        val user = userService.checkAndJoinUser("test@naver.com", response)
+
+        val accessToken = user.refreshToken?.let { refreshToken ->
+            jwtToken.createAccessFromRefreshToken(refreshToken)
+        }
+
+        user.refreshToken?.let { refreshToken ->
+            val refreshCookie = Cookie("refresh_token", refreshToken).apply {
+                path = "/"
+                isHttpOnly = false
+                secure = false
+                setAttribute("SameSite", "None")
+            }
+            response.addCookie(refreshCookie)
+        }
+
+        accessToken?.let { token ->
+            val accessCookie = Cookie("access_token", token).apply {
+                path = "/"
+                isHttpOnly = false
+                secure = false
+                setAttribute("SameSite", "None")
+            }
+            response.addCookie(accessCookie)
+        }
+
+        return mapOf(
+            "refresh_token" to user.refreshToken,
+            "access_token" to accessToken
+        )
+    }
+
     @GetMapping("/getUserCookie")
     @Operation(summary = "Application 계정 단편 로그인")
     fun getUserTokens(

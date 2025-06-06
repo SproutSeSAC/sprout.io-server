@@ -206,6 +206,23 @@ class NoticeServiceImpl(
         AuthorizationUtils.validateUserIsManagerRole(user)
         AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeEntity.targetCourses.map { it.course.id }.toSet())
 
+        noticeEntity.noticeSessions.forEach { item ->
+            item.noticeParticipants.forEach { pa ->
+                if (pa.status === ParticipantStatus.PARTICIPANT) {
+                    val dtodata = NotificationDto(
+                        fromId = user.id,
+                        userId = pa.user.id,
+                        type = 13,
+                        url = "",
+                        content = noticeEntity.title,
+                        NotiType = 3,
+                        comment = ""
+                    )
+                    sseService.publish(dtodata)
+                }
+            }
+        }
+
         noticeCommentRepository.deleteByNoticeId(noticeId)
         scrapedNoticeRepository.deleteByNoticeId(noticeId)
         noticeRepository.deleteById(noticeId)
