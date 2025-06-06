@@ -31,7 +31,7 @@ class StoreProjectionDto{
         var storeMenuList: MutableList<StoreMenuDto> = mutableListOf()
         val isLessThan10000Menu: Boolean
             get() {
-                return storeMenuList.any { it.price!! <= 10000 } ?: false
+                return storeMenuList.any { it.price!! <= 10000 }
             }
     }
 

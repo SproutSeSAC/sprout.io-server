@@ -51,14 +51,14 @@ class PostService(
 
             postRepository.save(post)
 
-            notice.targetCourses.forEach { notice ->
-                userCourseRepository.findAllByCourseId(notice.course.id).forEach { targetUser ->
+            notice.targetCourses.forEach { noticeItem ->
+                userCourseRepository.findAllByCourseId(noticeItem.course.id).forEach { targetUser ->
                     val dtodata = NotificationDto(
                         fromId = clientId,
                         userId = targetUser.id,
                         type = 8,
                         url = post.id.toString(),
-                        content = notice.notice.title,
+                        content = noticeItem.notice.title,
                         NotiType = 3,
                         comment = "",
                     )
@@ -149,7 +149,6 @@ class PostService(
                 val storeId = post.linkedId
                 storeService.getStoreDetail(storeId)
             }
-            else -> throw EntityNotFoundException("존재하지 않는 형식입니다.")
         }
     }
 
@@ -186,29 +185,29 @@ class PostService(
         return posts.map { post ->
             when (post.postType) {
                 PostType.NOTICE -> {
-                    val noticeId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+                    val noticeId = post.linkedId
                     val notice = noticeService.getNoticeById(noticeId)
                     if (compact) {
                         mapOf(
                                 "id" to post.id,
                                 "noticeid" to post.linkedId,
-                                "title" to (notice.title ?: "No title"),
-                                "content" to (notice.content ?: "No content")
+                                "title" to (notice.title),
+                                "content" to (notice.content)
                         )
                     } else {
                         notice
                     }
                 }
                 PostType.PROJECT -> {
-                    val projectId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+                    val projectId = post.linkedId
                     val project = projectService.findProjectDetailById(projectId)
                             ?: throw EntityNotFoundException("프로젝트를 찾을 수 없습니다.")
                     if (compact) {
                         mapOf(
                                 "id" to post.id,
                                 "projectid" to post.linkedId,
-                                "title" to (project.title ?: "No title"),
-                                "content" to (project.writerNickName ?: "No NickName")
+                                "title" to (project.title),
+                                "content" to (project.writerNickName)
                         )
                     } else {
                         project
@@ -234,7 +233,7 @@ class PostService(
         val post = postRepository.findById(postId)
                 .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
 
-        val linkedId = post.linkedId ?: throw IllegalArgumentException("테이블 매핑 에러")
+        val linkedId = post.linkedId
 
         return try {
             when (post.postType) {
@@ -287,7 +286,7 @@ class PostService(
                 PostType.PROJECT -> projectService.deleteProject(post.linkedId)
                 PostType.NOTICE -> noticeService.deleteNotice(post.linkedId)
                 PostType.MEAL -> mealPostService.deleteMealPost(post.linkedId)
-                else -> null
+                else -> { }
             }
 
             scrapService.deleteAllScrapsWithPostId(postId)
@@ -308,7 +307,7 @@ class PostService(
         val post = postRepository.findById(postId)
                 .orElseThrow { EntityNotFoundException("존재하지 않는 게시글 ID: $postId") }
 
-        return post.linkedId ?: throw IllegalArgumentException("테이블 매핑 오류")
+        return post.linkedId
     }
 
     @Transactional

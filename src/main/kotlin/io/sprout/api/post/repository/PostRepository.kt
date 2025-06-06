@@ -60,7 +60,7 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     WHERE po.linkedId = :projectId
     AND po.postType = :postType
 """)
-    fun findLinkedIdByDataId(@Param("projectId") projectId: Long, @Param("postType") postType: PostType): PostEntity
+    fun findLinkedIdByDataId(@Param("projectId") projectId: Long, @Param("postType") postType: PostType): PostEntity?
 
     
     fun findByLinkedIdAndPostType(linkedId: Long, postType: PostType): PostEntity?

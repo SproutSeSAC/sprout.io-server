@@ -130,9 +130,6 @@ class CommentService(
 
     @Transactional(readOnly = true)
     fun getCommentsByClientId(clientID: Long): List<CommentResponseDto> {
-        val user = userRepository.findUserById(clientID)
-                ?: throw EntityNotFoundException("유저를 찾을 수 없음")
-
         val comments = commentRepository.findAllByUser_Id(clientID)
 
         return comments.map { convertToResponseDto(it) }

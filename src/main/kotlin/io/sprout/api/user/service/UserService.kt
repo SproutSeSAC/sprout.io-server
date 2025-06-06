@@ -64,7 +64,6 @@ class UserService(
     fun checkAndJoinUser(email: String, response: HttpServletResponse): UserEntity {
         val user = userRepository.findByEmail(email)
         val savedUser: UserEntity
-        val nickname: String
 
         if (user == null) {
             // 새 유저 생성

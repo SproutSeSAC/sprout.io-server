@@ -455,7 +455,7 @@ class NoticeServiceImpl(
     override fun getNoticeTitleById(linkedId: Long): String {
         val notice = noticeRepository.findById(linkedId)
             .orElseThrow { EntityNotFoundException("공지사항을 찾을 수 없습니다. ID: $linkedId") }
-        return notice.title ?: "No Title"
+        return notice.title
     }
 
     private fun getUserId(): Long {

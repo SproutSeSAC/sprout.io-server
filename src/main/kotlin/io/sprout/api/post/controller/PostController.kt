@@ -89,9 +89,6 @@ class PostController(
             description = "입력된 DTO 타입에 따라 공지사항 또는 프로젝트 게시글을 수정합니다."
     )
     fun updatePost(@PathVariable postId: Long, @RequestBody requestMap: Map<String, Any>): ResponseEntity<Boolean> {
-        val clientID = securityManager.getAuthenticatedUserName()
-            ?: return ResponseEntity.status(401).build()
-
         return try {
             if (requestMap.containsKey("projectTitle")) {
                 val dto = objectMapper.convertValue(requestMap, ProjectRecruitmentRequestDto::class.java)
