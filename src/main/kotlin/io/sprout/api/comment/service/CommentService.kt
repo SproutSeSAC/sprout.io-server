@@ -49,7 +49,7 @@ class CommentService(
             type = isNotice.toLong(),
             url = "${post.id}",
             content = postService.getPostTitle(post.id),
-            NotiType = 5,
+            NotiType = isNotice.toLong(),
             comment = dto.content,
         )
 

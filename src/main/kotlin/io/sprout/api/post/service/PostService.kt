@@ -2,9 +2,11 @@ package io.sprout.api.post.service
 
 import io.sprout.api.mealPost.model.dto.MealPostDto
 import io.sprout.api.mealPost.service.MealPostService
+import io.sprout.api.mypage.repository.UserCourseRepository
 import io.sprout.api.notice.model.dto.NoticeRequestDto
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.notice.service.NoticeService
+import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
@@ -12,6 +14,7 @@ import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.model.entities.PType
 import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
+import io.sprout.api.sse.service.SseService
 import io.sprout.api.store.service.StoreService
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
@@ -26,7 +29,9 @@ class PostService(
     private val noticeService: NoticeService,
     private val mealPostService: MealPostService,
     private val scrapService: ScrapService,
-    private val storeService: StoreService
+    private val storeService: StoreService,
+    private val userCourseRepository: UserCourseRepository,
+    private val sseService: SseService
 ) {
 
     /**
@@ -37,16 +42,32 @@ class PostService(
     @Transactional
     fun createNoticePost(noticeRequestDto: NoticeRequestDto, clientId: Long): Pair<Long, Long> {
         return try {
-            val noticeId = noticeService.createNotice(noticeRequestDto)
+            val notice = noticeService.createNotice(noticeRequestDto)
             val post = PostEntity(
                 clientId = clientId,
                 postType = PostType.NOTICE,
-                linkedId = noticeId
+                linkedId = notice.id
             )
 
             postRepository.save(post)
 
-            Pair(noticeId, post.id)
+            notice.targetCourses.forEach { notice ->
+                userCourseRepository.findAllByCourseId(notice.course.id).forEach { targetUser ->
+                    val dtodata = NotificationDto(
+                        fromId = clientId,
+                        userId = targetUser.id,
+                        type = 8,
+                        url = post.id.toString(),
+                        content = notice.notice.title,
+                        NotiType = 3,
+                        comment = "",
+                    )
+
+                    sseService.publish(dtodata)
+                }
+            }
+
+            Pair(notice.id, post.id)
         } catch (e: Exception) {
             throw RuntimeException("공지사항 생성 중 오류 발생", e)
         }

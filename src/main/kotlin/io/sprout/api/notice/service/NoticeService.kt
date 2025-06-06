@@ -1,6 +1,7 @@
 package io.sprout.api.notice.service
 
 import io.sprout.api.notice.model.dto.*
+import io.sprout.api.notice.model.entities.NoticeEntity
 import io.sprout.api.notice.model.entities.NoticeStatus
 import io.sprout.api.notice.model.entities.ParticipantStatus
 import org.springframework.data.domain.Page
@@ -9,7 +10,7 @@ import org.springframework.data.domain.Pageable
 
 
 interface NoticeService {
-    fun createNotice(noticeRequest: NoticeRequestDto): Long
+    fun createNotice(noticeRequest: NoticeRequestDto): NoticeEntity
     fun updateNotice(noticeId: Long, noticeRequest: NoticeRequestDto)
     fun getNoticeById(noticeId: Long): NoticeDetailResponseDto
     fun getNoticeComments(noticeId: Long, pageable: Pageable): NoticeCommentResponseDto

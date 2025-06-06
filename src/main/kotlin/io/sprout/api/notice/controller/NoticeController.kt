@@ -27,9 +27,9 @@ class NoticeController(
     @PostMapping
     @Operation(summary = "공지사항 등록", description = "공지사항을 등록합니다.")
     fun createNotice(@RequestBody @Valid noticeRequest: NoticeRequestDto): ResponseEntity<Map<String, Long>> {
-        val noticeId = noticeService.createNotice(noticeRequest)
+        val notice = noticeService.createNotice(noticeRequest)
 
-        return ResponseEntity.ok(mapOf("noticeId" to noticeId))
+        return ResponseEntity.ok(mapOf("noticeId" to notice.id))
     }
 
     /**

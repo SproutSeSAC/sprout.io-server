@@ -3,6 +3,7 @@ package io.sprout.api.notice.service
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
+import io.sprout.api.mypage.repository.UserCourseRepository
 import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.notice.repository.*
@@ -48,7 +49,7 @@ class NoticeServiceImpl(
      * @param noticeRequest 공지사항 생성 파라미터
      * @return noticeId
      */
-    override fun createNotice(noticeRequest: NoticeRequestDto): Long {
+    override fun createNotice(noticeRequest: NoticeRequestDto): NoticeEntity {
         val user = getUser()
         AuthorizationUtils.validateUserIsManagerRole(user)
         AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeRequest.targetCourseIdList)
@@ -60,7 +61,7 @@ class NoticeServiceImpl(
         }
         noticeRepository.save(noticeEntity)
 
-        return noticeEntity.id
+        return noticeEntity
     }
 
     /**
