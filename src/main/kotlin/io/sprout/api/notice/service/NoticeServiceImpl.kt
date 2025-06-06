@@ -9,12 +9,14 @@ import io.sprout.api.notice.repository.*
 import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
+import io.sprout.api.post.service.PostService
 import io.sprout.api.scrap.repository.ScrapRepository
 import io.sprout.api.sse.service.SseService
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import io.sprout.api.utils.AuthorizationUtils
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -308,13 +310,14 @@ class NoticeServiceImpl(
             throw CustomBadRequestException("참가 정원이 다 찼습니다.")
         }
 
+        val data = postRepository.findByLinkedIdAndPostType(noticeSession.notice.id, PostType.NOTICE) ?: throw IllegalArgumentException("읽을 수 없음");
         val dtodata = NotificationDto(
             fromId = user.id,
             userId = participant.user.id,
             type = 6,
-            url = "",
+            url = data.id.toString(),
             content = noticeSession.notice.title,
-            NotiType = 2,
+            NotiType = 13,
             comment = "",
         )
 
@@ -349,7 +352,7 @@ class NoticeServiceImpl(
             type = 7,
             url = "",
             content = noticeSession.notice.title,
-            NotiType = 2,
+            NotiType = 13,
             comment = "",
         )
 
@@ -384,7 +387,7 @@ class NoticeServiceImpl(
             type = 5,
             url = "",
             content = participant.noticeSession.notice.title,
-            NotiType = 2,
+            NotiType = 13,
             comment = "",
         )
 
