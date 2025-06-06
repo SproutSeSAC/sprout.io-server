@@ -136,6 +136,7 @@ class UserService(
         return userEntity.refreshToken!!
     }
 
+
     /**
      * user 삭제 처리
      * - user pk 를 유령회원 pk로 바꾸기
@@ -156,7 +157,9 @@ class UserService(
             "notice_participant", "project_post_participant",
             "scraped_notice", "scraped_project", "scraped_store", "scrap",
             "notification",
-            "user_memo"
+            "user_memo",
+            "meal_post", "meal_post_participation",
+            "google_token", "google_calendar"
         )
 
         jdbcTemplate.queryForList(findTablesSql).forEach { row ->

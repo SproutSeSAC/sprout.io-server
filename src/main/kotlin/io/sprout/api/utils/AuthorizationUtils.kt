@@ -44,6 +44,11 @@ object AuthorizationUtils {
      * targetCourse 모두 가지고 있는지
      */
     fun validateUserCourseContainAllTargetCourses(user: UserEntity, targetCourses: Set<Long>) {
+        // TODO CAMPUS LEADER 권한 임시용
+        if (user.role == RoleType.SUPER_ADMIN || user.role == RoleType.CAMPUS_LEADER) {
+            return
+        }
+
         val isUserCourseContainsAllTargetCourse = user.userCourseList
             .map { uc -> uc.course.id }
             .containsAll(targetCourses)
