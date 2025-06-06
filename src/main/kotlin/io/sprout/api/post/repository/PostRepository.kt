@@ -17,21 +17,17 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     fun findAllByClientId(clientId: Long, pageable: Pageable): Page<PostEntity>
     fun findAllByClientIdAndPostTypeIn(clientId: Long, postType: List<PostType>, pageable: Pageable): Page<PostEntity>
 
-    @Query(
-        """
-        SELECT p.* FROM post p
-            JOIN project pr ON p.linked_id = pr.id 
-        WHERE 
-            p.client_id = :clientId 
-            AND p.post_type IN (:postTypes)
-            AND pr.project_type IN (:projectTypes)
-        """,
-        nativeQuery = true
-    )
+    @Query("""
+    SELECT a FROM PostEntity a
+    JOIN ProjectEntity b ON a.linkedId = b.id
+    WHERE a.clientId = :clientId
+      AND a.postType IN :postTypes
+      AND b.pType IN :projectTypes
+""")
     fun findProjectPostsByPostType(
         @Param("clientId") clientId: Long,
-        @Param("postType") postTypes: List<PostType>,
-        @Param("projectType") projectTypes: List<PType>,
+        @Param("postTypes") postTypes: List<PostType>,
+        @Param("projectTypes") projectTypes: List<PType>,
         pageable: Pageable
     ): Page<PostEntity>
 
