@@ -259,6 +259,7 @@ class MypageService(
         val scrapPosts = scraps.mapNotNull {
             val post = postService.getPostById(it.postId)
             val userId = postService.getPostWriterById(it.postId)
+
             if (userId == null) {
                 null
             }
@@ -273,6 +274,7 @@ class MypageService(
                     )
 
                     var projectType = ""
+
                     val postData = when (post) {
                         is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
                         is ProjectDetailResponseDto -> {
@@ -305,9 +307,9 @@ class MypageService(
             return PageImpl(scrapPosts, Pageable.unpaged(), scrapPosts.size.toLong())
         }
 
-        val start = pageable.offset.toInt()
-        val end = minOf(start + pageable.pageSize, scrapPosts.size)
-        val pagedList = scrapPosts.subList(start, end)
+        val start = pageable.offset.toInt().coerceIn(0, scrapPosts.size)
+        val end = (start + pageable.pageSize).coerceAtMost(scrapPosts.size)
+        val pagedList = if (start <= end) scrapPosts.subList(start, end) else emptyList<GetPostResponseDto>()
 
         return PageImpl(pagedList, pageable, scrapPosts.size.toLong())
     }
