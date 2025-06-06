@@ -3,18 +3,21 @@ package io.sprout.api.notice.service
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
+import io.sprout.api.mypage.repository.UserCourseRepository
 import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.*
 import io.sprout.api.notice.repository.*
 import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
+import io.sprout.api.post.service.PostService
 import io.sprout.api.scrap.repository.ScrapRepository
 import io.sprout.api.sse.service.SseService
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import io.sprout.api.utils.AuthorizationUtils
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -46,7 +49,7 @@ class NoticeServiceImpl(
      * @param noticeRequest 공지사항 생성 파라미터
      * @return noticeId
      */
-    override fun createNotice(noticeRequest: NoticeRequestDto): Long {
+    override fun createNotice(noticeRequest: NoticeRequestDto): NoticeEntity {
         val user = getUser()
         AuthorizationUtils.validateUserIsManagerRole(user)
         AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeRequest.targetCourseIdList)
@@ -58,7 +61,7 @@ class NoticeServiceImpl(
         }
         noticeRepository.save(noticeEntity)
 
-        return noticeEntity.id
+        return noticeEntity
     }
 
     /**
@@ -206,6 +209,23 @@ class NoticeServiceImpl(
         AuthorizationUtils.validateUserIsManagerRole(user)
         AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeEntity.targetCourses.map { it.course.id }.toSet())
 
+        noticeEntity.noticeSessions.forEach { item ->
+            item.noticeParticipants.forEach { pa ->
+                if (pa.status === ParticipantStatus.PARTICIPANT) {
+                    val dtodata = NotificationDto(
+                        fromId = user.id,
+                        userId = pa.user.id,
+                        type = 13,
+                        url = "",
+                        content = noticeEntity.title,
+                        NotiType = 3,
+                        comment = ""
+                    )
+                    sseService.publish(dtodata)
+                }
+            }
+        }
+
         noticeCommentRepository.deleteByNoticeId(noticeId)
         scrapedNoticeRepository.deleteByNoticeId(noticeId)
         noticeRepository.deleteById(noticeId)
@@ -291,13 +311,14 @@ class NoticeServiceImpl(
             throw CustomBadRequestException("참가 정원이 다 찼습니다.")
         }
 
+        val data = postRepository.findByLinkedIdAndPostType(noticeSession.notice.id, PostType.NOTICE) ?: throw IllegalArgumentException("읽을 수 없음");
         val dtodata = NotificationDto(
             fromId = user.id,
             userId = participant.user.id,
             type = 6,
-            url = "",
+            url = data.id.toString(),
             content = noticeSession.notice.title,
-            NotiType = 2,
+            NotiType = 13,
             comment = "",
         )
 
@@ -332,7 +353,7 @@ class NoticeServiceImpl(
             type = 7,
             url = "",
             content = noticeSession.notice.title,
-            NotiType = 2,
+            NotiType = 13,
             comment = "",
         )
 
@@ -367,7 +388,7 @@ class NoticeServiceImpl(
             type = 5,
             url = "",
             content = participant.noticeSession.notice.title,
-            NotiType = 2,
+            NotiType = 13,
             comment = "",
         )
 
@@ -434,7 +455,7 @@ class NoticeServiceImpl(
     override fun getNoticeTitleById(linkedId: Long): String {
         val notice = noticeRepository.findById(linkedId)
             .orElseThrow { EntityNotFoundException("공지사항을 찾을 수 없습니다. ID: $linkedId") }
-        return notice.title ?: "No Title"
+        return notice.title
     }
 
     private fun getUserId(): Long {

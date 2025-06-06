@@ -23,7 +23,7 @@ class ProjectCustomRepositoryImpl(
         filterRequest: ProjectFilterRequest,
         userId: Long
     ): Pair<List<ProjectResponseDto>, Long> {
-        val builder = createFilterBuilder(filterRequest, userId)
+        val builder = createFilterBuilder(filterRequest)
 
         // 스크랩 여부에 따라 조인
         val totalCount = fetchTotalCount(builder, userId, filterRequest)
@@ -144,8 +144,7 @@ class ProjectCustomRepositoryImpl(
     }
 
     private fun createFilterBuilder(
-        filterRequest: ProjectFilterRequest,
-        userId: Long
+        filterRequest: ProjectFilterRequest
     ): BooleanBuilder {
         val builder = BooleanBuilder()
         val projectEntity = QProjectEntity.projectEntity

@@ -3,6 +3,7 @@ package io.sprout.api.post.repository
 import io.sprout.api.notice.model.entities.NoticeParticipantEntity
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
+import io.sprout.api.project.model.entities.PType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -15,6 +16,24 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     fun findAllByClientId(clientId: Long): List<PostEntity>
     fun findAllByClientId(clientId: Long, pageable: Pageable): Page<PostEntity>
     fun findAllByClientIdAndPostTypeIn(clientId: Long, postType: List<PostType>, pageable: Pageable): Page<PostEntity>
+
+    @Query(
+        """
+        SELECT p.* FROM post p
+            JOIN project pr ON p.linked_id = pr.id 
+        WHERE 
+            p.client_id = :clientId 
+            AND p.post_type IN (:postTypes)
+            AND pr.project_type IN (:projectTypes)
+        """,
+        nativeQuery = true
+    )
+    fun findProjectPostsByPostType(
+        @Param("clientId") clientId: Long,
+        @Param("postType") postTypes: List<PostType>,
+        @Param("projectType") projectTypes: List<PType>,
+        pageable: Pageable
+    ): Page<PostEntity>
 
     @Query("""
         SELECT p.linkedId
@@ -41,7 +60,7 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     WHERE po.linkedId = :projectId
     AND po.postType = :postType
 """)
-    fun findLinkedIdByDataId(@Param("projectId") projectId: Long, @Param("postType") postType: PostType): PostEntity
+    fun findLinkedIdByDataId(@Param("projectId") projectId: Long, @Param("postType") postType: PostType): PostEntity?
 
     
     fun findByLinkedIdAndPostType(linkedId: Long, postType: PostType): PostEntity?

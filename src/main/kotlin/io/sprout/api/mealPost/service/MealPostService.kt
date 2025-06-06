@@ -168,18 +168,24 @@ class MealPostService(
         try {
             mealPostRepository.save(mealPost)
 
-            val dtodata = NotificationDto(
-                fromId = user.id,
-                userId = mealPost.mealPostParticipationList.first().user.id,
-                type = 0,
-                url = "",
-                content = mealPost.title,
-                NotiType = 0,
-                comment = "",
-            )
+            val masterNode = mealPost.mealPostParticipationList.find { x -> x.ordinalNumber == 1 }
 
-            sseService.publish(dtodata)
-            log.debug("JoinParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
+            if (masterNode !== null) {
+                val dtodata = NotificationDto(
+                    fromId = user.id,
+                    userId = masterNode.user.id,
+                    type = 0,
+                    url = "",
+                    content = mealPost.title,
+                    NotiType = 0,
+                    comment = "",
+                )
+
+                sseService.publish(dtodata)
+                log.debug("JoinParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
+            } else {
+                throw CustomSystemException("No have master in room...")
+            }
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
             throw CustomDataIntegrityViolationException("User data integrity violation: ${e.message}")
@@ -205,18 +211,24 @@ class MealPostService(
         try {
             mealPostRepository.save(mealPost)
 
-            val dtodata = NotificationDto(
-                fromId = user.id,
-                userId = mealPost.mealPostParticipationList.first().user.id,
-                type = 1,
-                url = "",
-                content = mealPost.title,
-                NotiType = 0,
-                comment = "",
-            )
+            val masterNode = mealPost.mealPostParticipationList.find { x -> x.ordinalNumber == 1 }
 
-            sseService.publish(dtodata)
-            log.debug("LeaveParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
+            if (masterNode !== null) {
+                val dtodata = NotificationDto(
+                    fromId = user.id,
+                    userId = masterNode.user.id,
+                    type = 1,
+                    url = "",
+                    content = mealPost.title,
+                    NotiType = 0,
+                    comment = "",
+                )
+
+                sseService.publish(dtodata)
+                log.debug("LeaveParty, mealPostId is: ${mealPost.id}, userID is ${user.id}")
+            } else {
+                throw CustomSystemException("No have master in room...")
+            }
         } catch (e: DataIntegrityViolationException) {
             // 데이터 무결성 예외 처리
             throw CustomDataIntegrityViolationException("User data integrity violation: ${e.message}")

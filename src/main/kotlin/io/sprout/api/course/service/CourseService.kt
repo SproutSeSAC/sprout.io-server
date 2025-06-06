@@ -34,7 +34,7 @@ class CourseService(
                 title = course.title,
                 startDate = course.startDate,
                 endDate = course.endDate,
-                campusName = course.campus!!.name
+                campusName = course.campus.name
             )
         }
 

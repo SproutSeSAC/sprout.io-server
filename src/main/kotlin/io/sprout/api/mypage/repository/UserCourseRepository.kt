@@ -7,4 +7,5 @@ import java.util.Optional
 interface UserCourseRepository : JpaRepository<UserCourseEntity, Long> {
     fun findByUserId(userId: Long): List<UserCourseEntity>
     fun deleteByCourseIdAndUserId(courseId: Long, id: Long)
+    fun findAllByCourseId(courseId: Long): List<UserCourseEntity>
 }

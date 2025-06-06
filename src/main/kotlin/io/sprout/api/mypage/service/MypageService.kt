@@ -14,6 +14,7 @@ import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.service.PostService
 import io.sprout.api.project.model.dto.ProjectDetailResponseDto
 import io.sprout.api.project.model.dto.ProjectResponseDto
+import io.sprout.api.project.model.entities.PType
 import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.store.repository.StoreReviewRepository
@@ -105,13 +106,31 @@ class MypageService(
     // region [게시글 관련 API]
 
     // 작성 글 목록 조회
-    fun getPostListByUserId(clientId: Long, pageable: Pageable, postTypes: List<PostType>?): Page<PostAndNickNameDto> {
+    fun getPostListByUserId(clientId: Long, pageable: Pageable, postTypes: List<String>?): Page<PostAndNickNameDto> {
         val posts: Page<PostEntity>
 
         if (postTypes.isNullOrEmpty()) {
             posts = postService.getPostsByClientIdAndPage(clientId, pageable)
         } else {
-            posts = postService.getPostsByClientIdAndPageAndPostTypeIn(clientId, postTypes, pageable)
+            val filteredType: List<PostType> = postTypes.mapNotNull { item ->
+                when (item.uppercase()) {
+                    "NOTICE" -> PostType.NOTICE
+                    "PROJECT" -> PostType.PROJECT
+                    "STUDY" -> PostType.PROJECT
+                    "MEAL" -> PostType.MEAL
+                    else -> null
+                }
+            }
+
+            val projectType: List<PType> = postTypes.mapNotNull { item ->
+                when (item.uppercase()) {
+                    "PROJECT" -> PType.PROJECT
+                    "STUDY" -> PType.STUDY
+                    else -> null
+                }
+            }
+
+            posts = postService.getPostsByClientIdAndPageAndPTypeAndPostTypeIn(clientId, filteredType, projectType, pageable)
         }
 
         return posts.map { post ->
@@ -129,8 +148,10 @@ class MypageService(
                     val linkedId = post.linkedId
                     try {
                         val project = projectService.getProjectById(linkedId)
-                        projectType = project?.pType?.toString() ?: ""
-                        project?.title ?: "프로젝트를 찾을 수 없음!"
+                        if (project !== null) {
+                            projectType = project.pType.toString()
+                            project.title
+                        } else null
                     } catch (e: Exception) {
                         println("PROJECT ERROR: linkedId=$linkedId, message=${e.message}")
                         "프로젝트(스터디)를 찾을 수 없음."
@@ -238,6 +259,7 @@ class MypageService(
         val scrapPosts = scraps.mapNotNull {
             val post = postService.getPostById(it.postId)
             val userId = postService.getPostWriterById(it.postId)
+
             if (userId == null) {
                 null
             }
@@ -252,6 +274,7 @@ class MypageService(
                     )
 
                     var projectType = ""
+
                     val postData = when (post) {
                         is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
                         is ProjectDetailResponseDto -> {
@@ -284,9 +307,9 @@ class MypageService(
             return PageImpl(scrapPosts, Pageable.unpaged(), scrapPosts.size.toLong())
         }
 
-        val start = pageable.offset.toInt()
-        val end = minOf(start + pageable.pageSize, scrapPosts.size)
-        val pagedList = scrapPosts.subList(start, end)
+        val start = pageable.offset.toInt().coerceIn(0, scrapPosts.size)
+        val end = (start + pageable.pageSize).coerceAtMost(scrapPosts.size)
+        val pagedList = if (start <= end) scrapPosts.subList(start, end) else emptyList<GetPostResponseDto>()
 
         return PageImpl(pagedList, pageable, scrapPosts.size.toLong())
     }

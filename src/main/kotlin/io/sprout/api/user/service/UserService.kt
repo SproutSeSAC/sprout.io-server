@@ -64,7 +64,6 @@ class UserService(
     fun checkAndJoinUser(email: String, response: HttpServletResponse): UserEntity {
         val user = userRepository.findByEmail(email)
         val savedUser: UserEntity
-        val nickname: String
 
         if (user == null) {
             // 새 유저 생성
@@ -430,7 +429,7 @@ class UserService(
             ?.let { UserMemoResponseDto(it) }
     }
 
-    fun getPostListByUserId(clientId: Long, pageable: Pageable, postTypes: List<PostType>?): Page<PostAndNickNameDto>? {
+    fun getPostListByUserId(clientId: Long, pageable: Pageable, postTypes: List<String>?): Page<PostAndNickNameDto>? {
         val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
         val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
 

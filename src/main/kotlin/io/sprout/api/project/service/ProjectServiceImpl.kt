@@ -113,13 +113,13 @@ class ProjectServiceImpl(
 
     @Transactional
     override fun findProjectDetailById(projectId: Long): ProjectDetailResponseDto? {
-        var x = projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!)
+        val x = projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!)
             ?: throw IllegalArgumentException("Project with ID $projectId not found")
 
         val Post = postRepository.findLinkedIdByDataId(projectId, PostType.PROJECT)
 
-        println("POST 찾음! : " + Post.id + " // " + Post.linkedId)
         if (Post != null) {
+            println("POST 찾음! : " + Post.id + " // " + Post.linkedId)
             x.isScraped = (scrapRepository.findByUserIdAndPostId(securityManager.getAuthenticatedUserId(), Post.id)) !== null
         }
 
@@ -229,7 +229,7 @@ class ProjectServiceImpl(
     override fun getProjectTitleById(linkedId: Long): String {
         val project = projectRepository.findById(linkedId)
                 .orElseThrow { EntityNotFoundException("프로젝트를 찾을 수 없습니다. ID: $linkedId") }
-        return project.title ?: "No Title"
+        return project.title
     }
 
     override fun getProjectById(linkedId: Long): ProjectEntity? {

@@ -19,7 +19,7 @@ interface NoticeSessionRepository : JpaRepository<NoticeSessionEntity, Long> {
     @Query("SELECT s FROM NoticeSessionEntity s WHERE s.eventStartDateTime BETWEEN :now AND :future30")
     fun findSessionsAfter(now: LocalDateTime, future30: LocalDateTime): List<NoticeSessionEntity>
 
-    @Query("SELECT s FROM NoticeSessionEntity s WHERE s.eventEndDateTime <= :past30")
-    fun findSessionsBefore(past30: LocalDateTime): List<NoticeSessionEntity>
+    @Query("SELECT s FROM NoticeSessionEntity s WHERE s.eventEndDateTime BETWEEN :past30 AND :now")
+    fun findSessionsBefore(now: LocalDateTime, past30: LocalDateTime): List<NoticeSessionEntity>
 
 }

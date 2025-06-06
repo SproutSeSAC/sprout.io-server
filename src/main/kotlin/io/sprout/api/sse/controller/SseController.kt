@@ -28,7 +28,6 @@ class SseController(
     @Operation(summary = "SSE 구독 시작", description = "clientID(Long 타입)를 기반으로 SSE 구독")
     fun subscribe(): ResponseEntity<SseEmitter> {
         val clientID = securityManager.getAuthenticatedUserId()
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
 
         val emitter = sseService.subscribe(clientID)
         return ResponseEntity.ok(emitter)
@@ -39,7 +38,6 @@ class SseController(
     @Operation(summary = "SSE 구독 종료", description = "clientID(Long 타입)를 기반으로 구독 해제")
     fun unsubscribe(): ResponseEntity<String> {
         val clientID = securityManager.getAuthenticatedUserId()
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.")
 
         sseService.unsubscribe(clientID)
         return ResponseEntity.ok("구독이 해제되었습니다.")
@@ -50,7 +48,6 @@ class SseController(
     @Operation(summary = "SSE 데이터 발행", description = "특정 clientID로 데이터 전송")
     fun publish(@PathVariable clientID: Long, @RequestBody message: String): ResponseEntity<String> {
         val publisherID = securityManager.getAuthenticatedUserId()
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.")
 
         val dtodata = NotificationDto(
             fromId = publisherID,

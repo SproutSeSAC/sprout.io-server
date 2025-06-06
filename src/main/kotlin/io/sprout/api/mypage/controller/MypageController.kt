@@ -50,7 +50,7 @@ class MypageController(
     @GetMapping("/getPost")
     fun getPostList(
         @PageableDefault(size = 10) pageable: Pageable,
-        @RequestParam(required = false) postTypes: List<PostType>?
+        @RequestParam(required = false) postTypes: List<String>?
     ): ResponseEntity<Page<PostAndNickNameDto>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)

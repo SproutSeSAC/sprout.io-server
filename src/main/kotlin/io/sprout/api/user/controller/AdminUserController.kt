@@ -60,7 +60,7 @@ class AdminUserController(
     fun getPostList(
         @PathVariable userId: Long,
         @PageableDefault(size = 10) pageable: Pageable,
-        @RequestParam(required = false) postTypes: List<PostType>?
+        @RequestParam(required = false) postTypes: List<String>?
     ): ResponseEntity<Page<PostAndNickNameDto>> {
         return ResponseEntity.ok(userService.getPostListByUserId(userId, pageable, postTypes))
     }
