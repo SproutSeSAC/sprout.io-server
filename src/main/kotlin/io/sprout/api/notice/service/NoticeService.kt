@@ -13,6 +13,7 @@ interface NoticeService {
     fun createNotice(noticeRequest: NoticeRequestDto): NoticeEntity
     fun updateNotice(noticeId: Long, noticeRequest: NoticeRequestDto)
     fun getNoticeById(noticeId: Long): NoticeDetailResponseDto
+    fun increaseViewCount(noticeId: Long): Boolean
     fun getNoticeComments(noticeId: Long, pageable: Pageable): NoticeCommentResponseDto
     fun createNoticeComment(commentRequest: NoticeCommentRequestDto, noticeId: Long)
     fun deleteNoticeComment(commentId: Long)

@@ -94,7 +94,6 @@ class NoticeServiceImpl(
 
         val findNotice = noticeRepository.findByIdAndCoursesAndUser(noticeId)
             ?: throw CustomBadRequestException("Not found notice")
-        findNotice.increaseViewCount()
 
         AuthorizationUtils.validateUserCourseContainAtLeastOneTargetCourses(user, findNotice.targetCourses.map { it.course.id }.toSet())
 
@@ -108,6 +107,15 @@ class NoticeServiceImpl(
         responseDto.isScraped = ((scrapRepository.findByUserIdAndPostId(user.id, post.id)) != null)
 
         return responseDto
+    }
+
+    @Transactional
+    override fun increaseViewCount(noticeId: Long): Boolean {
+        val findNotice = noticeRepository.findByIdAndCoursesAndUser(noticeId)
+                ?: throw CustomBadRequestException("Not found notice")
+        findNotice.increaseViewCount()
+
+        return true
     }
 
     /**

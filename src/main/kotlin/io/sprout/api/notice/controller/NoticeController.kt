@@ -72,6 +72,15 @@ class NoticeController(
         return ResponseEntity.ok(response)
     }
 
+    @Operation(
+        summary = "공지사항 조회수 증가 API", // 간단한 설명
+        description = "특정 프로젝트의 조회수를 증가시키는 API입니다. 1 증가시 true 반환", // 상세 설명
+    )
+    @PostMapping("/{noticeId}/view")
+    fun increaseViewCount(@PathVariable noticeId: Long): ResponseEntity<Boolean> {
+        val result = noticeService.increaseViewCount(noticeId)
+        return ResponseEntity.ok(result)
+    }
 
     /**
      * 공지사항 검색
