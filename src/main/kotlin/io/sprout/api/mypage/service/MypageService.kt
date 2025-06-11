@@ -112,25 +112,7 @@ class MypageService(
         if (postTypes.isNullOrEmpty()) {
             posts = postService.getPostsByClientIdAndPage(clientId, pageable)
         } else {
-            val filteredType: List<PostType> = postTypes.mapNotNull { item ->
-                when (item.uppercase()) {
-                    "NOTICE" -> PostType.NOTICE
-                    "PROJECT" -> PostType.PROJECT
-                    "STUDY" -> PostType.PROJECT
-                    "MEAL" -> PostType.MEAL
-                    else -> null
-                }
-            }
-
-            val projectType: List<PType> = postTypes.mapNotNull { item ->
-                when (item.uppercase()) {
-                    "PROJECT" -> PType.PROJECT
-                    "STUDY" -> PType.STUDY
-                    else -> null
-                }
-            }
-
-            posts = postService.getPostsByClientIdAndPageAndPTypeAndPostTypeIn(clientId, filteredType, projectType, pageable)
+            posts = postService.getPostsByClientIdAndPageAndPostTypeIn(clientId, postTypes.map { it -> it.uppercase() }, pageable)
         }
 
         return posts.map { post ->
@@ -192,7 +174,7 @@ class MypageService(
     fun getPostCommentListByUserId(
         clientId: Long,
         pageable: Pageable,
-        postTypes: List<PostType>?
+        postTypes: List<String>?
     ): Page<PostCommentDto> {
         val storeReviews = storeReviewRepository.findByUserId(clientId)
         val comments = commentService.getCommentsByClientId(clientId)
@@ -238,8 +220,13 @@ class MypageService(
         val filtered = if (postTypes.isNullOrEmpty()) {
             combined
         } else {
-            val stringPostTypes = postTypes.map { it.toString() }
-            combined.filter { stringPostTypes.contains(it.postType) }
+            combined.filter {
+                if (it.postType == "PROJECT" || it.postType == "STUDY") {
+                    postTypes.contains(it.pType)
+                } else{
+                    postTypes.contains(it.postType)
+                }
+            }
         }
 
         val sorted = filtered.sortedByDescending { it.createdAt }

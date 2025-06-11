@@ -18,6 +18,21 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     fun findAllByClientIdAndPostTypeIn(clientId: Long, postType: List<PostType>, pageable: Pageable): Page<PostEntity>
 
     @Query("""
+    SELECT a.*, b.pType FROM post a
+    LEFT JOIN project b ON a.linked_id = b.id AND a.postType = 'PROJECT'
+    WHERE a.client_id = :clientId
+      AND CASE 
+          WHEN a.postType = 'PROJECT' THEN b.pType
+          ELSE a.postType
+        END IN :postTypes
+    """, nativeQuery = true)
+    fun testSQL(
+        @Param("clientId") clientId: Long,
+        @Param("postTypes") postTypes: List<String>,
+        pageable: Pageable
+    ): Page<PostEntity>
+
+    @Query("""
     SELECT a FROM PostEntity a
     JOIN ProjectEntity b ON a.linkedId = b.id
     WHERE a.clientId = :clientId
@@ -32,7 +47,7 @@ interface PostRepository : JpaRepository<PostEntity, Long> {
     ): Page<PostEntity>
 
     @Query("""
-        SELECT p.linkedId
+        SELECT p.linkedId 
         FROM PostEntity p
         JOIN NoticeEntity n ON n.id = p.linkedId
         JOIN NoticeSessionEntity ns ON ns.notice.id = n.id

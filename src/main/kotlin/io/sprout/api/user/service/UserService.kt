@@ -438,7 +438,7 @@ class UserService(
         return mypageService.getPostListByUserId(clientId, pageable, postTypes);
     }
 
-    fun getPostCommentListByUserId(clientId: Long, pageable: Pageable, postTypes: List<PostType>?): Page<PostCommentDto>? {
+    fun getPostCommentListByUserId(clientId: Long, pageable: Pageable, postTypes: List<String>?): Page<PostCommentDto>? {
         val managerId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
         val manager = userRepository.findUserById(managerId) ?: throw CustomBadRequestException("Not found admin")
 

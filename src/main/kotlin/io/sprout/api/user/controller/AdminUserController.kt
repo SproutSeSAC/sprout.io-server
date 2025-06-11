@@ -69,7 +69,7 @@ class AdminUserController(
     @GetMapping("/{userId}/comments")
     fun getCommentList(@PathVariable userId: Long,
        @PageableDefault(size = 10) pageable: Pageable,
-       @RequestParam(required = false) postTypes: List<PostType>?
+       @RequestParam(required = false) postTypes: List<String>?
     ): ResponseEntity<Page<PostCommentDto>> {
         return ResponseEntity.ok(userService.getPostCommentListByUserId(userId, pageable, postTypes))
     }

@@ -348,8 +348,8 @@ class PostService(
     }
 
     @Transactional()
-    fun getPostsByClientIdAndPageAndPostTypeIn(clientId: Long, postType: List<PostType>, pageable: Pageable): Page<PostEntity> {
-        return postRepository.findAllByClientIdAndPostTypeIn(clientId, postType, pageable);
+    fun getPostsByClientIdAndPageAndPostTypeIn(clientId: Long, postType: List<String>, pageable: Pageable): Page<PostEntity> {
+        return postRepository.testSQL(clientId, postType, pageable);
     }
 
     @Transactional()

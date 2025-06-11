@@ -61,7 +61,7 @@ class MypageController(
     @GetMapping("/getComments")
     fun getCommentList(
         @PageableDefault(size = 10) pageable: Pageable,
-        @RequestParam(required = false) postTypes: List<PostType>?
+        @RequestParam(required = false) postTypes: List<String>?
     ): ResponseEntity<Page<PostCommentDto>> {
         val userId = securityManager.getAuthenticatedUserName()
                 ?: return ResponseEntity.status(401).body(null)
