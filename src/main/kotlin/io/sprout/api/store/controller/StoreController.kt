@@ -73,10 +73,10 @@ class StoreController(
     @GetMapping("/report")
     @Operation(summary = "맛집 제보 조회", description = "type = \'ADD\' | \'UPDATE\'")
     fun reportStore(
-        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
     ): ResponseEntity<Page<StoreReportResponseDto>> {
-        val pageable = PageRequest.of(page-1, size, Sort.by("createdAt").descending())
+        val pageable = PageRequest.of(page, size, Sort.by("createdAt").descending())
 
         return ResponseEntity.ok(storeService.getStoreReport(pageable))
     }

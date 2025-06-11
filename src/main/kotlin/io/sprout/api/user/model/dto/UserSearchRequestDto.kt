@@ -11,6 +11,6 @@ data class UserSearchRequestDto(
     var roles: List<RoleType>?
 ){
     fun getOffset():Long {
-        return (page-1) * size
+        return (page) * size
     }
 }

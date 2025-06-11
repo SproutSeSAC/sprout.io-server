@@ -29,7 +29,7 @@ class ProjectController(
         @RequestParam(required = false) techStack: List<Long>?,
         @RequestParam(required = false) position: List<Long>?,
         @RequestParam(required = false) meetingType: String?,
-        @RequestParam(defaultValue = "1") page: Int,     // 기본값 1 설정
+        @RequestParam(defaultValue = "0") page: Int,     // 기본값 1 설정
         @RequestParam(defaultValue = "20") size: Int,    // 기본값 20 설정
         @RequestParam(defaultValue = "false") onlyScraped: Boolean,
         @RequestParam(required = false) pType: PType?,
@@ -50,7 +50,7 @@ class ProjectController(
 
         val (filteredProjects, totalCount) = projectService.getFilteredProjects(filterRequest)
 
-        val totalPages = (totalCount + filterRequest.size - 1) / filterRequest.size
+        val totalPages = (totalCount - 1) / filterRequest.size
         val nextPage = if (filterRequest.page.toLong() != totalPages) filterRequest.page + 1 else null
 
         val responseBody = mapOf(

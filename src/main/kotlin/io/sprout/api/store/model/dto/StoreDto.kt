@@ -31,14 +31,12 @@ class StoreDto {
         @Schema(description = "스크랩한 항목만 조회 여부", nullable = true, defaultValue = "false")
         val onlyScraped: Boolean? = false,
 
-        @Schema(description = "페이지 번호",  nullable = true, defaultValue = "1")
-        private val page: Int = 1,
+        @Schema(description = "페이지 번호",  nullable = true, defaultValue = "0")
+        val page: Int = 0,
 
         @Schema(description = "페이지 사이즈", nullable = true, defaultValue = "5")
         val size: Int = 5,
-    ){
-        val pageIndex: Int = page-1
-    }
+    )
 
     @Schema(description = "맛집 리스트 조회 response")
     data class StoreListResponse(

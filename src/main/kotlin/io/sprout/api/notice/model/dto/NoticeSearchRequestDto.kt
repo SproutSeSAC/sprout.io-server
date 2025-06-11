@@ -13,9 +13,9 @@ data class NoticeSearchRequestDto(
     val keyword: String?,
     val onlyScraped: Boolean?,
 
-    val page: Int = 1,
+    val page: Int = 0,
     val size: Int = 10
 ){
     val offset
-        get() = (page-1) * size
+        get() = page * size
 }

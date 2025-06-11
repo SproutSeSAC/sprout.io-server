@@ -225,7 +225,7 @@ class ProjectCustomRepositoryImpl(
                 .where(scrapEntity.userId.eq(userid).and(builder))
                 .orderBy(orderSpecifier)
                 .limit(filterRequest.size.toLong())
-                .offset((filterRequest.page - 1).toLong() * filterRequest.size.toLong())
+                .offset((filterRequest.page).toLong() * filterRequest.size.toLong())
             return query.fetch()
         } else {
             return queryFactory
@@ -236,7 +236,7 @@ class ProjectCustomRepositoryImpl(
                 .where(builder)
                 .orderBy(orderSpecifier)
                 .limit(filterRequest.size.toLong())
-                .offset((filterRequest.page - 1).toLong() * filterRequest.size.toLong()).fetch()
+                .offset((filterRequest.page).toLong() * filterRequest.size.toLong()).fetch()
         }
     }
 

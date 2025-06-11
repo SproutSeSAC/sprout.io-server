@@ -43,7 +43,7 @@ class StoreRepositoryCustomImpl(
             )
             .orderBy(store.id.asc())
             .limit(request.size.toLong())
-            .offset((request.pageIndex * request.size).toLong())
+            .offset((request.page * request.size).toLong())
             .transform(
                 groupBy(store.id).list(
                     Projections.constructor(

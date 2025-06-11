@@ -181,13 +181,13 @@ class NoticeController(
     @Operation(summary = "공지사항 세션 조회", description = "자신의 교육과정 내 세션 조회")
     @GetMapping("/sessions")
     fun getNoticeSessions(
-        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
         @RequestParam(required = false) applicationStatus: NoticeStatus?,
         @RequestParam(required = false) keyword: String?
     ): ResponseEntity<NoticeSessionResponseDto> {
 
-        val pageable = PageRequest.of(page - 1, size)
+        val pageable = PageRequest.of(page, size)
 
         return ResponseEntity
             .ok(noticeService.getNoticeSessions(pageable, applicationStatus, keyword))
@@ -264,11 +264,11 @@ class NoticeController(
     @Operation(summary = "공지사항 세션 참가자 확인", description = "공지사항 세션 참가자를 확인합니다.")
     fun getSessionDetail(
         @PathVariable sessionId: Long,
-        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
         @RequestParam(required = false, defaultValue = "WAIT, PARTICIPANT, REJECT") searchParticipantStatus: List<ParticipantStatus>
     ): ResponseEntity<Page<NoticeParticipantResponseDto>> {
-        val pageable = PageRequest.of(page-1, size, Sort.by("createdAt").descending())
+        val pageable = PageRequest.of(page, size, Sort.by("createdAt").descending())
         val result = noticeService.getSessionParticipants(sessionId, pageable, searchParticipantStatus)
 
         return ResponseEntity.ok(result)
