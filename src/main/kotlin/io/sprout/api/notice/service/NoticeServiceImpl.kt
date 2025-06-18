@@ -267,7 +267,7 @@ class NoticeServiceImpl(
             fromId = user.id,
             userId = session.notice.user.id,
             type = 4,
-            url = postId.toString() + "," + sessionId.toString(),
+            url = postId?.id.toString() + "," + sessionId.toString(),
             content = session.notice.title,
             NotiType = 14,
             comment = "",
