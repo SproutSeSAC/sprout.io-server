@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
+import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.entities.QPostEntity
 import io.sprout.api.project.model.dto.*
 import io.sprout.api.project.model.entities.*
@@ -218,11 +219,13 @@ class ProjectCustomRepositoryImpl(
             val query = queryFactory
                 .select(projectEntity.id)
                 .from(postEntity)
-                .leftJoin(scrapEntity)
-                .on(postEntity.id.eq(scrapEntity.postId))
+                .innerJoin(scrapEntity)
+                    .on(postEntity.id.eq(scrapEntity.postId)
+                        .and(scrapEntity.userId.eq(userid)))
                 .leftJoin(projectEntity)
-                .on(postEntity.linkedId.eq(projectEntity.id))
-                .where(scrapEntity.userId.eq(userid).and(builder))
+                    .on(postEntity.linkedId.eq(projectEntity.id)
+                        .and(postEntity.postType.eq(PostType.PROJECT)))
+                .where(builder)
                 .orderBy(orderSpecifier)
                 .limit(filterRequest.size.toLong())
                 .offset((filterRequest.page).toLong() * filterRequest.size.toLong())
@@ -232,7 +235,8 @@ class ProjectCustomRepositoryImpl(
                 .select(projectEntity.id)
                 .from(postEntity)
                 .leftJoin(projectEntity)
-                .on(postEntity.linkedId.eq(projectEntity.id))
+                    .on(postEntity.linkedId.eq(projectEntity.id)
+                        .and(postEntity.postType.eq(PostType.PROJECT)))
                 .where(builder)
                 .orderBy(orderSpecifier)
                 .limit(filterRequest.size.toLong())
