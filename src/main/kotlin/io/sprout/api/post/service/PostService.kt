@@ -170,7 +170,7 @@ class PostService(
                 val projectId = post.linkedId
                 projectService.findProjectDetailById(projectId)?.writerId
             }
-            else -> throw EntityNotFoundException("존재하지 않는 형식입니다.")
+            else -> null
         }
     }
 

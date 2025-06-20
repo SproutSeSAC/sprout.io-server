@@ -261,13 +261,15 @@ class NoticeServiceImpl(
             throw CustomDataIntegrityViolationException("중복된 요청입니다.")
         }
 
+        val postId = postRepository.findByLinkedIdAndPostType(session.notice.id, PostType.NOTICE)
+
         val dtoData = NotificationDto(
             fromId = user.id,
             userId = session.notice.user.id,
             type = 4,
-            url = "",
+            url = postId?.id.toString() + "," + sessionId.toString(),
             content = session.notice.title,
-            NotiType = 2,
+            NotiType = 14,
             comment = "",
         )
 
