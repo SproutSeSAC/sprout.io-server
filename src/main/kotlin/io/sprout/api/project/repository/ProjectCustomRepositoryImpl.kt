@@ -116,9 +116,11 @@ class ProjectCustomRepositoryImpl(
     override fun findProjectsEndingCloseWithDetails(size: Long, days: Long): List<ProjectSimpleResponseDto> {
         val project = QProjectEntity.projectEntity
         val user = QUserEntity.userEntity
+        val post = QPostEntity.postEntity
 
         return queryFactory
             .select(
+                post.id,
                 project.id,
                 project.title,
                 project.description,
@@ -127,6 +129,9 @@ class ProjectCustomRepositoryImpl(
             )
             .from(project)
             .join(project.writer, user)
+            .leftJoin(post)
+                .on(project.id.eq(post.linkedId)
+                    .and(post.postType.eq(PostType.PROJECT)))
             .where(project.recruitmentEnd.between(
                 LocalDate.now(), 
                 LocalDate.now().plusDays(days)))
@@ -135,6 +140,7 @@ class ProjectCustomRepositoryImpl(
             .fetch()
             .map { tuple ->
                 ProjectSimpleResponseDto(
+                    postId = tuple.get(post.id),
                     projectId = tuple.get(project.id) ?: throw IllegalArgumentException("Project ID cannot be null"),
                     title = tuple.get(project.title) ?: "",
                     content = tuple.get(project.description) ?: "",
