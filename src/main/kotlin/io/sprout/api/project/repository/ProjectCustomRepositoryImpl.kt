@@ -196,8 +196,10 @@ class ProjectCustomRepositoryImpl(
 
         // 스크랩 필터링이 있는 경우에만 조인
         if (filterRequest.onlyScraped) {
-            query.leftJoin(postEntity).on(postEntity.linkedId.eq(projectEntity.id))
-            query.leftJoin(scrapEntity)
+            query.leftJoin(postEntity)
+                .on(postEntity.linkedId.eq(projectEntity.id)
+                    .and(postEntity.postType.eq(PostType.PROJECT)))
+            query.innerJoin(scrapEntity)
                 .on(scrapEntity.postId.eq(postEntity.id)
                     .and(scrapEntity.userId.eq(userId)))
         }
