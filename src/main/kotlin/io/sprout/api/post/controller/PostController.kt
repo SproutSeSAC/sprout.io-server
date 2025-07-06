@@ -145,7 +145,7 @@ class PostController(
         return ResponseEntity.ok(linkedId)
     }
 
-    @GetMapping("/{postId}/view")
+    @PostMapping("/{postId}/view")
     @Operation(
             summary = "게시글 조회수 카운트 증가용 API",
             description = "특정 게시글의 조회수를 증가시킵니다."
