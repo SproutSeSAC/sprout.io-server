@@ -18,6 +18,7 @@ data class GetPostResponseDto (
     val id: Long,
     val writer: writerDto,
     val postId: Long,
+    val linkedId: Long,
     val title: String,
     val postType: PostType,
     val content: String,

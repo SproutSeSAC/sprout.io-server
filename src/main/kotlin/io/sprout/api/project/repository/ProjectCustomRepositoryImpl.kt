@@ -19,6 +19,7 @@ import java.time.LocalDate
 class ProjectCustomRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : ProjectCustomRepository {
+    val post = QPostEntity.postEntity
 
     override fun filterProjects(
         filterRequest: ProjectFilterRequest,
@@ -125,7 +126,8 @@ class ProjectCustomRepositoryImpl(
                 project.title,
                 project.description,
                 user.nickname,
-                user.profileImageUrl
+                user.profileImageUrl,
+                post.id
             )
             .from(project)
             .join(project.writer, user)
@@ -133,7 +135,7 @@ class ProjectCustomRepositoryImpl(
                 .on(project.id.eq(post.linkedId)
                     .and(post.postType.eq(PostType.PROJECT)))
             .where(project.recruitmentEnd.between(
-                LocalDate.now(), 
+                LocalDate.now(),
                 LocalDate.now().plusDays(days)))
             .orderBy(project.recruitmentEnd.asc())
             .limit(size)
@@ -146,6 +148,7 @@ class ProjectCustomRepositoryImpl(
                     content = tuple.get(project.description) ?: "",
                     userNickname = tuple.get(user.nickname) ?: "Unknown",
                     imgUrl = tuple.get(user.profileImageUrl) ?: "null",
+                    postId = tuple.get(post.id) ?: throw IllegalArgumentException("Project is Not Equal (No Found Linked ID From POST)")
                 )
             }
     }

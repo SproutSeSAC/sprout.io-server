@@ -9,6 +9,7 @@ import io.sprout.api.notice.service.NoticeService
 import io.sprout.api.notification.entity.NotificationDto
 import io.sprout.api.post.entities.PostEntity
 import io.sprout.api.post.entities.PostType
+import io.sprout.api.post.entities.PostType.*
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.project.model.dto.ProjectRecruitmentRequestDto
 import io.sprout.api.project.model.entities.PType
@@ -45,7 +46,7 @@ class PostService(
             val notice = noticeService.createNotice(noticeRequestDto)
             val post = PostEntity(
                 clientId = clientId,
-                postType = PostType.NOTICE,
+                postType = NOTICE,
                 linkedId = notice.id
             )
 
@@ -86,7 +87,7 @@ class PostService(
             val projectId = projectService.postProjectAndGetId(projectDto)
             val post = PostEntity(
                 clientId = clientId,
-                postType = PostType.PROJECT,
+                postType = PROJECT,
                 linkedId = projectId
             )
 
@@ -109,7 +110,7 @@ class PostService(
             val mealId = mealPostService.createMealPostReturnId(dto)
             val post = PostEntity(
                 clientId = clientId,
-                postType = PostType.MEAL,
+                postType = MEAL,
                 linkedId = mealId
             )
 
@@ -132,20 +133,20 @@ class PostService(
                 .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
 
         return when (post.postType) {
-            PostType.NOTICE -> {
+            NOTICE -> {
                 val noticeId = post.linkedId
                 noticeService.getNoticeById(noticeId)
             }
-            PostType.PROJECT -> {
+            PROJECT -> {
                 val projectId = post.linkedId
                 projectService.findProjectDetailById(projectId)
                         ?: throw EntityNotFoundException("프로젝트를 찾을 수 없습니다. -> 공지는 원본 안 건드림")
             }
-            PostType.MEAL -> {
+            MEAL -> {
                 val mealId = post.linkedId
                 mealPostService.getMealPostDetail(mealId)
             }
-            PostType.STORE -> {
+            STORE -> {
                 val storeId = post.linkedId
                 storeService.getStoreDetail(storeId)
             }
@@ -162,11 +163,11 @@ class PostService(
             .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
 
         return when (post.postType) {
-            PostType.NOTICE -> {
+            NOTICE -> {
                 val noticeId = post.linkedId
                 noticeService.getNoticeById(noticeId).writer.userId
             }
-            PostType.PROJECT -> {
+            PROJECT -> {
                 val projectId = post.linkedId
                 projectService.findProjectDetailById(projectId)?.writerId
             }
@@ -184,7 +185,7 @@ class PostService(
 
         return posts.map { post ->
             when (post.postType) {
-                PostType.NOTICE -> {
+                NOTICE -> {
                     val noticeId = post.linkedId
                     val notice = noticeService.getNoticeById(noticeId)
                     if (compact) {
@@ -198,7 +199,7 @@ class PostService(
                         notice
                     }
                 }
-                PostType.PROJECT -> {
+                PROJECT -> {
                     val projectId = post.linkedId
                     val project = projectService.findProjectDetailById(projectId)
                             ?: throw EntityNotFoundException("프로젝트를 찾을 수 없습니다.")
@@ -213,7 +214,7 @@ class PostService(
                         project
                     }
                 }
-                PostType.MEAL -> {
+                MEAL -> {
                     val mealId = post.linkedId
                     val meal = mealPostService.getMealPostDetail(mealId)
 
@@ -237,7 +238,7 @@ class PostService(
 
         return try {
             when (post.postType) {
-                PostType.NOTICE -> {
+                NOTICE -> {
                     if (dto !is NoticeRequestDto) {
                         throw IllegalArgumentException("Notice DTO를 확인 해 주세요.")
                     }
@@ -245,7 +246,7 @@ class PostService(
                     true
                 }
 
-                PostType.PROJECT -> {
+                PROJECT -> {
                     if (dto !is ProjectRecruitmentRequestDto) {
                         throw IllegalArgumentException("Project DTO를 확인 해 주세요.")
                     }
@@ -253,7 +254,7 @@ class PostService(
                     true
                 }
 
-                PostType.MEAL -> {
+                MEAL -> {
                     if (dto !is MealPostDto.MealPostCreateRequest) {
                         throw IllegalArgumentException("Meal DTO를 확인 해 주세요.")
                     }
@@ -283,9 +284,9 @@ class PostService(
             }
 
             when (post.postType) {
-                PostType.PROJECT -> projectService.deleteProject(post.linkedId)
-                PostType.NOTICE -> noticeService.deleteNotice(post.linkedId)
-                PostType.MEAL -> mealPostService.deleteMealPost(post.linkedId)
+                PROJECT -> projectService.deleteProject(post.linkedId)
+                NOTICE -> noticeService.deleteNotice(post.linkedId)
+                MEAL -> mealPostService.deleteMealPost(post.linkedId)
                 else -> { }
             }
 
@@ -321,13 +322,13 @@ class PostService(
             .orElseThrow { EntityNotFoundException("존재하지 않는 게시글 ID: $postId") }
 
         when (post.postType) {
-            PostType.NOTICE -> {
+            NOTICE -> {
                 return noticeService.getNoticeById(post.linkedId).title
             }
-            PostType.PROJECT -> {
+            PROJECT -> {
                 return projectService.findProjectDetailById(post.linkedId)?.title ?: ""
             }
-            PostType.MEAL -> {
+            MEAL -> {
                 return mealPostService.getMealPostDetail(post.linkedId).title
             }
             else -> throw EntityNotFoundException("프로젝트를 찾을 수 없습니다. -> 공지는 원본 안 건드림")
@@ -369,6 +370,27 @@ class PostService(
      */
     fun getNoticesByUserIdFromParticipant(userId: Long): List<NoticeParticipantEntity> {
         return postRepository.findNoticesByUserIdFromParticipant(userId)
+    }
+
+    /**
+     * 글 조회수 증가 API
+     */
+    fun increaseViewCount(postId: Long): Boolean {
+        val post = postRepository.findById(postId)
+            .orElseThrow { EntityNotFoundException("게시글을 찾을 수 없습니다.") }
+
+        return when (post.postType) {
+            NOTICE -> {
+                val noticeId = post.linkedId
+                noticeService.increaseViewCount(noticeId)
+            }
+            PROJECT -> {
+                val projectId = post.linkedId
+                projectService.increaseViewCount(projectId)
+            }
+            MEAL -> false
+            STORE -> false
+        }
     }
 
 

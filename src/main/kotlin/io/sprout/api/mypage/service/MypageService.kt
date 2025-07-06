@@ -184,6 +184,7 @@ class MypageService(
                 commentId = it.id,
                 userNickname = it.user.nickname,
                 postId = postService.getPostByLinkedIdAndPostType(it.store.id, PostType.STORE).id,
+                linkedId = it.store.id,
                 content = it.review ?: "",
                 createdAt = it.createdAt,
                 postType = PostType.STORE.toString(),
@@ -192,15 +193,23 @@ class MypageService(
         }
 
         val postComments = comments.map {
+            var linkedIdData: Long = 0
             var projectType = ""
             val post = postService.getPostById(it.postId)
             val mPostType = when (post) {
-                is NoticeDetailResponseDto -> PostType.NOTICE
+                is NoticeDetailResponseDto -> {
+                    linkedIdData = post.id
+                    PostType.NOTICE
+                }
                 is ProjectDetailResponseDto -> {
+                    linkedIdData = post.id
                     projectType = post.pType.toString()
                     PostType.PROJECT
                 }
-                is MealPostDto.MealPostDetailResponse -> PostType.MEAL
+                is MealPostDto.MealPostDetailResponse -> {
+                    linkedIdData = post.mealPostId
+                    PostType.MEAL
+                }
                 else -> PostType.NOTICE
             }
 
@@ -208,6 +217,7 @@ class MypageService(
                 commentId = it.id,
                 userNickname = it.userInfo.nickname,
                 postId = it.postId,
+                linkedId = linkedIdData,
                 content = it.content,
                 createdAt = it.createAt,
                 postType = mPostType.toString(),
@@ -261,14 +271,19 @@ class MypageService(
                     )
 
                     var projectType = ""
-
+                    var linkedIdData: Long = 0
                     val postData = when (post) {
-                        is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
+                        is NoticeDetailResponseDto -> {
+                            linkedIdData = post.id
+                            PostInfoDto(post.title, post.content, PostType.NOTICE)
+                        }
                         is ProjectDetailResponseDto -> {
+                            linkedIdData = post.id
                             projectType = post.pType.toString()
                             PostInfoDto(post.title, post.description, PostType.PROJECT)
                         }
                         is MealPostDto.MealPostDetailResponse -> {
+                            linkedIdData = post.mealPostId
                             PostInfoDto(post.title, "", PostType.MEAL)
                         }
                         else -> return@mapNotNull null
@@ -278,6 +293,7 @@ class MypageService(
                         id = it.id,
                         writer = writer,
                         postId = it.postId,
+                        linkedId = linkedIdData,
                         title = postData.title,
                         postType = postData.postType,
                         content = postData.content,
