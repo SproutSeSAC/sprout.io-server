@@ -144,4 +144,14 @@ class PostController(
         val linkedId = postService.getLinkedIdByPostId(postId)
         return ResponseEntity.ok(linkedId)
     }
+
+    @GetMapping("/{postId}/view")
+    @Operation(
+            summary = "게시글 조회수 카운트 증가용 API",
+            description = "특정 게시글의 조회수를 증가시킵니다."
+    )
+    fun increaseViewCount(@PathVariable postId: Long): ResponseEntity<Boolean> {
+        val result = postService.increaseViewCount(postId)
+        return ResponseEntity.ok(result)
+    }
 }
