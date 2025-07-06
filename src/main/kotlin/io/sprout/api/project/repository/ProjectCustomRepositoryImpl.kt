@@ -117,9 +117,11 @@ class ProjectCustomRepositoryImpl(
     override fun findProjectsEndingCloseWithDetails(size: Long, days: Long): List<ProjectSimpleResponseDto> {
         val project = QProjectEntity.projectEntity
         val user = QUserEntity.userEntity
+        val post = QPostEntity.postEntity
 
         return queryFactory
             .select(
+                post.id,
                 project.id,
                 project.title,
                 project.description,
@@ -130,8 +132,8 @@ class ProjectCustomRepositoryImpl(
             .from(project)
             .join(project.writer, user)
             .leftJoin(post)
-                .on(post.linkedId.eq(project.id).and(
-                    post.postType.eq(PostType.PROJECT)))
+                .on(project.id.eq(post.linkedId)
+                    .and(post.postType.eq(PostType.PROJECT)))
             .where(project.recruitmentEnd.between(
                 LocalDate.now(),
                 LocalDate.now().plusDays(days)))
@@ -140,6 +142,7 @@ class ProjectCustomRepositoryImpl(
             .fetch()
             .map { tuple ->
                 ProjectSimpleResponseDto(
+                    postId = tuple.get(post.id),
                     projectId = tuple.get(project.id) ?: throw IllegalArgumentException("Project ID cannot be null"),
                     title = tuple.get(project.title) ?: "",
                     content = tuple.get(project.description) ?: "",
@@ -196,8 +199,10 @@ class ProjectCustomRepositoryImpl(
 
         // 스크랩 필터링이 있는 경우에만 조인
         if (filterRequest.onlyScraped) {
-            query.leftJoin(postEntity).on(postEntity.linkedId.eq(projectEntity.id))
-            query.leftJoin(scrapEntity)
+            query.leftJoin(postEntity)
+                .on(postEntity.linkedId.eq(projectEntity.id)
+                    .and(postEntity.postType.eq(PostType.PROJECT)))
+            query.innerJoin(scrapEntity)
                 .on(scrapEntity.postId.eq(postEntity.id)
                     .and(scrapEntity.userId.eq(userId)))
         }
@@ -225,11 +230,13 @@ class ProjectCustomRepositoryImpl(
             val query = queryFactory
                 .select(projectEntity.id)
                 .from(postEntity)
-                .leftJoin(scrapEntity)
-                .on(postEntity.id.eq(scrapEntity.postId))
+                .innerJoin(scrapEntity)
+                    .on(postEntity.id.eq(scrapEntity.postId)
+                        .and(scrapEntity.userId.eq(userid)))
                 .leftJoin(projectEntity)
-                .on(postEntity.linkedId.eq(projectEntity.id))
-                .where(scrapEntity.userId.eq(userid).and(builder))
+                    .on(postEntity.linkedId.eq(projectEntity.id)
+                        .and(postEntity.postType.eq(PostType.PROJECT)))
+                .where(builder)
                 .orderBy(orderSpecifier)
                 .limit(filterRequest.size.toLong())
                 .offset((filterRequest.page).toLong() * filterRequest.size.toLong())
@@ -239,7 +246,8 @@ class ProjectCustomRepositoryImpl(
                 .select(projectEntity.id)
                 .from(postEntity)
                 .leftJoin(projectEntity)
-                .on(postEntity.linkedId.eq(projectEntity.id))
+                    .on(postEntity.linkedId.eq(projectEntity.id)
+                        .and(postEntity.postType.eq(PostType.PROJECT)))
                 .where(builder)
                 .orderBy(orderSpecifier)
                 .limit(filterRequest.size.toLong())
