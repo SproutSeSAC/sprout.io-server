@@ -6,6 +6,7 @@ data class PostCommentDto(
         val commentId: Long,
         val userNickname: String,
         val postId: Long,
+        val linkedId: Long,
         val content: String,
         val createdAt: LocalDateTime,
         val postType: String,
