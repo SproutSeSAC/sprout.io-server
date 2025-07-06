@@ -148,7 +148,6 @@ class ProjectCustomRepositoryImpl(
                     content = tuple.get(project.description) ?: "",
                     userNickname = tuple.get(user.nickname) ?: "Unknown",
                     imgUrl = tuple.get(user.profileImageUrl) ?: "null",
-                    postId = tuple.get(post.id) ?: throw IllegalArgumentException("Project is Not Equal (No Found Linked ID From POST)")
                 )
             }
     }
