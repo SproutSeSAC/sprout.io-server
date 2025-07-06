@@ -271,14 +271,19 @@ class MypageService(
                     )
 
                     var projectType = ""
-
+                    var linkedIdData: Long = 0
                     val postData = when (post) {
-                        is NoticeDetailResponseDto -> PostInfoDto(post.title, post.content, PostType.NOTICE)
+                        is NoticeDetailResponseDto -> {
+                            linkedIdData = post.id
+                            PostInfoDto(post.title, post.content, PostType.NOTICE)
+                        }
                         is ProjectDetailResponseDto -> {
+                            linkedIdData = post.id
                             projectType = post.pType.toString()
                             PostInfoDto(post.title, post.description, PostType.PROJECT)
                         }
                         is MealPostDto.MealPostDetailResponse -> {
+                            linkedIdData = post.mealPostId
                             PostInfoDto(post.title, "", PostType.MEAL)
                         }
                         else -> return@mapNotNull null
@@ -288,6 +293,7 @@ class MypageService(
                         id = it.id,
                         writer = writer,
                         postId = it.postId,
+                        linkedId = linkedIdData,
                         title = postData.title,
                         postType = postData.postType,
                         content = postData.content,
