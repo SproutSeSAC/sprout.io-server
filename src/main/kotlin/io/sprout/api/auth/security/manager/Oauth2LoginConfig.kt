@@ -15,7 +15,9 @@ class OAuth2LoginConfig(private val properties: OAuth2ClientProperties) {
 
     @Bean
     fun clientRegistrationRepository(): ClientRegistrationRepository {
-        return InMemoryClientRegistrationRepository(googleClientRegistration())
+        return InMemoryClientRegistrationRepository(mutableListOf(
+            googleClientRegistration(), googleRefreshClientRegistration()
+        ))
     }
 
     private fun googleClientRegistration(): ClientRegistration {
@@ -40,6 +42,31 @@ class OAuth2LoginConfig(private val properties: OAuth2ClientProperties) {
             .userNameAttributeName(IdTokenClaimNames.SUB)
             .jwkSetUri("https://www.googleapis.com/oauth2/v3/certs")
             .clientName("Google")
+            .build()
+    }
+
+    private fun googleRefreshClientRegistration(): ClientRegistration {
+        val googleRegistration = properties.registration["google"]
+            ?: throw IllegalArgumentException("Google registration properties not found")
+
+        return ClientRegistration.withRegistrationId("refresh")
+            .clientId(googleRegistration.clientId)
+            .clientSecret(googleRegistration.clientSecret)
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .redirectUri("https://prod-sprout.duckdns.org/back/api/login/oauth2/code/google}")
+            .scope(
+                "openid",
+                "profile",
+                "email",
+                "https://www.googleapis.com/auth/calendar"  // Google Calendar API 권한 추가
+            )
+            .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent")
+            .tokenUri("https://www.googleapis.com/oauth2/v4/token")
+            .userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo")
+            .userNameAttributeName(IdTokenClaimNames.SUB)
+            .jwkSetUri("https://www.googleapis.com/oauth2/v3/certs")
+            .clientName("Refresh")
             .build()
     }
 }

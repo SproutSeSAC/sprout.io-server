@@ -28,8 +28,11 @@ class GoogleTokenEntity(
 
 ) {
     fun updateAccessTokenAndRefreshToken(accessToken: String, refreshToken: String?, expiresIn: Int) {
+        if (refreshToken != null) {
+            this.refreshToken = refreshToken
+        }
+
         this.accessToken = accessToken
-        this.refreshToken = refreshToken
         this.accessTokenExpiration = Instant.now().plusSeconds(expiresIn.toLong())
     }
 

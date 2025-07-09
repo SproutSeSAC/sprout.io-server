@@ -2,6 +2,7 @@ package io.sprout.api.user.service
 
 import io.sprout.api.user.model.entities.GoogleCalendarEntity
 import io.sprout.api.auth.security.manager.SecurityManager
+import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.config.properties.GoogleOAuthPropertiesConfig
 import io.sprout.api.user.model.dto.CalendarIdResponseDto
 import io.sprout.api.user.model.dto.ManagerEmailResponseDto
@@ -59,7 +60,7 @@ class GoogleTokenService(
         if (googleToken.isAccessTokenExpired()) {
             if (googleToken.refreshToken == null) {
                 // Refresh Token이 없거나 만료되었을 경우 403 Forbidden 반환
-                throw HttpClientErrorException(HttpStatus.FORBIDDEN, "Refresh token is expired or not available")
+                throw CustomBadRequestException("Google Refresh token is expired or not available")
             }
 
             // Refresh Token으로 Access Token 갱신 요청
@@ -80,7 +81,7 @@ class GoogleTokenService(
                 googleToken.updateAccessToken(newAccessToken, expiresIn)
                 tokenRepository.save(googleToken)
             } else {
-                throw HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Failed to refresh access token")
+                throw CustomBadRequestException("Failed to refresh google access token")
             }
         }
 
