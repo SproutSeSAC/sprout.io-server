@@ -47,6 +47,8 @@ class JwtFilter(
             "/api/login/test",
             "/h2-console",
             "/favicon.ico",
+            "/api/oauth2/authorization/**",// Corrected path,
+            "/api/oauth2/authorization/refresh",// Corrected path,
             "/api/oauth2/authorization/google",// Corrected path,
             "/api/test/**",
 
