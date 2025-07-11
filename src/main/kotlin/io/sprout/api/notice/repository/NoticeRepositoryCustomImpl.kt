@@ -8,6 +8,7 @@ import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
+import io.sprout.api.campus.model.entities.QCampusEntity
 import io.sprout.api.course.model.entities.QCourseEntity
 import io.sprout.api.notice.model.dto.*
 import io.sprout.api.notice.model.entities.*
@@ -17,6 +18,7 @@ import io.sprout.api.scrap.entity.QScrapEntity
 import io.sprout.api.user.model.entities.QUserCourseEntity
 import io.sprout.api.user.model.entities.QUserEntity
 import io.sprout.api.user.model.entities.RoleType
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -32,6 +34,7 @@ class NoticeRepositoryCustomImpl(
     val scrapedNotice = QScrapedNoticeEntity.scrapedNoticeEntity
     val userCourse = QUserCourseEntity.userCourseEntity
     val course = QCourseEntity.courseEntity
+    val campus = QCampusEntity.campusEntity
     val user = QUserEntity.userEntity
 
     val post = QPostEntity.postEntity
@@ -178,6 +181,79 @@ class NoticeRepositoryCustomImpl(
             )
 
         return NoticeSessionResponseDto(result, isLastPage)
+    }
+
+    override fun findBySessionIdAndStatusListTest(
+        sessionId: Long,
+        searchParticipantStatus: List<ParticipantStatus>,
+        pageable: PageRequest
+    ): PageImpl<NoticeParticipantResponseDto> {
+        val total = queryFactory
+            .select(noticeParticipant.id.count())
+            .from(noticeParticipant)
+            .join(noticeParticipant.noticeSession, noticeSession)
+            .where(
+                noticeSession.id.eq(sessionId)
+                    .and(noticeParticipant.status.`in`(searchParticipantStatus))
+            )
+            .fetchOne()
+
+        val ids = queryFactory
+            .select(noticeParticipant.id)
+            .from(noticeParticipant)
+            .join(noticeParticipant.noticeSession, noticeSession)
+            .where(
+                noticeSession.id.eq(sessionId)
+                    .and(noticeParticipant.status.`in`(searchParticipantStatus))
+            )
+            .orderBy(noticeParticipant.createdAt.asc())
+            .limit(pageable.pageSize.toLong())
+            .offset(pageable.offset)
+            .fetch()
+
+
+        val result = queryFactory
+            .selectFrom(noticeParticipant)
+            .join(noticeParticipant.user, user)
+            .join(user.userCourseList, userCourse)
+            .join(userCourse.course, course)
+            .join(course.campus, campus)
+            .join(noticeParticipant.noticeSession, noticeSession)
+            .where(noticeParticipant.id.`in`(ids))
+            .orderBy(noticeParticipant.createdAt.asc())
+            .transform(
+                groupBy(noticeParticipant.id).list(
+                    Projections.constructor(
+                        NoticeParticipantResponseDto::class.java,
+                        noticeParticipant.id,
+                        user.id,
+                        noticeParticipant.status,
+                        user.phoneNumber,
+                        user.email,
+                        user.name,
+                        user.nickname,
+                        user.profileImageUrl,
+                        noticeParticipant.createdAt,
+
+                        list(
+                            Projections.constructor(
+                                NoticeParticipantResponseDto.Course::class.java,
+                                course.id,
+                                course.title
+                            )
+                        ),
+                        list(
+                            Projections.constructor(
+                                NoticeParticipantResponseDto.Campus::class.java,
+                                campus.id,
+                                campus.name
+                            )
+                        )
+                    )
+                )
+            )
+
+        return PageImpl(result, pageable, total ?: 0L)
     }
 
     /**

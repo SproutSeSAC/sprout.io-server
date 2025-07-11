@@ -16,7 +16,6 @@ data class ProjectResponseDto @QueryProjection constructor(
     val recruitmentEnd: LocalDate,
     val pType: String,
     val positionNames: List<String>,
-//    val techStackNames: List<String>,
     val techStacks: List<TechStacks>,
     var isScraped: Boolean,
     val viewCount: Int,
@@ -36,16 +35,15 @@ data class ProjectResponseDto @QueryProjection constructor(
            recruitmentEnd = this.recruitmentEnd,
            pType = this.pType,
            positionNames = this.positionNames.distinct(),
-           techStacks = this.techStacks.distinct(),
-//           techStackNames = this.techStackNames.distinct(),
+           techStacks = this.techStacks.distinct().filter { it.name != null && it.imageUrl != null },
            isScraped = this.isScraped,
            viewCount = this.viewCount
        )
    }
 
     data class TechStacks(
-        val name: String,
-        val imageUrl: String
+        val name: String?,
+        val imageUrl: String?
     )
 
 }

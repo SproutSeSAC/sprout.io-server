@@ -326,7 +326,7 @@ class UserService(
         val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
         val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
 
-        AuthorizationUtils.validateUserIsAdminRole(admin)
+        AuthorizationUtils.validateUserIsManagerRole(admin)
 
         return getUserInfo(userId)
     }

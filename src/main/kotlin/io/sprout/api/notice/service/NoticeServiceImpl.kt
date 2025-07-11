@@ -427,8 +427,11 @@ class NoticeServiceImpl(
         AuthorizationUtils.validateUserIsManagerRole(user)
         AuthorizationUtils.validateUserCourseContainAllTargetCourses(user, noticeSession.notice.targetCourses.map { it.course.id }.toSet())
 
-        return noticeParticipantRepository.findBySessionIdAndStatusList(sessionId, searchParticipantStatus, pageable)
-            .map { NoticeParticipantResponseDto(it) }
+        return noticeRepository.findBySessionIdAndStatusListTest(sessionId, searchParticipantStatus, pageable)
+
+//        return noticeParticipantRepository.findBySessionIdAndStatusList(sessionId, searchParticipantStatus, pageable)
+//            .map { NoticeParticipantResponseDto(it) }
+
     }
 
     /**
