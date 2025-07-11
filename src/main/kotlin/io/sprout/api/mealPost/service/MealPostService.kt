@@ -129,8 +129,8 @@ class MealPostService(
     fun deleteMealPost(mealPostId: Long): Boolean {
         val mealPost = mealPostRepository.findById(mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
         if (! mealPostParticipationRepository.isOwner(mealPostId, getUserInfo().id)
-            || getUserInfo().role != RoleType.SUPER_ADMIN
-            || getUserInfo().role != RoleType.CAMPUS_LEADER) {
+            && getUserInfo().role != RoleType.SUPER_ADMIN
+            && getUserInfo().role != RoleType.CAMPUS_LEADER) {
             throw CustomBadRequestException("not party owner")
         }
 
