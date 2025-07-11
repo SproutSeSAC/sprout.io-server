@@ -35,4 +35,10 @@ class SecurityManager(private val jwtToken: JwtToken) {
 
         return (authentication.principal as UserDetails).username.toLong()
     }
+
+    fun getAuthenticatedUserRole(): String {
+        val authentication = SecurityContextHolder.getContext().authentication
+
+        return (authentication.principal as UserDetails).()
+    }
 }

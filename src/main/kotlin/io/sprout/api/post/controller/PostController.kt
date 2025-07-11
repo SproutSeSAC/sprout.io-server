@@ -117,7 +117,10 @@ class PostController(
         description = "특정 게시글을 삭제하는 API입니다."
     )
     fun deletePost(@PathVariable postId: Long): ResponseEntity<Boolean> {
-        val result = postService.deletePost(postId)
+        val clientID = securityManager.getAuthenticatedUserName()
+            ?: return ResponseEntity.status(401).body(false)
+
+        val result = postService.deletePost(clientID, postId)
         return if (result) {
             ResponseEntity.ok(true)
         } else {

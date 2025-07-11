@@ -17,6 +17,8 @@ import io.sprout.api.project.service.ProjectService
 import io.sprout.api.scrap.service.ScrapService
 import io.sprout.api.sse.service.SseService
 import io.sprout.api.store.service.StoreService
+import io.sprout.api.user.model.entities.RoleType
+import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
@@ -32,6 +34,7 @@ class PostService(
     private val scrapService: ScrapService,
     private val storeService: StoreService,
     private val userCourseRepository: UserCourseRepository,
+    private val userRepository: UserRepository,
     private val sseService: SseService
 ) {
 
@@ -277,22 +280,45 @@ class PostService(
      * 삭제합니다. notice와 project는 jpa 의존으로 묶어놨습니다.
      */
     @Transactional
-    fun deletePost(postId: Long): Boolean {
+    fun deletePost(clientId: Long, postId: Long): Boolean {
+        val user = userRepository.findUserById(clientId)
+            ?: return false
+
         return try {
             val post = postRepository.findById(postId).orElseThrow {
                 IllegalArgumentException("$postId 없음")
             }
 
-            when (post.postType) {
-                PROJECT -> projectService.deleteProject(post.linkedId)
-                NOTICE -> noticeService.deleteNotice(post.linkedId)
-                MEAL -> mealPostService.deleteMealPost(post.linkedId)
-                else -> { }
+            if (when (post.postType) {
+                PROJECT -> {
+                    if (user.id == projectService.getCreatedUserId(post.linkedId)
+                        || user.role == RoleType.CAMPUS_LEADER
+                        || user.role == RoleType.SUPER_ADMIN) {
+                        projectService.deleteProject(post.linkedId)
+                        true
+                    }
+                    else false
+                }
+                NOTICE -> {
+                    if (user.id == noticeService.getCreatedUserId(post.linkedId)
+                        || user.role == RoleType.CAMPUS_LEADER
+                        || user.role == RoleType.SUPER_ADMIN) {
+                        noticeService.deleteNotice(post.linkedId)
+                        true
+                    }
+                    else false
+                }
+                MEAL -> {
+                    mealPostService.deleteMealPost(post.linkedId)
+                }
+                else -> { false }
+            }) {
+                scrapService.deleteAllScrapsWithPostId(postId)
+                postRepository.delete(post)
+                true
+            } else {
+                false
             }
-
-            scrapService.deleteAllScrapsWithPostId(postId)
-            postRepository.delete(post)
-            true
         } catch (e: Exception) {
             println("삭제 실패 : ${e.message}")
             false
