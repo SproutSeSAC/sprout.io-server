@@ -27,7 +27,7 @@ class MealPostController(
     // 지우기
     @DeleteMapping("/{mealPostId}")
     @Operation(summary = "한끼팟 삭제", description = "한끼팟 삭제 API")
-    fun deleteMealPost(@PathVariable mealPostId: Long) {
+    fun deleteMealPost(@PathVariable mealPostId: Long): Boolean {
         return mealPostService.deleteMealPost(mealPostId)
     }
 

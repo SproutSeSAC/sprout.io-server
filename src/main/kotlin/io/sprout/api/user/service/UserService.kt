@@ -287,18 +287,6 @@ class UserService(
     }
 
     /**
-     * 사용자 권한 조회
-     */
-    fun serchUserRole() {
-        val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
-        val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
-
-        AuthorizationUtils.validateUserIsAdminRole(admin)
-
-        return userRepository.search(searchRequest, admin)
-    }
-
-    /**
      * 사용자 권한 변경 (관리자용)
      */
     @Transactional
