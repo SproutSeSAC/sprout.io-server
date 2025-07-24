@@ -9,6 +9,7 @@ interface ProjectService {
     fun toggleScrapProject(projectId: Long): Boolean
     fun increaseViewCount(projectId: Long): Boolean
     fun findProjectDetailById(projectId: Long): ProjectDetailResponseDto?
+    fun getCreatedUserId(projectId: Long): Long
     fun getCommentsByProjectId(projectId: Long): List<ProjectCommentResponseDto>
     fun postComment(projectId: Long, content: String): Boolean
     fun deleteComment(commentId: Long): Boolean

@@ -118,6 +118,14 @@ class NoticeServiceImpl(
         return true
     }
 
+    @Transactional(readOnly = true)
+    override fun getCreatedUserId(noticeId: Long): Long {
+        val findNotice = noticeRepository.findByIdAndCoursesAndUser(noticeId)
+            ?: throw CustomBadRequestException("Not found notice")
+
+        return findNotice.user.id;
+    }
+
     /**
      *  공지사항 댓글 조회
      *

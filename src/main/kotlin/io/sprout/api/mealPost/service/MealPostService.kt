@@ -17,6 +17,7 @@ import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.sse.service.SseService
 import io.sprout.api.store.repository.StoreRepository
+import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.UserRepository
 import org.slf4j.LoggerFactory
@@ -117,9 +118,19 @@ class MealPostService(
         }
     }
 
-    fun deleteMealPost(mealPostId: Long) {
+    @Transactional(readOnly = true)
+    fun getCreatedUserId(mealPostId: Long): Long {
+        val mealPost: MealPostEntity = mealPostRepository.findWithParticipationUserById(mealPostId)
+            ?: throw CustomBadRequestException("Not found party");
+
+        return 0;
+    }
+
+    fun deleteMealPost(mealPostId: Long): Boolean {
         val mealPost = mealPostRepository.findById(mealPostId).orElseThrow { CustomBadRequestException("Not found party") }
-        if (! mealPostParticipationRepository.isOwner(mealPostId, getUserInfo().id)) {
+        if (! mealPostParticipationRepository.isOwner(mealPostId, getUserInfo().id)
+            && getUserInfo().role != RoleType.SUPER_ADMIN
+            && getUserInfo().role != RoleType.CAMPUS_LEADER) {
             throw CustomBadRequestException("not party owner")
         }
 
@@ -136,6 +147,7 @@ class MealPostService(
             throw CustomSystemException("System error occurred while saving meal post: ${e.message}")
         }
 
+        return true;
     }
 
     @Transactional

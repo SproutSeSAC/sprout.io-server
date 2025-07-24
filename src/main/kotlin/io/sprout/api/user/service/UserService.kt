@@ -276,6 +276,8 @@ class UserService(
      * 자신의 캠퍼스 인원만 검색 가능
      */
     fun searchUsers(searchRequest: UserSearchRequestDto): PageResponse<UserSearchResponseDto> {
+
+
         val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
         val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
 
@@ -284,6 +286,17 @@ class UserService(
         return userRepository.search(searchRequest, admin)
     }
 
+    /**
+     * 사용자 권한 조회
+     */
+    fun serchUserRole() {
+        val adminId: Long = securityManager.getAuthenticatedUserName() ?: throw CustomBadRequestException("Invalid Token")
+        val admin = userRepository.findUserById(adminId) ?: throw CustomBadRequestException("Not found admin")
+
+        AuthorizationUtils.validateUserIsAdminRole(admin)
+
+        return userRepository.search(searchRequest, admin)
+    }
 
     /**
      * 사용자 권한 변경 (관리자용)
