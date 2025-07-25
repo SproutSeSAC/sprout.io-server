@@ -127,6 +127,14 @@ class ProjectServiceImpl(
     }
 
     @Transactional(readOnly = true)
+    override fun getCreatedUserId(projectId: Long): Long {
+        val x = projectRepository.findProjectDetailById(projectId, securityManager.getAuthenticatedUserName()!!)
+            ?: throw IllegalArgumentException("Project with ID $projectId not found")
+
+        return x.writerId;
+    }
+
+    @Transactional(readOnly = true)
     override fun getCommentsByProjectId(projectId: Long): List<ProjectCommentResponseDto> {
         return handleExceptions {
             projectRepository.getCommentsByProjectId(projectId)

@@ -10,6 +10,7 @@ import io.sprout.api.post.entities.PostType
 import io.sprout.api.post.repository.PostRepository
 import io.sprout.api.post.service.PostService
 import io.sprout.api.sse.service.SseService
+import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
@@ -99,7 +100,9 @@ class CommentService(
         val comment = commentRepository.findById(commentId)
                 .orElseThrow { EntityNotFoundException("코멘트가 없음 (조회실패)") }
 
-        if (comment.user.id != user.id) {
+        if (comment.user.id != user.id
+            && user.role != RoleType.SUPER_ADMIN
+            && user.role != RoleType.CAMPUS_LEADER) {
             return false
         }
 
