@@ -158,12 +158,11 @@ class ProjectCustomRepositoryImpl(
         val builder = BooleanBuilder()
         val projectEntity = QProjectEntity.projectEntity
 
-        filterRequest.techStack?.let {
-            builder.and(projectEntity.techStacks.any().techStack.id.`in`(it))
+        if (!filterRequest.techStack.isNullOrEmpty()) {
+            builder.and(projectEntity.techStacks.any().techStack.id.`in`(filterRequest.techStack))
         }
-
-        filterRequest.position?.let {
-            builder.and(projectEntity.positions.any().position.id.`in`(it))
+        if (!filterRequest.position.isNullOrEmpty()) {
+            builder.and(projectEntity.positions.any().position.id.`in`(filterRequest.position))
         }
 
         filterRequest.meetingType?.let {
