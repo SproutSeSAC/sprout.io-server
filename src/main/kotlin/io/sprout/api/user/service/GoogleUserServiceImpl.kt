@@ -1,5 +1,6 @@
 package io.sprout.api.user.service
 
+import io.sprout.api.auth.security.handler.CustomAuthenticationSuccessHandler
 import io.sprout.api.user.model.entities.GoogleCalendarEntity
 import io.sprout.api.auth.security.manager.SecurityManager
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
@@ -12,6 +13,7 @@ import io.sprout.api.user.model.entities.UserEntity
 import io.sprout.api.user.repository.GoogleCalendarRepository
 import io.sprout.api.user.repository.GoogleTokenRepository
 import io.sprout.api.user.repository.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
@@ -27,6 +29,8 @@ class GoogleTokenService(
     private val securityManager: SecurityManager,
     private val userRepository: UserRepository
 ) : GoogleUserService {
+    private val log = LoggerFactory.getLogger(GoogleTokenService::class.java)
+
     override fun saveOrUpdateToken(user: UserEntity, accessToken: String, refreshToken: String?, expiresIn: Int) {
         val existingToken = tokenRepository.findByUser(user)
         if (existingToken != null) {
@@ -72,17 +76,24 @@ class GoogleTokenService(
                 "grant_type" to "refresh_token"
             )
 
-            val response = restTemplate.postForEntity(url, body, Map::class.java)
-            val newAccessToken = response.body?.get("access_token") as? String
-            val expiresIn = response.body?.get("expires_in") as? Int
+            try {
+                val response = restTemplate.postForEntity(url, body, Map::class.java)
+                val newAccessToken = response.body?.get("access_token") as? String
+                val expiresIn = response.body?.get("expires_in") as? Int
 
-            if (newAccessToken != null && expiresIn != null) {
-                // Access Token과 만료시간 갱신
-                googleToken.updateAccessToken(newAccessToken, expiresIn)
-                tokenRepository.save(googleToken)
-            } else {
-                throw CustomBadRequestException("Failed to refresh google access token")
+                if (newAccessToken != null && expiresIn != null) {
+                    // Access Token과 만료시간 갱신
+                    googleToken.updateAccessToken(newAccessToken, expiresIn)
+                    tokenRepository.save(googleToken)
+                } else {
+                    throw CustomBadRequestException("Failed to refresh google access token")
+                }
+            } catch (e: HttpClientErrorException) {
+                // 4xx error in refresh api request
+                log.info("google api error: {}", e.message)
+                throw CustomBadRequestException("google refresh token is expired")
             }
+
         }
 
         return googleToken

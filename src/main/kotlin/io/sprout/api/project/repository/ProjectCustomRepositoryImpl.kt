@@ -159,10 +159,20 @@ class ProjectCustomRepositoryImpl(
         val projectEntity = QProjectEntity.projectEntity
 
         if (!filterRequest.techStack.isNullOrEmpty()) {
-            builder.and(projectEntity.techStacks.any().techStack.id.`in`(filterRequest.techStack))
+            if (filterRequest.techStack.contains(0)) {
+                builder.and(projectEntity.techStacks.isEmpty)
+            } else{
+                builder.and(projectEntity.techStacks.any().techStack.id.`in`(filterRequest.techStack))
+            }
         }
+
         if (!filterRequest.position.isNullOrEmpty()) {
-            builder.and(projectEntity.positions.any().position.id.`in`(filterRequest.position))
+            if (filterRequest.position.contains(0)) {
+//                builder.and(projectEntity.positions.any().isNull)
+                builder.and(projectEntity.positions.isEmpty)
+            } else{
+                builder.and(projectEntity.positions.any().position.id.`in`(filterRequest.position))
+            }
         }
 
         filterRequest.meetingType?.let {
