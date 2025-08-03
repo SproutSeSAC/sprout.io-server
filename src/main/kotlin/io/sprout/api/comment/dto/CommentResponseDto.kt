@@ -16,5 +16,7 @@ data class CommentResponseDto(
      @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
      val createAt: LocalDateTime,
      val imgUrl: String,
-     val postId: Long
+     val postId: Long,
+     val rate: Int,
+     val isStore: Int
 )
