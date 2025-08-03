@@ -31,4 +31,7 @@ class CommentEntity(
 
         @Column(name = "rating", nullable = true)
         var rating: Int,
+
+        @Column(name = "isStore", nullable = false, columnDefinition = "INT DEFAULT 0")
+        var isStore: Int = 0,
 )

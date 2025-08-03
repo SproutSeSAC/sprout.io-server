@@ -5,4 +5,5 @@ data class CommentRequestDto(
     val postId: Long,
     val imgUrl: String,
     val rate: Int,
+    val isStore: Int? = 0
 )

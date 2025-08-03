@@ -13,17 +13,18 @@ import io.sprout.api.sse.service.SseService
 import io.sprout.api.user.model.entities.RoleType
 import io.sprout.api.user.repository.UserRepository
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
 class CommentService(
-        private val commentRepository: CommentRepository,
-        private val userRepository: UserRepository,
-        private val postRepository: PostRepository,
-        private val sseService: SseService,
-        private val postService: PostService
+    private val commentRepository: CommentRepository,
+    private val userRepository: UserRepository,
+    private val postRepository: PostRepository,
+    private val sseService: SseService,
+    @Lazy private val postService: PostService
 ) {
     @Transactional
     fun createComment(clientID: Long, dto: CommentRequestDto): CommentResponseDto {
@@ -41,21 +42,25 @@ class CommentService(
             post = post,
             imgurl = dto.imgUrl,
             createdAt = LocalDateTime.now(),
-            rating = dto.rate
+            rating = dto.rate,
+            isStore = dto.isStore ?: 0
         )
         val savedComment = commentRepository.save(comment)
 
-        val dtodata = NotificationDto(
-            fromId = clientID,
-            userId = post.clientId,
-            type = isNotice.toLong(),
-            url = "${post.id}",
-            content = postService.getPostTitle(post.id),
-            NotiType = isNotice.toLong(),
-            comment = dto.content,
-        )
+        if (dto.isStore == 0) {
+            val dtodata = NotificationDto(
+                fromId = clientID,
+                userId = post.clientId,
+                type = isNotice.toLong(),
+                url = "${post.id}",
+                content = postService.getPostTitle(post.id),
+                NotiType = isNotice.toLong(),
+                comment = dto.content,
+            )
 
-        sseService.publish(dtodata)
+            sseService.publish(dtodata)
+        }
+
         return convertToResponseDto(savedComment)
     }
 
@@ -154,5 +159,11 @@ class CommentService(
             createAt = comment.createdAt,
             rate = comment.rating
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getStoreCommentsByPostId(postId: Long): List<CommentResponseDto> {
+        val comments = commentRepository.findByPostIdAndIsStore(postId, 1)
+        return comments.map { convertToResponseDto(it) }
     }
 }

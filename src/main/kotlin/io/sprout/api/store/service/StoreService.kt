@@ -1,6 +1,8 @@
 package io.sprout.api.store.service
 
 import io.sprout.api.auth.security.manager.SecurityManager
+import io.sprout.api.comment.dto.CommentRequestDto
+import io.sprout.api.comment.service.CommentService
 import io.sprout.api.common.exeption.custom.CustomBadRequestException
 import io.sprout.api.common.exeption.custom.CustomDataIntegrityViolationException
 import io.sprout.api.common.exeption.custom.CustomSystemException
@@ -28,6 +30,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.orm.jpa.JpaSystemException
 import org.springframework.stereotype.Service
+import kotlin.String
 
 @Service
 class StoreService(
@@ -38,6 +41,7 @@ class StoreService(
     private val postRepository: PostRepository,
     private val scrapRepository: ScrapRepository,
     private val storeReportRepository: StoreReportRepository,
+    private val commentService: CommentService
 ) {
 
     private fun <T> handleExceptions(action: () -> T): T {
@@ -88,6 +92,8 @@ class StoreService(
         val isScraped = ((scrapRepository.findByUserIdAndPostId(userId, post.id)) != null)
 //        val isScraped = scrapedStoreRepository.findByUserIdAndStoreId(userId, storeId) != null
 
+        val comments = commentService.getStoreCommentsByPostId(post.id)
+
         return StoreDto.StoreDetailResponse(
             name = store.name,
             storeImageList = store.storeImageList.map { it.path },
@@ -111,15 +117,24 @@ class StoreService(
                     imageUrl = it.imageUrl
                 )
             }.sortedBy { it.id }.toMutableSet(),
-            storeReviewList = store.storeReviewList.map {
+            storeReviewList = comments.map { comment ->
                 StoreReviewDetail(
-                    nickname = it.user.nickname,
-                    review = it.review,
-                    profileImageUrl = it.user.profileImageUrl,
-                    rating = it.rating,
-                    createdAt = it.createdAt
+                    nickname = comment.userInfo.nickname,
+                    review = comment.content,
+                    profileImageUrl = comment.userInfo.profileImg,
+                    rating = comment.rate,
+                    createdAt = comment.createAt
                 )
             }.sortedByDescending { it.createdAt }.toMutableSet(),
+//            storeReviewList = store.storeReviewList.map {
+//                StoreReviewDetail(
+//                    nickname = it.user.nickname,
+//                    review = it.review,
+//                    profileImageUrl = it.user.profileImageUrl,
+//                    rating = it.rating,
+//                    createdAt = it.createdAt
+//                )
+//            }.sortedByDescending { it.createdAt }.toMutableSet(),
         )
 
     }
@@ -147,12 +162,21 @@ class StoreService(
 
     fun createReview(storeId: Long, reviewCreateRequest: StoreDto.StoreReviewRequest) {
         val store = storeRepository.findStoreById(storeId) ?: throw CustomBadRequestException("Not found store")
+        val user = UserEntity(securityManager.getAuthenticatedUserName()!!);
+        val data = CommentRequestDto(
+            content =  reviewCreateRequest.review,
+            postId = storeId,
+            imgUrl = "",
+            rate = reviewCreateRequest.rating,
+            isStore = 1
+        )
+        commentService.createComment(user.id, data);
 
-        storeReviewRepository.save(StoreReviewEntity(
-            reviewCreateRequest.review,
-            reviewCreateRequest.rating,
-            UserEntity(securityManager.getAuthenticatedUserName()!!),
-            store))
+//        storeReviewRepository.save(StoreReviewEntity(
+//            reviewCreateRequest.review,
+//            reviewCreateRequest.rating,
+//            UserEntity(securityManager.getAuthenticatedUserName()!!),
+//            store))
 
     }
 
