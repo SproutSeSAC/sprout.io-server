@@ -17,5 +17,6 @@ data class CommentResponseDto(
      val createAt: LocalDateTime,
      val imgUrl: String,
      val postId: Long,
-     val rate: Int
+     val rate: Int,
+     val isStore: Int
 )

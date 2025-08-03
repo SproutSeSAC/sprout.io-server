@@ -37,7 +37,6 @@ class MypageService(
     private val mealPostService: MealPostService,
     private val commentService: CommentService,
     private val scrapService: ScrapService,
-    private val storeReviewRepository: StoreReviewRepository,
 ) {
 
     // region [프로필 관련 API]
@@ -176,61 +175,59 @@ class MypageService(
         pageable: Pageable,
         postTypes: List<String>?
     ): Page<PostCommentDto> {
-        val storeReviews = storeReviewRepository.findByUserId(clientId)
         val comments = commentService.getCommentsByClientId(clientId)
 
-        val storeReviewComments = storeReviews.map {
-            PostCommentDto(
-                commentId = it.id,
-                userNickname = it.user.nickname,
-                postId = postService.getPostByLinkedIdAndPostType(it.store.id, PostType.STORE).id,
-                linkedId = it.store.id,
-                content = it.review ?: "",
-                createdAt = it.createdAt,
-                postType = PostType.STORE.toString(),
-                pType = ""
-            )
-        }
-
         val postComments = comments.map {
-            var linkedIdData: Long = 0
-            var projectType = ""
-            val post = postService.getPostById(it.postId)
-            val mPostType = when (post) {
-                is NoticeDetailResponseDto -> {
-                    linkedIdData = post.id
-                    PostType.NOTICE
+            if (it.isStore == 0) {
+                var linkedIdData: Long = 0
+                var projectType = ""
+                val post = postService.getPostById(it.postId)
+                val mPostType = when (post) {
+                    is NoticeDetailResponseDto -> {
+                        linkedIdData = post.id
+                        PostType.NOTICE
+                    }
+                    is ProjectDetailResponseDto -> {
+                        linkedIdData = post.id
+                        projectType = post.pType.toString()
+                        PostType.PROJECT
+                    }
+                    is MealPostDto.MealPostDetailResponse -> {
+                        linkedIdData = post.mealPostId
+                        PostType.MEAL
+                    }
+                    else -> PostType.NOTICE
                 }
-                is ProjectDetailResponseDto -> {
-                    linkedIdData = post.id
-                    projectType = post.pType.toString()
-                    PostType.PROJECT
-                }
-                is MealPostDto.MealPostDetailResponse -> {
-                    linkedIdData = post.mealPostId
-                    PostType.MEAL
-                }
-                else -> PostType.NOTICE
+
+                PostCommentDto(
+                    commentId = it.id,
+                    userNickname = it.userInfo.nickname,
+                    postId = it.postId,
+                    linkedId = linkedIdData,
+                    content = it.content,
+                    createdAt = it.createAt,
+                    postType = mPostType.toString(),
+                    pType = projectType
+                )
+            } else {
+                PostCommentDto(
+                    commentId = it.id,
+                    userNickname = it.userInfo.nickname,
+                    postId = it.postId,
+                    linkedId = it.postId,
+                    content = it.content,
+                    createdAt = it.createAt,
+                    postType = PostType.STORE.toString(),
+                    pType = ""
+                )
             }
 
-            PostCommentDto(
-                commentId = it.id,
-                userNickname = it.userInfo.nickname,
-                postId = it.postId,
-                linkedId = linkedIdData,
-                content = it.content,
-                createdAt = it.createAt,
-                postType = mPostType.toString(),
-                pType = projectType
-            )
         }
 
-        val combined = (storeReviewComments + postComments)
-
         val filtered = if (postTypes.isNullOrEmpty()) {
-            combined
+            postComments
         } else {
-            combined.filter {
+            postComments.filter {
                 if (it.postType == "PROJECT" || it.postType == "STUDY") {
                     postTypes.contains(it.pType)
                 } else{

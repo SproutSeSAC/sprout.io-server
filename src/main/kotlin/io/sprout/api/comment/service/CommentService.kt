@@ -120,8 +120,6 @@ class CommentService(
     fun getCommentsByPostId(postId: Long): List<CommentResponseDto> {
         val comments = commentRepository.findByPostId(postId)
         return comments.map { comment ->
-
-
             CommentResponseDto(
                 id = comment.id,
                 content = comment.content,
@@ -133,7 +131,8 @@ class CommentService(
                 postId = comment.post.id,
                 imgUrl = comment.imgurl,
                 createAt = comment.createdAt,
-                rate = comment.rating
+                rate = comment.rating,
+                isStore = comment.isStore
             )
         }
     }
@@ -157,7 +156,8 @@ class CommentService(
             postId = comment.post.id,
             imgUrl = comment.imgurl,
             createAt = comment.createdAt,
-            rate = comment.rating
+            rate = comment.rating,
+            isStore = comment.isStore
         )
     }
 
