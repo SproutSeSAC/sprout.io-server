@@ -36,11 +36,12 @@ class CommentService(
         val isNotice = if (post.postType == PostType.NOTICE) 3 else 2
 
         val comment = CommentEntity(
-                content = dto.content,
-                user = user,
-                post = post,
-                imgurl = dto.imgUrl,
-                createdAt = LocalDateTime.now()
+            content = dto.content,
+            user = user,
+            post = post,
+            imgurl = dto.imgUrl,
+            createdAt = LocalDateTime.now(),
+            rating = dto.rate
         )
         val savedComment = commentRepository.save(comment)
 
@@ -126,7 +127,8 @@ class CommentService(
                 ),
                 postId = comment.post.id,
                 imgUrl = comment.imgurl,
-                createAt = comment.createdAt
+                createAt = comment.createdAt,
+                rate = comment.rating
             )
         }
     }
@@ -149,7 +151,8 @@ class CommentService(
             ),
             postId = comment.post.id,
             imgUrl = comment.imgurl,
-            createAt = comment.createdAt
+            createAt = comment.createdAt,
+            rate = comment.rating
         )
     }
 }
