@@ -56,7 +56,7 @@ class LoginController(
         val redirectUrl = if (host.contains("localhost")) {
             "http://localhost:3000/login-check"
         } else {
-            "https://prod-sprout.duckdns.org/login-check"
+            "https://" + host +  "/login-check"
         }
 
         log.info("Init Browser Domain to: {}", host)
