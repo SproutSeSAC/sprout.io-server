@@ -52,6 +52,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
+	runtimeOnly("com.mysql:mysql-connector-j")
 
 
 	//개발환경 변경 감지 재시작
@@ -74,6 +75,9 @@ dependencies {
 	implementation(platform("software.amazon.awssdk:bom:2.20.158"))
 	implementation("software.amazon.awssdk:s3")
 	implementation("software.amazon.awssdk:auth")
+
+	// Azure
+	implementation("com.azure:azure-storage-blob:12.29.1")
 
 	// queryDsl
 	implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")  // QueryDSL JPA 지원
